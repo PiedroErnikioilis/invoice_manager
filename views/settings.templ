@@ -1,0 +1,69 @@
+package views
+
+import "din-invoice/models"
+import "fmt"
+
+templ SettingsForm(settings models.AppSettings) {
+    @Layout("Einstellungen") {
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-2xl mx-auto">
+            <h1 class="text-2xl font-bold mb-6">Einstellungen</h1>
+            <form action="/settings" method="POST" enctype="multipart/form-data">
+                <div class="mb-6">
+                    <h2 class="text-lg font-bold mb-4 border-b pb-2">Absender Standardwerte</h2>
+                    @Input("Name / Firma", "sender_name", "text", settings.SenderName, "Deine Firma", false, "Standardname für neue Rechnungen.")
+                    @Textarea("Anschrift", "sender_address", settings.SenderAddress, 3)
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="logo">Logo</label>
+                        if settings.LogoPath != "" {
+                            <div class="mb-2">
+                                <p class="text-xs text-gray-500">Aktuelles Logo: { settings.LogoPath }</p>
+                            </div>
+                        }
+                        <input type="file" id="logo" name="logo" accept="image/*" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h2 class="text-lg font-bold mb-4 border-b pb-2">Fußzeile & Kontakt</h2>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        @Input("Bank Name", "bank_name", "text", settings.BankName, "Musterbank", false, "Name deiner Bank.")
+                        @Input("IBAN", "iban", "text", settings.IBAN, "DEXX ...", false, "Deine IBAN.")
+                        @Input("BIC", "bic", "text", settings.BIC, "MUSB...", false, "Deine BIC.")
+                        @Input("Webseite", "website", "text", settings.Website, "www.example.com", false, "Deine Webseite.")
+                        @Input("Email", "email", "email", settings.Email, "info@example.com", false, "Deine Email-Adresse.")
+                     </div>
+                </div>
+
+                <div class="mb-6">
+                    <h2 class="text-lg font-bold mb-4 border-b pb-2">Rechnungsoptionen</h2>
+                    <div class="mb-4">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" name="default_small_business" class="mr-2 w-5 h-5" checked?={ settings.DefaultSmallBusiness } />
+                            <span class="text-sm font-bold text-gray-700">Standardmäßig Kleinunternehmerregelung (§ 19 UStG)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h2 class="text-lg font-bold mb-4 border-b pb-2">Nummernkreise</h2>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Die nächste Rechnungsnummer wird automatisch hochgezählt, wenn sie beim Erstellen einer neuen Rechnung verwendet wird.
+                    </p>
+                    @Input("Nächste Rechnungsnummer (Zähler)", "next_invoice_number", "number", fmt.Sprintf("%d", settings.NextInvoiceNumber), "1", true, "Startwert für die automatische Nummerierung.")
+                </div>
+
+                <div class="mb-6">
+                    <h2 class="text-lg font-bold mb-4 border-b pb-2">PDF Export</h2>
+                    @Input("Speicherpfad für PDFs", "pdf_output_path", "text", settings.PDFOutputPath, "./invoices/", false, "Ordner, in dem PDFs gespeichert werden.")
+                </div>
+
+                <div class="flex items-center justify-end">
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                        Speichern
+                    </button>
+                </div>
+            </form>
+        </div>
+    }
+}

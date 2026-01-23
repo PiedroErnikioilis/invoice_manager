@@ -1,0 +1,94 @@
+package views
+
+import "din-invoice/models"
+import "fmt"
+
+templ StatsDashboard(stats *models.Stats) {
+	@Layout("Statistik") {
+		<h1 class="text-3xl font-bold text-gray-800 mb-6">Statistik Dashboard</h1>
+
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+			<!-- Cards -->
+			<div class="bg-white rounded shadow p-6 border-l-4 border-blue-500">
+				<div class="text-gray-500 text-sm font-bold uppercase">Umsatz (Netto)</div>
+				<div class="text-2xl font-bold text-gray-800">{ fmt.Sprintf("%.2f €", stats.TotalRevenueNet) }</div>
+			</div>
+			<div class="bg-white rounded shadow p-6 border-l-4 border-green-500">
+				<div class="text-gray-500 text-sm font-bold uppercase">Umsatz (Brutto)</div>
+				<div class="text-2xl font-bold text-gray-800">{ fmt.Sprintf("%.2f €", stats.TotalRevenueGross) }</div>
+			</div>
+			<div class="bg-white rounded shadow p-6 border-l-4 border-yellow-500">
+				<div class="text-gray-500 text-sm font-bold uppercase">Rechnungen (Offen)</div>
+				<div class="text-2xl font-bold text-gray-800">{ fmt.Sprintf("%d", stats.OpenCount) }</div>
+			</div>
+			<div class="bg-white rounded shadow p-6 border-l-4 border-purple-500">
+				<div class="text-gray-500 text-sm font-bold uppercase">Rechnungen (Gesamt)</div>
+				<div class="text-2xl font-bold text-gray-800">{ fmt.Sprintf("%d", stats.InvoicesCount) }</div>
+			</div>
+		</div>
+
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+			<!-- Top Products -->
+			<div class="bg-white rounded shadow p-6">
+				<h2 class="text-xl font-bold mb-4">Top Produkte (Umsatz)</h2>
+				if len(stats.TopProducts) == 0 {
+					<p class="text-gray-500">Keine Daten verfügbar.</p>
+				} else {
+					<table class="w-full text-sm">
+						<thead>
+							<tr class="text-gray-500 border-b">
+								<th class="text-left py-2">Produkt</th>
+								<th class="text-right py-2">Verkauft</th>
+								<th class="text-right py-2">Umsatz</th>
+							</tr>
+						</thead>
+						<tbody>
+							for _, p := range stats.TopProducts {
+								<tr class="border-b last:border-0">
+									<td class="py-2 font-medium">{ p.Name }</td>
+									<td class="py-2 text-right">{ fmt.Sprintf("%d", p.Quantity) }</td>
+									<td class="py-2 text-right font-mono">{ fmt.Sprintf("%.2f €", p.Revenue) }</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				}
+			</div>
+
+            <!-- Invoice Status Distribution -->
+            <div class="bg-white rounded shadow p-6">
+                <h2 class="text-xl font-bold mb-4">Status Übersicht</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        <div class="w-32 font-bold text-gray-600">Entwurf</div>
+                        <div class="flex-1 bg-gray-200 rounded h-4 overflow-hidden">
+                            <div class="bg-gray-500 h-full" style={ fmt.Sprintf("width: %d%%", percent(stats.DraftCount, stats.InvoicesCount)) }></div>
+                        </div>
+                        <div class="w-12 text-right text-sm">{ fmt.Sprintf("%d", stats.DraftCount) }</div>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-32 font-bold text-gray-600">Offen</div>
+                        <div class="flex-1 bg-gray-200 rounded h-4 overflow-hidden">
+                            <div class="bg-yellow-500 h-full" style={ fmt.Sprintf("width: %d%%", percent(stats.OpenCount, stats.InvoicesCount)) }></div>
+                        </div>
+                        <div class="w-12 text-right text-sm">{ fmt.Sprintf("%d", stats.OpenCount) }</div>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-32 font-bold text-gray-600">Bezahlt</div>
+                        <div class="flex-1 bg-gray-200 rounded h-4 overflow-hidden">
+                            <div class="bg-green-500 h-full" style={ fmt.Sprintf("width: %d%%", percent(stats.PaidCount, stats.InvoicesCount)) }></div>
+                        </div>
+                        <div class="w-12 text-right text-sm">{ fmt.Sprintf("%d", stats.PaidCount) }</div>
+                    </div>
+                </div>
+            </div>
+		</div>
+	}
+}
+
+func percent(val, total int) int {
+    if total == 0 {
+        return 0
+    }
+    return (val * 100) / total
+}

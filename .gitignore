@@ -1,0 +1,22 @@
+# Binaries
+app
+app.exe
+*.exe
+
+# Logs
+*.log
+app.log
+
+# Database
+*.db
+*.db-journal
+
+# Generated PDFs
+invoices/*.pdf
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Templ generated files (optional, but usually committed if user doesn't have templ)
+# *_templ.go
