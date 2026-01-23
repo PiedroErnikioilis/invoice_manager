@@ -28,7 +28,38 @@ templ EuerDashboard(stats *models.EuerStats) {
             </a>
         </div>
 
-        <div class="grid grid-cols-1 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Income List (Invoices) -->
+            <div class="bg-white shadow-md rounded px-8 pt-6 pb-8">
+                <h2 class="text-xl font-bold mb-4">Einnahmen Liste (Bezahlte Rechnungen)</h2>
+                <div class="overflow-y-auto max-h-96">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-gray-500 border-b">
+                                <th class="text-left py-2">Datum</th>
+                                <th class="text-left py-2">Rechnung #</th>
+                                <th class="text-left py-2">Kunde</th>
+                                <th class="text-right py-2">Betrag</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            for _, i := range stats.Invoices {
+                                <tr class="border-b last:border-0 hover:bg-gray-50">
+                                    <td class="py-2">{ i.Date }</td>
+                                    <td class="py-2">
+                                        <a href={ templ.SafeURL(fmt.Sprintf("/invoices/%d", i.ID)) } class="text-blue-600 hover:underline font-medium">
+                                            { i.InvoiceNumber }
+                                        </a>
+                                    </td>
+                                    <td class="py-2">{ i.RecipientName }</td>
+                                    <td class="py-2 text-right font-mono text-green-600">+{ fmt.Sprintf("%.2f €", i.TotalGross()) }</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- Expense List -->
             <div class="bg-white shadow-md rounded px-8 pt-6 pb-8">
                 <h2 class="text-xl font-bold mb-4">Ausgaben Liste</h2>
