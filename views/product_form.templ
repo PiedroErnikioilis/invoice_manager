@@ -16,113 +16,105 @@ templ ProductForm(product *models.Product, movements []models.StockMovement) {
 				</h1>
 				<a href="/products" class="text-gray-600 hover:text-gray-800">Zurück</a>
 			</div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Main Form -->
-                <div>
-                    <form action={ templ.SafeURL(getActionURL(product)) } method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                        
-                        @Input("Name", "name", "text", product.Name, "Produktname", true, "Bezeichnung des Produkts.")
-                        @Textarea("Beschreibung", "description", product.Description, 3)
-
-                        <div class="flex flex-wrap -mx-3 mb-6">
-                            <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-                                @Input("Preis (€)", "price", "number", fmt.Sprintf("%.2f", product.Price), "0.00", true, "Netto- oder Bruttopreis.")
-                            </div>
-                            <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-                                @Input("Einheit", "unit", "text", product.Unit, "Stk", false, "z.B. Stk, h, m.")
-                            </div>
-                        </div>
-                        
-                        if product.ID == 0 {
-                             @Input("Anfangsbestand", "stock", "number", "0", "0", false, "Startmenge im Lager.")
-                        } else {
-                            <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2">
-                                    Aktueller Bestand
-                                </label>
-                                <div class="text-xl font-bold">{ fmt.Sprintf("%d", product.Stock) } { product.Unit }</div>
-                            </div>
-                        }
-
-                        <div class="flex items-center justify-between">
-                            <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
-                                Speichern
-                            </button>
-                            
-                            if product.ID != 0 {
-                                <button type="button" onclick={ DeleteProduct(product.ID) } class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                                    Löschen
-                                </button>
-                            }
-                        </div>
-                    </form>
-                </div>
-
-                if product.ID != 0 {
-                    <!-- Stock Management -->
-                    <div class="space-y-6">
-                        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8">
-                            <h2 class="text-xl font-bold mb-4">Lagerbuchung</h2>
-                            <div class="flex gap-4">
-                                <!-- Add Stock -->
-                                <form action={ templ.SafeURL(fmt.Sprintf("/products/%d/stock/add", product.ID)) } method="POST" class="w-1/2">
-                                    <h3 class="font-bold text-green-700 mb-2">Zugang (+)</h3>
-                                    <input type="number" name="quantity" class="border rounded w-full p-2 mb-2" placeholder="Menge" required min="1" />
-                                    <input type="text" name="note" class="border rounded w-full p-2 mb-2" placeholder="Notiz (opt)" />
-                                    <div class="mb-2 bg-gray-50 p-2 rounded border">
-                                        <label class="flex items-center mb-1 cursor-pointer">
-                                            <input type="checkbox" name="book_expense" class="mr-2" onchange="toggleCostInput(this.checked)" />
-                                            <span class="text-sm">Als Ausgabe buchen</span>
-                                        </label>
-                                        <input type="number" name="cost_total" id="cost_total" step="0.01" class="border rounded w-full p-1 text-sm hidden" placeholder="Gesamtkosten (€)" />
-                                    </div>
-                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded w-full">Buchen</button>
-                                </form>
-                                <!-- Remove Stock -->
-                                <form action={ templ.SafeURL(fmt.Sprintf("/products/%d/stock/remove", product.ID)) } method="POST" class="w-1/2">
-                                    <h3 class="font-bold text-red-700 mb-2">Abgang (-)</h3>
-                                    <input type="number" name="quantity" class="border rounded w-full p-2 mb-2" placeholder="Menge" required min="1" />
-                                    <input type="text" name="note" class="border rounded w-full p-2 mb-2" placeholder="Notiz (opt)" />
-                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded w-full">Buchen</button>
-                                </form>
-                            </div>
-                        </div>
-
-                        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8">
-                             <h2 class="text-xl font-bold mb-4">Verlauf</h2>
-                             <div class="overflow-y-auto max-h-64">
-                                 <table class="w-full text-sm text-left">
-                                     <thead class="text-gray-500 border-b">
-                                         <tr>
-                                             <th class="py-2">Datum</th>
-                                             <th class="py-2">Typ</th>
-                                             <th class="py-2 text-right">Menge</th>
-                                             <th class="py-2 text-right">Notiz</th>
-                                         </tr>
-                                     </thead>
-                                     <tbody>
-                                         for _, m := range movements {
-                                             <tr class="border-b">
-                                                 <td class="py-2">{ m.CreatedAt.Format("02.01.06 15:04") }</td>
-                                                 <td class="py-2 font-bold">{ m.MovementType }</td>
-                                                 <td class={ "py-2 text-right font-mono font-bold", getStockColor(m.Quantity) }>
-                                                     if m.Quantity > 0 {
-                                                         +{ fmt.Sprintf("%d", m.Quantity) }
-                                                     } else {
-                                                         { fmt.Sprintf("%d", m.Quantity) }
-                                                     }
-                                                 </td>
-                                                 <td class="py-2 text-right text-gray-500 text-xs">{ m.Note }</td>
-                                             </tr>
-                                         }
-                                     </tbody>
-                                 </table>
-                             </div>
-                        </div>
-                    </div>
-                }
-            </div>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<!-- Main Form -->
+				<div>
+					<form action={ templ.SafeURL(getActionURL(product)) } method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+						@Input("Name", "name", "text", product.Name, "Produktname", true, "Bezeichnung des Produkts.")
+						@Textarea("Beschreibung", "description", product.Description, 3)
+						<div class="flex flex-wrap -mx-3 mb-6">
+							<div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+								@Input("Preis (€)", "price", "number", fmt.Sprintf("%.2f", product.Price), "0.00", true, "Netto- oder Bruttopreis.")
+							</div>
+							<div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+								@Input("Einheit", "unit", "text", product.Unit, "Stk", false, "z.B. Stk, h, m.")
+							</div>
+						</div>
+						if product.ID == 0 {
+							@Input("Anfangsbestand", "stock", "number", "0", "0", false, "Startmenge im Lager.")
+						} else {
+							<div class="mb-4">
+								<label class="block text-gray-700 text-sm font-bold mb-2">
+									Aktueller Bestand
+								</label>
+								<div class="text-xl font-bold">{ fmt.Sprintf("%d", product.Stock) } { product.Unit }</div>
+							</div>
+						}
+						<div class="flex items-center justify-between">
+							<button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+								Speichern
+							</button>
+							if product.ID != 0 {
+								<button type="button" onclick={ DeleteProduct(product.ID) } class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+									Löschen
+								</button>
+							}
+						</div>
+					</form>
+				</div>
+				if product.ID != 0 {
+					<!-- Stock Management -->
+					<div class="space-y-6">
+						<div class="bg-white shadow-md rounded px-8 pt-6 pb-8">
+							<h2 class="text-xl font-bold mb-4">Lagerbuchung</h2>
+							<div class="flex gap-4">
+								<!-- Add Stock -->
+								<form action={ templ.SafeURL(fmt.Sprintf("/products/%d/stock/add", product.ID)) } method="POST" class="w-1/2">
+									<h3 class="font-bold text-green-700 mb-2">Zugang (+)</h3>
+									<input type="number" name="quantity" class="border rounded w-full p-2 mb-2" placeholder="Menge" required min="1"/>
+									<input type="text" name="note" class="border rounded w-full p-2 mb-2" placeholder="Notiz (opt)"/>
+									<div class="mb-2 bg-gray-50 p-2 rounded border">
+										<label class="flex items-center mb-1 cursor-pointer">
+											<input type="checkbox" name="book_expense" class="mr-2" onchange="toggleCostInput(this.checked)"/>
+											<span class="text-sm">Als Ausgabe buchen</span>
+										</label>
+										<input type="number" name="cost_total" id="cost_total" step="0.01" class="border rounded w-full p-1 text-sm hidden" placeholder="Gesamtkosten (€)"/>
+									</div>
+									<button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded w-full">Buchen</button>
+								</form>
+								<!-- Remove Stock -->
+								<form action={ templ.SafeURL(fmt.Sprintf("/products/%d/stock/remove", product.ID)) } method="POST" class="w-1/2">
+									<h3 class="font-bold text-red-700 mb-2">Abgang (-)</h3>
+									<input type="number" name="quantity" class="border rounded w-full p-2 mb-2" placeholder="Menge" required min="1"/>
+									<input type="text" name="note" class="border rounded w-full p-2 mb-2" placeholder="Notiz (opt)"/>
+									<button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded w-full">Buchen</button>
+								</form>
+							</div>
+						</div>
+						<div class="bg-white shadow-md rounded px-8 pt-6 pb-8">
+							<h2 class="text-xl font-bold mb-4">Verlauf</h2>
+							<div class="overflow-y-auto max-h-64">
+								<table class="w-full text-sm text-left">
+									<thead class="text-gray-500 border-b">
+										<tr>
+											<th class="py-2">Datum</th>
+											<th class="py-2">Typ</th>
+											<th class="py-2 text-right">Menge</th>
+											<th class="py-2 text-right">Notiz</th>
+										</tr>
+									</thead>
+									<tbody>
+										for _, m := range movements {
+											<tr class="border-b">
+												<td class="py-2">{ m.CreatedAt.Format("02.01.06 15:04") }</td>
+												<td class="py-2 font-bold">{ m.MovementType }</td>
+												<td class={ "py-2 text-right font-mono font-bold", getStockColor(m.Quantity) }>
+													if m.Quantity > 0 {
+														+{ fmt.Sprintf("%d", m.Quantity) }
+													} else {
+														{ fmt.Sprintf("%d", m.Quantity) }
+													}
+												</td>
+												<td class="py-2 text-right text-gray-500 text-xs">{ m.Note }</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				}
+			</div>
 		</div>
 	}
 }
@@ -135,10 +127,10 @@ func getActionURL(p *models.Product) string {
 }
 
 func getStockColor(qty int) string {
-    if qty > 0 {
-        return "text-green-600"
-    }
-    return "text-red-600"
+	if qty > 0 {
+		return "text-green-600"
+	}
+	return "text-red-600"
 }
 
 script DeleteProduct(id int) {

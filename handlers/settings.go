@@ -37,15 +37,15 @@ func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
 	nextNum, _ := strconv.Atoi(r.FormValue("next_invoice_number"))
 
 	settings := models.AppSettings{
-		SenderName:        r.FormValue("sender_name"),
-		SenderAddress:     r.FormValue("sender_address"),
-		NextInvoiceNumber: nextNum,
-		BankName:          r.FormValue("bank_name"),
-		IBAN:              r.FormValue("iban"),
-		BIC:               r.FormValue("bic"),
-		Website:           r.FormValue("website"),
-		Email:             r.FormValue("email"),
-		PDFOutputPath:     r.FormValue("pdf_output_path"),
+		SenderName:           r.FormValue("sender_name"),
+		SenderAddress:        r.FormValue("sender_address"),
+		NextInvoiceNumber:    nextNum,
+		BankName:             r.FormValue("bank_name"),
+		IBAN:                 r.FormValue("iban"),
+		BIC:                  r.FormValue("bic"),
+		Website:              r.FormValue("website"),
+		Email:                r.FormValue("email"),
+		PDFOutputPath:        r.FormValue("pdf_output_path"),
 		DefaultSmallBusiness: r.FormValue("default_small_business") == "on",
 	}
 
@@ -53,30 +53,30 @@ func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
 	file, handler, err := r.FormFile("logo")
 	if err == nil {
 		defer file.Close()
-		
+
 		// Create uploads dir
 		uploadDir := "uploads"
 		if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
 			os.Mkdir(uploadDir, 0755)
 		}
-		
+
 		// Generate file path (keep original extension)
 		ext := filepath.Ext(handler.Filename)
 		filename := "logo" + ext
 		filePath := filepath.Join(uploadDir, filename)
-		
+
 		dst, err := os.Create(filePath)
 		if err != nil {
 			http.Error(w, "Failed to create logo file", http.StatusInternalServerError)
 			return
 		}
 		defer dst.Close()
-		
+
 		if _, err := io.Copy(dst, file); err != nil {
 			http.Error(w, "Failed to save logo file", http.StatusInternalServerError)
 			return
 		}
-		
+
 		settings.LogoPath = filePath
 	} else {
 		// Keep existing logo if not uploaded

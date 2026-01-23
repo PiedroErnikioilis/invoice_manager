@@ -21,28 +21,28 @@ func (s *Store) SetSetting(key, value string) error {
 }
 
 type AppSettings struct {
-	SenderName       string
-	SenderAddress    string
-	NextInvoiceNumber int
-	BankName         string
-	IBAN             string
-	BIC              string
-	Website          string
-	Email            string
-	PDFOutputPath    string
-	LogoPath         string
+	SenderName           string
+	SenderAddress        string
+	NextInvoiceNumber    int
+	BankName             string
+	IBAN                 string
+	BIC                  string
+	Website              string
+	Email                string
+	PDFOutputPath        string
+	LogoPath             string
 	DefaultSmallBusiness bool
 }
 
 func (s *Store) GetAppSettings() (AppSettings, error) {
 	var settings AppSettings
-	
+
 	val, _ := s.GetSetting("sender_name")
 	settings.SenderName = val
-	
+
 	val, _ = s.GetSetting("sender_address")
 	settings.SenderAddress = val
-	
+
 	val, _ = s.GetSetting("next_invoice_number")
 	if val != "" {
 		num, _ := strconv.Atoi(val)
@@ -56,13 +56,13 @@ func (s *Store) GetAppSettings() (AppSettings, error) {
 
 	val, _ = s.GetSetting("bank_name")
 	settings.BankName = val
-	
+
 	val, _ = s.GetSetting("iban")
 	settings.IBAN = val
 
 	val, _ = s.GetSetting("bic")
 	settings.BIC = val
-	
+
 	val, _ = s.GetSetting("website")
 	settings.Website = val
 
@@ -77,7 +77,7 @@ func (s *Store) GetAppSettings() (AppSettings, error) {
 
 	val, _ = s.GetSetting("logo_path")
 	settings.LogoPath = val
-	
+
 	return settings, nil
 }
 

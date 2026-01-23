@@ -6,7 +6,6 @@ import "fmt"
 templ StatsDashboard(stats *models.Stats) {
 	@Layout("Statistik") {
 		<h1 class="text-3xl font-bold text-gray-800 mb-6">Statistik Dashboard</h1>
-
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 			<!-- Cards -->
 			<div class="bg-white rounded shadow p-6 border-l-4 border-blue-500">
@@ -26,7 +25,6 @@ templ StatsDashboard(stats *models.Stats) {
 				<div class="text-2xl font-bold text-gray-800">{ fmt.Sprintf("%d", stats.InvoicesCount) }</div>
 			</div>
 		</div>
-
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 			<!-- Top Products -->
 			<div class="bg-white rounded shadow p-6">
@@ -54,41 +52,40 @@ templ StatsDashboard(stats *models.Stats) {
 					</table>
 				}
 			</div>
-
-            <!-- Invoice Status Distribution -->
-            <div class="bg-white rounded shadow p-6">
-                <h2 class="text-xl font-bold mb-4">Status Übersicht</h2>
-                <div class="space-y-4">
-                    <div class="flex items-center">
-                        <div class="w-32 font-bold text-gray-600">Entwurf</div>
-                        <div class="flex-1 bg-gray-200 rounded h-4 overflow-hidden">
-                            <div class="bg-gray-500 h-full" style={ fmt.Sprintf("width: %d%%", percent(stats.DraftCount, stats.InvoicesCount)) }></div>
-                        </div>
-                        <div class="w-12 text-right text-sm">{ fmt.Sprintf("%d", stats.DraftCount) }</div>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-32 font-bold text-gray-600">Offen</div>
-                        <div class="flex-1 bg-gray-200 rounded h-4 overflow-hidden">
-                            <div class="bg-yellow-500 h-full" style={ fmt.Sprintf("width: %d%%", percent(stats.OpenCount, stats.InvoicesCount)) }></div>
-                        </div>
-                        <div class="w-12 text-right text-sm">{ fmt.Sprintf("%d", stats.OpenCount) }</div>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-32 font-bold text-gray-600">Bezahlt</div>
-                        <div class="flex-1 bg-gray-200 rounded h-4 overflow-hidden">
-                            <div class="bg-green-500 h-full" style={ fmt.Sprintf("width: %d%%", percent(stats.PaidCount, stats.InvoicesCount)) }></div>
-                        </div>
-                        <div class="w-12 text-right text-sm">{ fmt.Sprintf("%d", stats.PaidCount) }</div>
-                    </div>
-                </div>
-            </div>
+			<!-- Invoice Status Distribution -->
+			<div class="bg-white rounded shadow p-6">
+				<h2 class="text-xl font-bold mb-4">Status Übersicht</h2>
+				<div class="space-y-4">
+					<div class="flex items-center">
+						<div class="w-32 font-bold text-gray-600">Entwurf</div>
+						<div class="flex-1 bg-gray-200 rounded h-4 overflow-hidden">
+							<div class="bg-gray-500 h-full" style={ fmt.Sprintf("width: %d%%", percent(stats.DraftCount, stats.InvoicesCount)) }></div>
+						</div>
+						<div class="w-12 text-right text-sm">{ fmt.Sprintf("%d", stats.DraftCount) }</div>
+					</div>
+					<div class="flex items-center">
+						<div class="w-32 font-bold text-gray-600">Offen</div>
+						<div class="flex-1 bg-gray-200 rounded h-4 overflow-hidden">
+							<div class="bg-yellow-500 h-full" style={ fmt.Sprintf("width: %d%%", percent(stats.OpenCount, stats.InvoicesCount)) }></div>
+						</div>
+						<div class="w-12 text-right text-sm">{ fmt.Sprintf("%d", stats.OpenCount) }</div>
+					</div>
+					<div class="flex items-center">
+						<div class="w-32 font-bold text-gray-600">Bezahlt</div>
+						<div class="flex-1 bg-gray-200 rounded h-4 overflow-hidden">
+							<div class="bg-green-500 h-full" style={ fmt.Sprintf("width: %d%%", percent(stats.PaidCount, stats.InvoicesCount)) }></div>
+						</div>
+						<div class="w-12 text-right text-sm">{ fmt.Sprintf("%d", stats.PaidCount) }</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	}
 }
 
 func percent(val, total int) int {
-    if total == 0 {
-        return 0
-    }
-    return (val * 100) / total
+	if total == 0 {
+		return 0
+	}
+	return (val * 100) / total
 }

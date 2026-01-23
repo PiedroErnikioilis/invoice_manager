@@ -47,14 +47,14 @@ func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 	}
 
 	amount, _ := strconv.ParseFloat(r.FormValue("amount"), 64)
-	
+
 	expense := models.Expense{
 		Description: r.FormValue("description"),
 		Amount:      amount,
 		Date:        r.FormValue("date"),
 		Category:    r.FormValue("category"),
 	}
-	
+
 	if expense.Date == "" {
 		expense.Date = time.Now().Format("2006-01-02")
 	}
@@ -63,16 +63,16 @@ func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 	file, handler, err := r.FormFile("receipt")
 	if err == nil {
 		defer file.Close()
-		
+
 		uploadDir := "uploads/receipts"
 		if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
 			os.MkdirAll(uploadDir, 0755)
 		}
-		
+
 		ext := filepath.Ext(handler.Filename)
 		filename := fmt.Sprintf("receipt_%d%s", time.Now().UnixNano(), ext)
 		filePath := filepath.Join(uploadDir, filename)
-		
+
 		dst, err := os.Create(filePath)
 		if err == nil {
 			defer dst.Close()
@@ -91,7 +91,7 @@ func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 	if r.FormValue("update_inventory") == "on" {
 		productID, _ := strconv.Atoi(r.FormValue("product_id"))
 		quantity, _ := strconv.Atoi(r.FormValue("quantity"))
-		
+
 		if productID > 0 && quantity > 0 {
 			// Record stock addition (Purchase)
 			h.Store.RecordStockMovement(productID, quantity, "PURCHASE", "Einkauf: "+expense.Description)

@@ -7,25 +7,25 @@ templ Input(label, name, type_ string, value string, placeholder string, require
 		<label class="block text-gray-700 text-sm font-bold mb-2" for={ name }>
 			{ label }
 		</label>
-		<input 
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
-            id={ name } 
-            name={ name } 
-            type={ type_ } 
-            value={ value } 
-            placeholder={ placeholder } 
-            if required {
-                required
-            }
-        />
-        if helpText != "" {
-            <p class="text-gray-500 text-xs italic mt-1">{ helpText }</p>
-        }
+		<input
+			class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+			id={ name }
+			name={ name }
+			type={ type_ }
+			value={ value }
+			placeholder={ placeholder }
+			if required {
+				required
+			}
+		/>
+		if helpText != "" {
+			<p class="text-gray-500 text-xs italic mt-1">{ helpText }</p>
+		}
 	</div>
 }
 
 templ Textarea(label, name string, value string, rows int) {
-    <div class="mb-4">
+	<div class="mb-4">
 		<label class="block text-gray-700 text-sm font-bold mb-2" for={ name }>
 			{ label }
 		</label>

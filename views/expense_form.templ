@@ -4,68 +4,57 @@ import "din-invoice/models"
 import "fmt"
 
 templ ExpenseForm(products []models.Product) {
-    @Layout("Ausgabe erfassen") {
-        <div class="max-w-2xl mx-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h1 class="text-3xl font-bold text-gray-800">Ausgabe / Kauf erfassen</h1>
-                <a href="/euer" class="text-gray-600 hover:text-gray-800">Zurück</a>
-            </div>
-
-            <form action="/euer/expenses" method="POST" enctype="multipart/form-data" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                
-                <h2 class="text-xl font-bold mb-4 border-b pb-2">Rechnungsdaten</h2>
-                
-                @Input("Beschreibung", "description", "text", "", "z.B. Einkauf Material", true, "Kurze Beschreibung des Einkaufs.")
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    @Input("Betrag (€)", "amount", "number", "", "0.00", true, "Bruttobetrag der Rechnung.")
-                    @Input("Datum", "date", "date", "", "", true, "Datum des Belegs.")
-                </div>
-                
-                @Input("Kategorie", "category", "text", "", "z.B. Material, Werkzeug", false, "Kategorie für die Auswertung.")
-
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Beleg / Rechnung (PDF/Bild)</label>
-                    <input type="file" name="receipt" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-                    <p class="text-xs text-gray-500 mt-1 italic">Lade hier die Rechnung hoch.</p>
-                </div>
-
-                <div class="bg-blue-50 p-4 rounded border border-blue-200 mb-6">
-                    <h2 class="text-lg font-bold mb-2 text-blue-800">Inventar verknüpfen (Optional)</h2>
-                    <p class="text-sm text-blue-600 mb-4">Hier kannst du direkt den Bestand eines Produkts erhöhen.</p>
-                    
-                    <div class="mb-4">
-                        <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="update_inventory" name="update_inventory" class="mr-2 w-5 h-5" onchange="toggleInventory(this.checked)" />
-                            <span class="text-sm font-bold text-gray-700">Bestand aktualisieren?</span>
-                        </label>
-                    </div>
-
-                    <div id="inventory_fields" class="hidden">
-                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="product_id">Produkt</label>
-                                <select name="product_id" id="product_id" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                                    <option value="">Wähle ein Produkt...</option>
-                                    for _, p := range products {
-                                        <option value={ fmt.Sprintf("%d", p.ID) }>{ p.Name } (Bestand: { fmt.Sprintf("%d", p.Stock) })</option>
-                                    }
-                                </select>
-                            </div>
-                            @Input("Menge (+)", "quantity", "number", "1", "1", false, "Anzahl, die dem Lager hinzugefügt wird.")
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-end">
-                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
-                        Speichern & Buchen
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <script>
+	@Layout("Ausgabe erfassen") {
+		<div class="max-w-2xl mx-auto">
+			<div class="flex justify-between items-center mb-6">
+				<h1 class="text-3xl font-bold text-gray-800">Ausgabe / Kauf erfassen</h1>
+				<a href="/euer" class="text-gray-600 hover:text-gray-800">Zurück</a>
+			</div>
+			<form action="/euer/expenses" method="POST" enctype="multipart/form-data" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+				<h2 class="text-xl font-bold mb-4 border-b pb-2">Rechnungsdaten</h2>
+				@Input("Beschreibung", "description", "text", "", "z.B. Einkauf Material", true, "Kurze Beschreibung des Einkaufs.")
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					@Input("Betrag (€)", "amount", "number", "", "0.00", true, "Bruttobetrag der Rechnung.")
+					@Input("Datum", "date", "date", "", "", true, "Datum des Belegs.")
+				</div>
+				@Input("Kategorie", "category", "text", "", "z.B. Material, Werkzeug", false, "Kategorie für die Auswertung.")
+				<div class="mb-6">
+					<label class="block text-gray-700 text-sm font-bold mb-2">Beleg / Rechnung (PDF/Bild)</label>
+					<input type="file" name="receipt" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+					<p class="text-xs text-gray-500 mt-1 italic">Lade hier die Rechnung hoch.</p>
+				</div>
+				<div class="bg-blue-50 p-4 rounded border border-blue-200 mb-6">
+					<h2 class="text-lg font-bold mb-2 text-blue-800">Inventar verknüpfen (Optional)</h2>
+					<p class="text-sm text-blue-600 mb-4">Hier kannst du direkt den Bestand eines Produkts erhöhen.</p>
+					<div class="mb-4">
+						<label class="flex items-center cursor-pointer">
+							<input type="checkbox" id="update_inventory" name="update_inventory" class="mr-2 w-5 h-5" onchange="toggleInventory(this.checked)"/>
+							<span class="text-sm font-bold text-gray-700">Bestand aktualisieren?</span>
+						</label>
+					</div>
+					<div id="inventory_fields" class="hidden">
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div class="mb-4">
+								<label class="block text-gray-700 text-sm font-bold mb-2" for="product_id">Produkt</label>
+								<select name="product_id" id="product_id" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+									<option value="">Wähle ein Produkt...</option>
+									for _, p := range products {
+										<option value={ fmt.Sprintf("%d", p.ID) }>{ p.Name } (Bestand: { fmt.Sprintf("%d", p.Stock) })</option>
+									}
+								</select>
+							</div>
+							@Input("Menge (+)", "quantity", "number", "1", "1", false, "Anzahl, die dem Lager hinzugefügt wird.")
+						</div>
+					</div>
+				</div>
+				<div class="flex items-center justify-end">
+					<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+						Speichern & Buchen
+					</button>
+				</div>
+			</form>
+		</div>
+		<script>
             function toggleInventory(checked) {
                 const el = document.getElementById('inventory_fields');
                 const pSelect = document.getElementById('product_id');
@@ -82,5 +71,5 @@ templ ExpenseForm(products []models.Product) {
                 }
             }
         </script>
-    }
+	}
 }

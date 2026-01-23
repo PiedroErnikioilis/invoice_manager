@@ -38,7 +38,7 @@ func (s *Store) GetStats() (*Stats, error) {
 	// Let's do a join.
 	// Net = Sum(quantity * price)
 	// Gross = Net + Tax (if not small business)
-	
+
 	rows, err := s.DB.Query(`
 		SELECT i.tax_rate, i.is_small_business, ii.quantity, ii.price_per_unit
 		FROM invoices i
@@ -58,10 +58,10 @@ func (s *Store) GetStats() (*Stats, error) {
 		if err := rows.Scan(&taxRate, &isSmall, &qty, &price); err != nil {
 			continue
 		}
-		
+
 		net := float64(qty) * price
 		stats.TotalRevenueNet += net
-		
+
 		if !isSmall {
 			stats.TotalRevenueGross += net * (1 + taxRate/100)
 		} else {

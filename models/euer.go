@@ -12,7 +12,7 @@ func (s *Store) GetEuerStats() (*EuerStats, error) {
 
 	// 1. Calculate Income (Paid Invoices)
 	// We assume Gross amount is the income (Brutto).
-	
+
 	rows, err := s.DB.Query(`
 		SELECT i.tax_rate, i.is_small_business, ii.quantity, ii.price_per_unit
 		FROM invoices i
@@ -29,7 +29,7 @@ func (s *Store) GetEuerStats() (*EuerStats, error) {
 			if err := rows.Scan(&taxRate, &isSmall, &qty, &price); err != nil {
 				continue
 			}
-			
+
 			net := float64(qty) * price
 			if !isSmall {
 				stats.TotalIncome += net * (1 + taxRate/100)
@@ -46,7 +46,7 @@ func (s *Store) GetEuerStats() (*EuerStats, error) {
 	}
 
 	stats.Profit = stats.TotalIncome - stats.TotalExpenses
-	
+
 	// Load Expenses list for display
 	stats.Expenses, _ = s.ListExpenses()
 

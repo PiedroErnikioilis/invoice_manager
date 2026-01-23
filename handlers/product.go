@@ -53,7 +53,7 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	
+
 	// Initial stock movement if > 0
 	if initialStock > 0 {
 		h.Store.RecordStockMovement(id, initialStock, "INITIAL", "Anfangsbestand")
@@ -75,7 +75,7 @@ func (h *ProductHandler) Edit(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Product not found", http.StatusNotFound)
 		return
 	}
-	
+
 	movements, _ := h.Store.ListStockMovements(id)
 
 	views.ProductForm(product, movements).Render(r.Context(), w)
@@ -95,14 +95,14 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Stock is not updated here anymore, only basic info
-	
+
 	price, _ := strconv.ParseFloat(r.FormValue("price"), 64)
 	// stock, _ := strconv.Atoi(r.FormValue("stock")) // Ignored
 
 	// We need to fetch current stock to preserve it if we use UpdateProduct
 	// Or we just update fields excluding stock.
 	// UpdateProduct in models updates everything.
-	
+
 	existing, err := h.Store.GetProduct(id)
 	if err != nil {
 		http.Error(w, "Product not found", http.StatusNotFound)
@@ -164,21 +164,21 @@ func (h *ProductHandler) handleStockMovement(w http.ResponseWriter, r *http.Requ
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	
+
 	quantity, _ := strconv.Atoi(r.FormValue("quantity"))
 	note := r.FormValue("note")
-	
+
 	if quantity <= 0 {
 		http.Redirect(w, r, "/products/"+idStr+"/edit", http.StatusSeeOther)
 		return
 	}
-	
+
 	movementType := "IN"
 	if multiplier < 0 {
 		movementType = "OUT"
 	}
-	
-	err = h.Store.RecordStockMovement(id, quantity * multiplier, movementType, note)
+
+	err = h.Store.RecordStockMovement(id, quantity*multiplier, movementType, note)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -187,7 +187,7 @@ func (h *ProductHandler) handleStockMovement(w http.ResponseWriter, r *http.Requ
 	// Book as expense if requested and it is stock addition (IN)
 	if multiplier > 0 && r.FormValue("book_expense") == "on" {
 		product, _ := h.Store.GetProduct(id)
-		
+
 		cost, _ := strconv.ParseFloat(r.FormValue("cost_total"), 64)
 		if cost > 0 {
 			h.Store.CreateExpense(models.Expense{
@@ -198,6 +198,6 @@ func (h *ProductHandler) handleStockMovement(w http.ResponseWriter, r *http.Requ
 			})
 		}
 	}
-	
+
 	http.Redirect(w, r, "/products/"+idStr+"/edit", http.StatusSeeOther)
 }

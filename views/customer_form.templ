@@ -16,27 +16,23 @@ templ CustomerForm(customer *models.Customer) {
 				</h1>
 				<a href="/customers" class="text-gray-600 hover:text-gray-800">Zurück</a>
 			</div>
-
 			<form action={ templ.SafeURL(getCustomerActionURL(customer)) } method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-				
-                @Input("Name / Firma", "name", "text", customer.Name, "Firmenname oder Vor- Nachname", true, "Der Name des Kunden.")
-                @Input("Email", "email", "email", customer.Email, "Email Adresse", false, "Email für Rechnungsversand.")
-                @Textarea("Anschrift", "address", customer.Address, 4)
-
+				@Input("Name / Firma", "name", "text", customer.Name, "Firmenname oder Vor- Nachname", true, "Der Name des Kunden.")
+				@Input("Email", "email", "email", customer.Email, "Email Adresse", false, "Email für Rechnungsversand.")
+				@Textarea("Anschrift", "address", customer.Address, 4)
 				<div class="flex items-center justify-between">
 					<button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
 						Speichern
 					</button>
-					
 					if customer.ID != 0 {
-                        <div class="flex gap-2">
-                            <a href={ templ.SafeURL(fmt.Sprintf("/invoices/new?customer_id=%d", customer.ID)) } class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                                Rechnung erstellen
-                            </a>
-                            <button type="button" onclick={ DeleteCustomer(customer.ID) } class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                                Löschen
-                            </button>
-                        </div>
+						<div class="flex gap-2">
+							<a href={ templ.SafeURL(fmt.Sprintf("/invoices/new?customer_id=%d", customer.ID)) } class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+								Rechnung erstellen
+							</a>
+							<button type="button" onclick={ DeleteCustomer(customer.ID) } class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+								Löschen
+							</button>
+						</div>
 					}
 				</div>
 			</form>

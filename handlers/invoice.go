@@ -32,10 +32,10 @@ func (h *InvoiceHandler) List(w http.ResponseWriter, r *http.Request) {
 
 func (h *InvoiceHandler) New(w http.ResponseWriter, r *http.Request) {
 	settings, _ := h.Store.GetAppSettings()
-	
+
 	// Format invoice number with 4 digits padding
 	invNum := fmt.Sprintf("%04d", settings.NextInvoiceNumber)
-	
+
 	invoice := &models.Invoice{
 		SenderName:      settings.SenderName,
 		SenderAddress:   settings.SenderAddress,
@@ -103,7 +103,7 @@ func (h *InvoiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 		}
 		q, _ := strconv.Atoi(quantities[i])
 		p, _ := strconv.ParseFloat(prices[i], 64)
-		
+
 		var pid *int
 		if i < len(productIDs) && productIDs[i] != "" {
 			id, err := strconv.Atoi(productIDs[i])
@@ -201,7 +201,7 @@ func (h *InvoiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 		}
 		q, _ := strconv.Atoi(quantities[i])
 		p, _ := strconv.ParseFloat(prices[i], 64)
-		
+
 		var pid *int
 		if i < len(productIDs) && productIDs[i] != "" {
 			id, err := strconv.Atoi(productIDs[i])
@@ -240,7 +240,7 @@ func (h *InvoiceHandler) View(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invoice not found", http.StatusNotFound)
 		return
 	}
-	
+
 	settings, err := h.Store.GetAppSettings()
 	if err != nil {
 		// Log error but continue

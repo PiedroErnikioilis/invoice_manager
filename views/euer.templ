@@ -6,7 +6,6 @@ import "fmt"
 templ EuerDashboard(stats *models.EuerStats) {
 	@Layout("EÜR Übersicht") {
 		<h1 class="text-3xl font-bold text-gray-800 mb-6">Einnahmen-Überschuss-Rechnung (EÜR)</h1>
-
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
 			<div class="bg-white rounded shadow p-6 border-l-4 border-green-500">
 				<div class="text-gray-500 text-sm font-bold uppercase">Einnahmen</div>
@@ -21,57 +20,55 @@ templ EuerDashboard(stats *models.EuerStats) {
 				<div class={ "text-2xl font-bold", getProfitColor(stats.Profit) }>{ fmt.Sprintf("%.2f €", stats.Profit) }</div>
 			</div>
 		</div>
-
-        <div class="mb-6 flex justify-end">
-            <a href="/expenses/new" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
-                + Ausgabe / Rechnung erfassen
-            </a>
-        </div>
-
-        <div class="grid grid-cols-1 gap-6">
-            <!-- Expense List -->
-            <div class="bg-white shadow-md rounded px-8 pt-6 pb-8">
-                <h2 class="text-xl font-bold mb-4">Ausgaben Liste</h2>
-                <div class="overflow-y-auto max-h-96">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="text-gray-500 border-b">
-                                <th class="text-left py-2">Datum</th>
-                                <th class="text-left py-2">Beschreibung</th>
-                                <th class="text-right py-2">Betrag</th>
-                                <th class="text-right py-2"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            for _, e := range stats.Expenses {
-                                <tr class="border-b last:border-0 hover:bg-gray-50">
-                                    <td class="py-2">{ e.Date }</td>
-                                    <td class="py-2">
-                                        <div class="font-medium">{ e.Description }</div>
-                                        <div class="text-xs text-gray-500">{ e.Category }</div>
-                                        if e.ReceiptPath != "" {
-                                            <a href={ templ.SafeURL(e.ReceiptPath) } target="_blank" class="text-blue-500 hover:underline text-xs">Beleg anzeigen</a>
-                                        }
-                                    </td>
-                                    <td class="py-2 text-right font-mono text-red-600">-{ fmt.Sprintf("%.2f €", e.Amount) }</td>
-                                    <td class="py-2 text-right">
-                                        <form action={ templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/delete", e.ID)) } method="POST" onsubmit="return confirm('Löschen?');">
-                                            <button type="submit" class="text-red-500 hover:text-red-700 font-bold">×</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+		<div class="mb-6 flex justify-end">
+			<a href="/expenses/new" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
+				+ Ausgabe / Rechnung erfassen
+			</a>
+		</div>
+		<div class="grid grid-cols-1 gap-6">
+			<!-- Expense List -->
+			<div class="bg-white shadow-md rounded px-8 pt-6 pb-8">
+				<h2 class="text-xl font-bold mb-4">Ausgaben Liste</h2>
+				<div class="overflow-y-auto max-h-96">
+					<table class="w-full text-sm">
+						<thead>
+							<tr class="text-gray-500 border-b">
+								<th class="text-left py-2">Datum</th>
+								<th class="text-left py-2">Beschreibung</th>
+								<th class="text-right py-2">Betrag</th>
+								<th class="text-right py-2"></th>
+							</tr>
+						</thead>
+						<tbody>
+							for _, e := range stats.Expenses {
+								<tr class="border-b last:border-0 hover:bg-gray-50">
+									<td class="py-2">{ e.Date }</td>
+									<td class="py-2">
+										<div class="font-medium">{ e.Description }</div>
+										<div class="text-xs text-gray-500">{ e.Category }</div>
+										if e.ReceiptPath != "" {
+											<a href={ templ.SafeURL(e.ReceiptPath) } target="_blank" class="text-blue-500 hover:underline text-xs">Beleg anzeigen</a>
+										}
+									</td>
+									<td class="py-2 text-right font-mono text-red-600">-{ fmt.Sprintf("%.2f €", e.Amount) }</td>
+									<td class="py-2 text-right">
+										<form action={ templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/delete", e.ID)) } method="POST" onsubmit="return confirm('Löschen?');">
+											<button type="submit" class="text-red-500 hover:text-red-700 font-bold">×</button>
+										</form>
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
 	}
 }
 
 func getProfitColor(val float64) string {
-    if val >= 0 {
-        return "text-green-700"
-    }
-    return "text-red-700"
+	if val >= 0 {
+		return "text-green-700"
+	}
+	return "text-red-700"
 }
