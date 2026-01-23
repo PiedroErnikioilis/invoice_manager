@@ -1,10 +1,13 @@
 module din-invoice
 
-go 1.24
+go 1.24.0
+
+toolchain go1.24.2
 
 require (
 	github.com/a-h/templ v0.3.977
 	github.com/go-chi/chi/v5 v5.2.4
+	github.com/go-rod/rod v0.116.2
 	github.com/johnfercher/maroto v1.0.0
 	modernc.org/sqlite v1.44.3
 )
@@ -12,7 +15,6 @@ require (
 require (
 	github.com/boombuler/barcode v1.0.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/go-rod/rod v0.116.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jung-kurt/gofpdf v1.16.2 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
