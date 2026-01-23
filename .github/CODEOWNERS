@@ -1,0 +1,8 @@
+# Globale Owner (Fallback)
+* @piedro
+
+# Spezifische Owner
+/db/ @piedro
+/handlers/ @piedro
+/services/ @piedro
+/views/ @piedro
