@@ -47,7 +47,7 @@ templ EuerDashboard(stats *models.EuerStats) {
 										<div class="font-medium">{ e.Description }</div>
 										<div class="text-xs text-gray-500">{ e.Category }</div>
 										if e.ReceiptPath != "" {
-											<a href={ templ.SafeURL(e.ReceiptPath) } target="_blank" class="text-blue-500 hover:underline text-xs">Beleg anzeigen</a>
+											<a href={ templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/receipt", e.ID)) } target="_blank" class="text-blue-500 hover:underline text-xs">Beleg anzeigen</a>
 										}
 									</td>
 									<td class="py-2 text-right font-mono text-red-600">-{ fmt.Sprintf("%.2f €", e.Amount) }</td>
