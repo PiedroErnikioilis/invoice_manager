@@ -82,6 +82,7 @@ func Init(dataSourceName string) (*sql.DB, error) {
 		date TEXT NOT NULL,
 		category TEXT,
 		receipt_path TEXT,
+		receipt_data TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	);
 	`
@@ -98,6 +99,7 @@ func Init(dataSourceName string) (*sql.DB, error) {
 		"ALTER TABLE invoices ADD COLUMN is_small_business BOOLEAN DEFAULT 0",
 		"ALTER TABLE invoice_items ADD COLUMN product_id INTEGER",
 		"ALTER TABLE invoices ADD COLUMN customer_id INTEGER",
+		"ALTER TABLE expenses ADD COLUMN receipt_data TEXT",
 	}
 
 	for _, m := range migrations {

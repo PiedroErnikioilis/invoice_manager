@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 type Expense struct {
 	ID          int
@@ -9,14 +12,15 @@ type Expense struct {
 	Date        string
 	Category    string
 	ReceiptPath string
+	ReceiptData string
 	CreatedAt   time.Time
 }
 
 func (s *Store) CreateExpense(e Expense) (int, error) {
 	res, err := s.DB.Exec(`
-		INSERT INTO expenses (description, amount, date, category, receipt_path)
-		VALUES (?, ?, ?, ?, ?)
-	`, e.Description, e.Amount, e.Date, e.Category, e.ReceiptPath)
+		INSERT INTO expenses (description, amount, date, category, receipt_path, receipt_data)
+		VALUES (?, ?, ?, ?, ?, ?)
+	`, e.Description, e.Amount, e.Date, e.Category, e.ReceiptPath, e.ReceiptData)
 	if err != nil {
 		return 0, err
 	}
@@ -40,6 +44,16 @@ func (s *Store) ListExpenses() ([]Expense, error) {
 		expenses = append(expenses, e)
 	}
 	return expenses, nil
+}
+
+func (s *Store) GetExpenseReceipt(id int) (string, string, error) {
+	var path string
+	var data sql.NullString
+	err := s.DB.QueryRow(`SELECT receipt_path, receipt_data FROM expenses WHERE id = ?`, id).Scan(&path, &data)
+	if err != nil {
+		return "", "", err
+	}
+	return path, data.String, nil
 }
 
 func (s *Store) DeleteExpense(id int) error {
