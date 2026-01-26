@@ -121,7 +121,7 @@ func (s *Store) UpdateInvoice(inv *Invoice) error {
 		tx.Rollback()
 		return err
 	}
-	
+
 	type itemToRestore struct {
 		ProductID *int
 		Quantity  int

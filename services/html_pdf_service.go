@@ -18,7 +18,6 @@ import (
 )
 
 func toPtr(f float64) *float64 { return &f }
-func toBoolPtr(b bool) *bool { return &b }
 
 // GenerateInvoicePDFHTML renders the HTML view and converts it to PDF using Rod.
 func GenerateInvoicePDFHTML(inv *models.Invoice, settings *models.AppSettings) (string, error) {
@@ -27,7 +26,7 @@ func GenerateInvoicePDFHTML(inv *models.Invoice, settings *models.AppSettings) (
 	if settings.LogoPath != "" {
 		// Clean the path (remove file:// prefix if we added it previously, though now we prefer Base64)
 		cleanPath := strings.TrimPrefix(settings.LogoPath, "file://")
-		
+
 		// If it's a relative path, resolve it relative to CWD
 		if !filepath.IsAbs(cleanPath) {
 			abs, err := filepath.Abs(cleanPath)
@@ -52,7 +51,7 @@ func GenerateInvoicePDFHTML(inv *models.Invoice, settings *models.AppSettings) (
 	}
 
 	htmlComponent := views.InvoicePDF(inv, settings)
-	
+
 	// Create a buffer to render into
 	var htmlBuilder strings.Builder
 	if err := htmlComponent.Render(context.Background(), &htmlBuilder); err != nil {
@@ -75,20 +74,20 @@ func GenerateInvoicePDFHTML(inv *models.Invoice, settings *models.AppSettings) (
 	if err := page.SetDocumentContent(htmlContent); err != nil {
 		return "", fmt.Errorf("failed to set page content: %w", err)
 	}
-	
+
 	page.MustWaitLoad()
 
 	// 4. Generate PDF
 	// A4 measurements
 	// rod.StreamReader implements io.Reader
 	pdfStream, err := page.PDF(&proto.PagePrintToPDF{
-		PaperWidth:   toPtr(8.27), // A4 Width in inches
-		PaperHeight:  toPtr(11.69), // A4 Height
-		MarginTop:    toPtr(0.0),
-		MarginBottom: toPtr(0.0),
-		MarginLeft:   toPtr(0.0),
-		MarginRight:  toPtr(0.0), // We handle margins in CSS
-		PrintBackground: true, // Important for CSS backgrounds
+		PaperWidth:      toPtr(8.27),  // A4 Width in inches
+		PaperHeight:     toPtr(11.69), // A4 Height
+		MarginTop:       toPtr(0.0),
+		MarginBottom:    toPtr(0.0),
+		MarginLeft:      toPtr(0.0),
+		MarginRight:     toPtr(0.0), // We handle margins in CSS
+		PrintBackground: true,       // Important for CSS backgrounds
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to generate pdf: %w", err)
@@ -102,7 +101,7 @@ func GenerateInvoicePDFHTML(inv *models.Invoice, settings *models.AppSettings) (
 	if err := os.MkdirAll(outDir, 0755); err != nil {
 		return "", err
 	}
-	
+
 	// Create file
 	filename := filepath.Join(outDir, fmt.Sprintf("rechnung_%s.pdf", inv.InvoiceNumber))
 	f, err := os.Create(filename)

@@ -30,18 +30,18 @@ func (s *Store) RecordStockMovement(productID int, quantity int, movementType st
 	}
 
 	// 2. Update actual product stock
-	// If it's IN, we add. If OUT, we subtract? 
-	// Let's standardise: quantity in movement is raw. 
+	// If it's IN, we add. If OUT, we subtract?
+	// Let's standardise: quantity in movement is raw.
 	// If movementType is 'IN' or 'ADJUST' (positive), we add.
 	// But simplify: The caller decides the sign of 'quantity'.
-	// NO, typical stock logic: 
+	// NO, typical stock logic:
 	// IN: +qty
 	// OUT: -qty
 	// INVOICE: -qty
 	// Let's assume the caller passes the signed quantity (e.g. -5 for invoice).
-	// Or we handle it by type? 
+	// Or we handle it by type?
 	// Let's stick to: The caller provides the signed integer change.
-	
+
 	_, err = tx.Exec(`UPDATE products SET stock = stock + ? WHERE id = ?`, quantity, productID)
 	if err != nil {
 		tx.Rollback()

@@ -11,7 +11,9 @@ type EuerStats struct {
 func (s *Store) GetEuerStats() (*EuerStats, error) {
 	stats := &EuerStats{}
 
-	// 1. Calculate Income (Paid Invoices) and Load Invoices
+	// 1. Calculate Income (Paid Invoices)
+	// We assume Gross amount is the income (Brutto).
+
 	rows, err := s.DB.Query(`
 		SELECT id, invoice_number, date, recipient_name, tax_rate, is_small_business, status
 		FROM invoices
@@ -31,6 +33,11 @@ func (s *Store) GetEuerStats() (*EuerStats, error) {
 			if err == nil {
 				stats.TotalIncome += fullInv.TotalGross()
 				stats.Invoices = append(stats.Invoices, *fullInv)
+			net := float64(qty) * price
+			if !isSmall {
+				stats.TotalIncome += net * (1 + taxRate/100)
+			} else {
+				stats.TotalIncome += net
 			}
 		}
 	}
@@ -42,7 +49,7 @@ func (s *Store) GetEuerStats() (*EuerStats, error) {
 	}
 
 	stats.Profit = stats.TotalIncome - stats.TotalExpenses
-	
+
 	// Load Expenses list for display
 	stats.Expenses, _ = s.ListExpenses()
 

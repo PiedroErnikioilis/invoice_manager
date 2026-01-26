@@ -11,7 +11,6 @@ templ CustomerList(customers []models.Customer) {
 				Neuer Kunde
 			</a>
 		</div>
-
 		<div class="bg-white rounded-lg shadow overflow-hidden">
 			<table class="min-w-full divide-y divide-gray-200">
 				<thead class="bg-gray-50">
@@ -34,9 +33,9 @@ templ CustomerList(customers []models.Customer) {
 							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ c.Email }</td>
 							<td class="px-6 py-4 text-sm text-gray-500 truncate max-w-xs">{ c.Address }</td>
 							<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href={ templ.SafeURL(fmt.Sprintf("/invoices/new?customer_id=%d", c.ID)) } class="text-green-600 hover:text-green-900 mr-4 font-bold" title="Rechnung erstellen">
-                                    + Rechnung
-                                </a>
+								<a href={ templ.SafeURL(fmt.Sprintf("/invoices/new?customer_id=%d", c.ID)) } class="text-green-600 hover:text-green-900 mr-4 font-bold" title="Rechnung erstellen">
+									+ Rechnung
+								</a>
 								<a href={ templ.SafeURL(fmt.Sprintf("/customers/%d/edit", c.ID)) } class="text-indigo-600 hover:text-indigo-900 mr-4">Bearbeiten</a>
 							</td>
 						</tr>
