@@ -49,9 +49,9 @@ func EuerDashboard(stats *models.EuerStats) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
-			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", stats.TotalIncome))
+			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.TotalIncome))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 12, Col: 95}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 12, Col: 93}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -62,9 +62,9 @@ func EuerDashboard(stats *models.EuerStats) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
-			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", stats.TotalExpenses))
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.TotalExpenses))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 16, Col: 95}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 16, Col: 93}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -97,9 +97,9 @@ func EuerDashboard(stats *models.EuerStats) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
-			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", stats.Profit))
+			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.Profit))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 20, Col: 109}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 20, Col: 107}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -167,9 +167,9 @@ func EuerDashboard(stats *models.EuerStats) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var12 string
-				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", i.TotalGross()))
+				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(i.TotalGross()))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 54, Col: 131}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 54, Col: 129}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
@@ -252,9 +252,9 @@ func EuerDashboard(stats *models.EuerStats) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var17 string
-				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", e.Amount))
+				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(e.Amount))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 86, Col: 123}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 86, Col: 121}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 				if templ_7745c5c3_Err != nil {
@@ -350,9 +350,9 @@ func EuerDashboard(stats *models.EuerStats) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var23 string
-				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", e.Amount))
+				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(e.Amount))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 129, Col: 96}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 129, Col: 94}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 				if templ_7745c5c3_Err != nil {

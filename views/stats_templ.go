@@ -49,9 +49,9 @@ func StatsDashboard(stats *models.Stats) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
-			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", stats.TotalRevenueNet))
+			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.TotalRevenueNet))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/stats.templ`, Line: 13, Col: 98}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/stats.templ`, Line: 13, Col: 96}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -62,9 +62,9 @@ func StatsDashboard(stats *models.Stats) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
-			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", stats.TotalRevenueGross))
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.TotalRevenueGross))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/stats.templ`, Line: 17, Col: 100}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/stats.templ`, Line: 17, Col: 98}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -142,9 +142,9 @@ func StatsDashboard(stats *models.Stats) templ.Component {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var9 string
-					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", p.Revenue))
+					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(p.Revenue))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/stats.templ`, Line: 48, Col: 83}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/stats.templ`, Line: 48, Col: 81}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 					if templ_7745c5c3_Err != nil {

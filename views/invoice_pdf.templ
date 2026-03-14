@@ -205,8 +205,8 @@ templ InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) {
 							<td class="p-2">{ strconv.Itoa(i + 1) }</td>
 							<td class="p-2">{ item.Description }</td>
 							<td class="p-2 text-right">{ strconv.Itoa(item.Quantity) }</td>
-							<td class="p-2 text-right">{ fmt.Sprintf("%.2f €", item.PricePerUnit) }</td>
-							<td class="p-2 text-right">{ fmt.Sprintf("%.2f €", float64(item.Quantity) * item.PricePerUnit) }</td>
+							<td class="p-2 text-right">{ models.FormatCurrency(item.PricePerUnit) }</td>
+							<td class="p-2 text-right">{ models.FormatCurrency(float64(item.Quantity) * item.PricePerUnit) }</td>
 						</tr>
 					}
 				</tbody>
@@ -216,17 +216,17 @@ templ InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) {
 				<table class="text-sm w-1/3">
 					<tr>
 						<td class="p-1 font-bold text-right">Nettobetrag:</td>
-						<td class="p-1 text-right font-mono">{ fmt.Sprintf("%.2f €", invoice.TotalNet()) }</td>
+						<td class="p-1 text-right font-mono whitespace-nowrap">{ models.FormatCurrency(invoice.TotalNet()) }</td>
 					</tr>
 					if !invoice.IsSmallBusiness {
 						<tr>
 							<td class="p-1 font-bold text-right">MwSt ({ fmt.Sprintf("%g%%", invoice.TaxRate) }):</td>
-							<td class="p-1 text-right font-mono">{ fmt.Sprintf("%.2f €", invoice.TaxAmount()) }</td>
+							<td class="p-1 text-right font-mono whitespace-nowrap">{ models.FormatCurrency(invoice.TaxAmount()) }</td>
 						</tr>
 					}
 					<tr class="border-t border-gray-400">
 						<td class="p-2 font-bold text-right text-lg">Gesamtbetrag:</td>
-						<td class="p-2 text-right font-bold text-lg font-mono">{ fmt.Sprintf("%.2f €", invoice.TotalGross()) }</td>
+						<td class="p-2 text-right font-bold text-lg font-mono whitespace-nowrap">{ models.FormatCurrency(invoice.TotalGross()) }</td>
 					</tr>
 				</table>
 			</div>

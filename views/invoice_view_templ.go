@@ -225,9 +225,9 @@ func InvoiceView(inv *models.Invoice, settings models.AppSettings) templ.Compone
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var15 string
-				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", item.PricePerUnit))
+				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(item.PricePerUnit))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_view.templ`, Line: 89, Col: 91}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_view.templ`, Line: 89, Col: 89}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 				if templ_7745c5c3_Err != nil {
@@ -238,9 +238,9 @@ func InvoiceView(inv *models.Invoice, settings models.AppSettings) templ.Compone
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var16 string
-				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", float64(item.Quantity)*item.PricePerUnit))
+				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(float64(item.Quantity) * item.PricePerUnit))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_view.templ`, Line: 90, Col: 128}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_view.templ`, Line: 90, Col: 126}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 				if templ_7745c5c3_Err != nil {
@@ -256,9 +256,9 @@ func InvoiceView(inv *models.Invoice, settings models.AppSettings) templ.Compone
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var17 string
-			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", inv.TotalNet()))
+			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(inv.TotalNet()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_view.templ`, Line: 99, Col: 91}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_view.templ`, Line: 99, Col: 89}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
@@ -287,9 +287,9 @@ func InvoiceView(inv *models.Invoice, settings models.AppSettings) templ.Compone
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var19 string
-				templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", inv.TaxAmount()))
+				templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(inv.TaxAmount()))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_view.templ`, Line: 104, Col: 88}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_view.templ`, Line: 104, Col: 86}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 				if templ_7745c5c3_Err != nil {
@@ -305,9 +305,9 @@ func InvoiceView(inv *models.Invoice, settings models.AppSettings) templ.Compone
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var20 string
-			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", inv.TotalGross()))
+			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(inv.TotalGross()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_view.templ`, Line: 109, Col: 122}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_view.templ`, Line: 109, Col: 120}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {

@@ -157,8 +157,8 @@ func GenerateInvoicePDF(inv *models.Invoice, settings *models.AppSettings) (stri
 			strconv.Itoa(i + 1),
 			item.Description,
 			strconv.Itoa(item.Quantity),
-			fmt.Sprintf("%.2f €", item.PricePerUnit),
-			fmt.Sprintf("%.2f €", float64(item.Quantity)*item.PricePerUnit),
+			models.FormatCurrency(item.PricePerUnit),
+			models.FormatCurrency(float64(item.Quantity) * item.PricePerUnit),
 		})
 	}
 
@@ -186,7 +186,7 @@ func GenerateInvoicePDF(inv *models.Invoice, settings *models.AppSettings) (stri
 			m.Text("Nettobetrag:", props.Text{Align: consts.Right, Style: consts.Bold, Size: 9})
 		})
 		m.Col(1, func() {
-			m.Text(fmt.Sprintf("%.2f €", inv.TotalNet()), props.Text{Align: consts.Right, Size: 9, Family: consts.Courier})
+			m.Text(models.FormatCurrency(inv.TotalNet()), props.Text{Align: consts.Right, Size: 9, Family: consts.Courier})
 		})
 	})
 
@@ -197,7 +197,7 @@ func GenerateInvoicePDF(inv *models.Invoice, settings *models.AppSettings) (stri
 				m.Text(fmt.Sprintf("MwSt (%.0f%%):", inv.TaxRate), props.Text{Align: consts.Right, Style: consts.Bold, Size: 9})
 			})
 			m.Col(1, func() {
-				m.Text(fmt.Sprintf("%.2f €", inv.TaxAmount()), props.Text{Align: consts.Right, Size: 9, Family: consts.Courier})
+				m.Text(models.FormatCurrency(inv.TaxAmount()), props.Text{Align: consts.Right, Size: 9, Family: consts.Courier})
 			})
 		})
 	}
@@ -210,7 +210,7 @@ func GenerateInvoicePDF(inv *models.Invoice, settings *models.AppSettings) (stri
 			m.Text("Gesamtbetrag:", props.Text{Align: consts.Right, Style: consts.Bold, Size: 11, Top: 2})
 		})
 		m.Col(1, func() {
-			m.Text(fmt.Sprintf("%.2f €", inv.TotalGross()), props.Text{Align: consts.Right, Style: consts.Bold, Size: 11, Top: 2, Family: consts.Courier})
+			m.Text(models.FormatCurrency(inv.TotalGross()), props.Text{Align: consts.Right, Style: consts.Bold, Size: 11, Top: 2, Family: consts.Courier})
 		})
 	})
 

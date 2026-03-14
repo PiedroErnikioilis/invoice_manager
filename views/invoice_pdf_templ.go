@@ -284,9 +284,9 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var17 string
-				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", item.PricePerUnit))
+				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(item.PricePerUnit))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 208, Col: 78}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 208, Col: 76}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 				if templ_7745c5c3_Err != nil {
@@ -297,9 +297,9 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var18 string
-				templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", float64(item.Quantity)*item.PricePerUnit))
+				templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(float64(item.Quantity) * item.PricePerUnit))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 209, Col: 103}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 209, Col: 101}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 				if templ_7745c5c3_Err != nil {
@@ -310,14 +310,14 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</tbody></table><!-- Totals --><div class=\"flex justify-end mb-8\"><table class=\"text-sm w-1/3\"><tr><td class=\"p-1 font-bold text-right\">Nettobetrag:</td><td class=\"p-1 text-right font-mono\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</tbody></table><!-- Totals --><div class=\"flex justify-end mb-8\"><table class=\"text-sm w-1/3\"><tr><td class=\"p-1 font-bold text-right\">Nettobetrag:</td><td class=\"p-1 text-right font-mono whitespace-nowrap\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var19 string
-			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", invoice.TotalNet()))
+			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(invoice.TotalNet()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 219, Col: 88}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 219, Col: 104}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
@@ -341,14 +341,14 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "):</td><td class=\"p-1 text-right font-mono\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "):</td><td class=\"p-1 text-right font-mono whitespace-nowrap\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var21 string
-				templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", invoice.TaxAmount()))
+				templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(invoice.TaxAmount()))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 224, Col: 90}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 224, Col: 106}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 				if templ_7745c5c3_Err != nil {
@@ -359,14 +359,14 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<tr class=\"border-t border-gray-400\"><td class=\"p-2 font-bold text-right text-lg\">Gesamtbetrag:</td><td class=\"p-2 text-right font-bold text-lg font-mono\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<tr class=\"border-t border-gray-400\"><td class=\"p-2 font-bold text-right text-lg\">Gesamtbetrag:</td><td class=\"p-2 text-right font-bold text-lg font-mono whitespace-nowrap\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var22 string
-			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", invoice.TotalGross()))
+			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(invoice.TotalGross()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 229, Col: 108}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 229, Col: 124}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {

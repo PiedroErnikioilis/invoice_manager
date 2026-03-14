@@ -33,7 +33,7 @@ templ ProductList(products []models.Product) {
 						<tr class="hover:bg-gray-50">
 							<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ p.Name }</td>
 							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ p.Description }</td>
-							<td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{ fmt.Sprintf("%.2f €", p.Price) }</td>
+							<td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{ models.FormatCurrency(p.Price) }</td>
 							<td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{ fmt.Sprintf("%d", p.Stock) }</td>
 							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ p.Unit }</td>
 							<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

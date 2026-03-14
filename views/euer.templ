@@ -9,15 +9,15 @@ templ EuerDashboard(stats *models.EuerStats) {
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
 			<div class="bg-white rounded shadow p-6 border-l-4 border-green-500">
 				<div class="text-gray-500 text-sm font-bold uppercase">Einnahmen</div>
-				<div class="text-2xl font-bold text-green-700">{ fmt.Sprintf("%.2f €", stats.TotalIncome) }</div>
+				<div class="text-2xl font-bold text-green-700">{ models.FormatCurrency(stats.TotalIncome) }</div>
 			</div>
 			<div class="bg-white rounded shadow p-6 border-l-4 border-red-500">
 				<div class="text-gray-500 text-sm font-bold uppercase">Ausgaben</div>
-				<div class="text-2xl font-bold text-red-700">{ fmt.Sprintf("%.2f €", stats.TotalExpenses) }</div>
+				<div class="text-2xl font-bold text-red-700">{ models.FormatCurrency(stats.TotalExpenses) }</div>
 			</div>
 			<div class="bg-white rounded shadow p-6 border-l-4 border-blue-500">
 				<div class="text-gray-500 text-sm font-bold uppercase">Überschuss</div>
-				<div class={ "text-2xl font-bold", getProfitColor(stats.Profit) }>{ fmt.Sprintf("%.2f €", stats.Profit) }</div>
+				<div class={ "text-2xl font-bold", getProfitColor(stats.Profit) }>{ models.FormatCurrency(stats.Profit) }</div>
 			</div>
 		</div>
 
@@ -51,7 +51,7 @@ templ EuerDashboard(stats *models.EuerStats) {
                                         </a>
                                     </td>
                                     <td class="py-2">{ i.RecipientName }</td>
-                                    <td class="py-2 text-right font-mono text-green-600">+{ fmt.Sprintf("%.2f €", i.TotalGross()) }</td>
+                                    <td class="py-2 text-right font-mono text-green-600">+{ models.FormatCurrency(i.TotalGross()) }</td>
                                 </tr>
                             }
                         </tbody>
@@ -83,7 +83,7 @@ templ EuerDashboard(stats *models.EuerStats) {
                                             <a href={ templ.SafeURL(e.ReceiptPath) } target="_blank" class="text-blue-500 hover:underline text-xs">Beleg anzeigen</a>
                                         }
                                     </td>
-                                    <td class="py-2 text-right font-mono text-red-600">-{ fmt.Sprintf("%.2f €", e.Amount) }</td>
+                                    <td class="py-2 text-right font-mono text-red-600">-{ models.FormatCurrency(e.Amount) }</td>
                                     <td class="py-2 text-right">
                                         <form action={ templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/delete", e.ID)) } method="POST" onsubmit="return confirm('Löschen?');">
                                             <button type="submit" class="text-red-500 hover:text-red-700 font-bold">×</button>
@@ -126,7 +126,7 @@ templ EuerDashboard(stats *models.EuerStats) {
 											<a href={ templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/receipt", e.ID)) } target="_blank" class="text-blue-500 hover:underline text-xs">Beleg anzeigen</a>
 										}
 									</td>
-									<td class="py-2 text-right font-mono text-red-600">-{ fmt.Sprintf("%.2f €", e.Amount) }</td>
+									<td class="py-2 text-right font-mono text-red-600">-{ models.FormatCurrency(e.Amount) }</td>
 									<td class="py-2 text-right">
 										<form action={ templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/delete", e.ID)) } method="POST" onsubmit="return confirm('Löschen?');">
 											<button type="submit" class="text-red-500 hover:text-red-700 font-bold">×</button>

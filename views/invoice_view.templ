@@ -86,8 +86,8 @@ templ InvoiceView(inv *models.Invoice, settings models.AppSettings) {
 								<td class="py-3 valign-top">{ fmt.Sprintf("%d", i+1) }</td>
 								<td class="py-3 valign-top">{ item.Description }</td>
 								<td class="py-3 text-right valign-top">{ fmt.Sprintf("%d", item.Quantity) }</td>
-								<td class="py-3 text-right valign-top">{ fmt.Sprintf("%.2f €", item.PricePerUnit) }</td>
-								<td class="py-3 text-right valign-top font-medium">{ fmt.Sprintf("%.2f €", float64(item.Quantity) * item.PricePerUnit) }</td>
+								<td class="py-3 text-right valign-top">{ models.FormatCurrency(item.PricePerUnit) }</td>
+								<td class="py-3 text-right valign-top font-medium">{ models.FormatCurrency(float64(item.Quantity) * item.PricePerUnit) }</td>
 							</tr>
 						}
 					</tbody>
@@ -96,17 +96,17 @@ templ InvoiceView(inv *models.Invoice, settings models.AppSettings) {
 					<table class="w-1/2">
 						<tr>
 							<td class="text-right py-1 text-gray-600">Nettobetrag:</td>
-							<td class="text-right py-1 font-mono w-32">{ fmt.Sprintf("%.2f €", inv.TotalNet()) }</td>
+							<td class="text-right py-1 font-mono w-32">{ models.FormatCurrency(inv.TotalNet()) }</td>
 						</tr>
 						if !inv.IsSmallBusiness {
 							<tr>
 								<td class="text-right py-1 text-gray-600">Umsatzsteuer ({ fmt.Sprintf("%.0f", inv.TaxRate) }%):</td>
-								<td class="text-right py-1 font-mono">{ fmt.Sprintf("%.2f €", inv.TaxAmount()) }</td>
+								<td class="text-right py-1 font-mono">{ models.FormatCurrency(inv.TaxAmount()) }</td>
 							</tr>
 						}
 						<tr class="text-lg">
 							<td class="text-right py-3 font-bold border-t-2 border-black">Gesamtbetrag:</td>
-							<td class="text-right py-3 font-bold font-mono border-t-2 border-black">{ fmt.Sprintf("%.2f €", inv.TotalGross()) }</td>
+							<td class="text-right py-3 font-bold font-mono border-t-2 border-black">{ models.FormatCurrency(inv.TotalGross()) }</td>
 						</tr>
 					</table>
 				</div>

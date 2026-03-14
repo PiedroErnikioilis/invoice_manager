@@ -10,11 +10,11 @@ templ StatsDashboard(stats *models.Stats) {
 			<!-- Cards -->
 			<div class="bg-white rounded shadow p-6 border-l-4 border-blue-500">
 				<div class="text-gray-500 text-sm font-bold uppercase">Umsatz (Netto)</div>
-				<div class="text-2xl font-bold text-gray-800">{ fmt.Sprintf("%.2f €", stats.TotalRevenueNet) }</div>
+				<div class="text-2xl font-bold text-gray-800">{ models.FormatCurrency(stats.TotalRevenueNet) }</div>
 			</div>
 			<div class="bg-white rounded shadow p-6 border-l-4 border-green-500">
 				<div class="text-gray-500 text-sm font-bold uppercase">Umsatz (Brutto)</div>
-				<div class="text-2xl font-bold text-gray-800">{ fmt.Sprintf("%.2f €", stats.TotalRevenueGross) }</div>
+				<div class="text-2xl font-bold text-gray-800">{ models.FormatCurrency(stats.TotalRevenueGross) }</div>
 			</div>
 			<div class="bg-white rounded shadow p-6 border-l-4 border-yellow-500">
 				<div class="text-gray-500 text-sm font-bold uppercase">Rechnungen (Offen)</div>
@@ -45,7 +45,7 @@ templ StatsDashboard(stats *models.Stats) {
 								<tr class="border-b last:border-0">
 									<td class="py-2 font-medium">{ p.Name }</td>
 									<td class="py-2 text-right">{ fmt.Sprintf("%d", p.Quantity) }</td>
-									<td class="py-2 text-right font-mono">{ fmt.Sprintf("%.2f €", p.Revenue) }</td>
+									<td class="py-2 text-right font-mono">{ models.FormatCurrency(p.Revenue) }</td>
 								</tr>
 							}
 						</tbody>
