@@ -14,13 +14,22 @@ type ExpenseCategory struct {
 type Expense struct {
 	ID           int
 	Description  string
-	Amount       float64
+	Amount       float64 // Brutto
+	TaxRate      float64
 	Date         string
 	CategoryID   *int
 	CategoryName string // joined from expense_categories
 	ReceiptPath  string
 	ReceiptData  string
 	CreatedAt    time.Time
+}
+
+func (e *Expense) Net() float64 {
+	return e.Amount / (1 + e.TaxRate/100)
+}
+
+func (e *Expense) Tax() float64 {
+	return e.Amount - e.Net()
 }
 
 func (s *Store) CreateExpenseCategory(name string) (int, error) {
@@ -59,9 +68,9 @@ func (s *Store) ListExpenseCategories() ([]ExpenseCategory, error) {
 
 func (s *Store) CreateExpense(e Expense) (int, error) {
 	res, err := s.DB.Exec(`
-		INSERT INTO expenses (description, amount, date, category_id, receipt_path, receipt_data)
-		VALUES (?, ?, ?, ?, ?, ?)
-	`, e.Description, e.Amount, e.Date, e.CategoryID, e.ReceiptPath, e.ReceiptData)
+		INSERT INTO expenses (description, amount, date, tax_rate, category_id, receipt_path, receipt_data)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+	`, e.Description, e.Amount, e.Date, e.TaxRate, e.CategoryID, e.ReceiptPath, e.ReceiptData)
 	if err != nil {
 		return 0, err
 	}
@@ -71,7 +80,7 @@ func (s *Store) CreateExpense(e Expense) (int, error) {
 
 func (s *Store) ListExpenses(year ...int) ([]Expense, error) {
 	query := `
-		SELECT e.id, e.description, e.amount, e.date, e.category_id, COALESCE(ec.name, ''), e.receipt_path, e.created_at
+		SELECT e.id, e.description, e.amount, e.date, e.tax_rate, e.category_id, COALESCE(ec.name, ''), e.receipt_path, e.created_at
 		FROM expenses e
 		LEFT JOIN expense_categories ec ON e.category_id = ec.id`
 	if len(year) > 0 && year[0] > 0 {
@@ -87,7 +96,7 @@ func (s *Store) ListExpenses(year ...int) ([]Expense, error) {
 	var expenses []Expense
 	for rows.Next() {
 		var e Expense
-		if err := rows.Scan(&e.ID, &e.Description, &e.Amount, &e.Date, &e.CategoryID, &e.CategoryName, &e.ReceiptPath, &e.CreatedAt); err != nil {
+		if err := rows.Scan(&e.ID, &e.Description, &e.Amount, &e.Date, &e.TaxRate, &e.CategoryID, &e.CategoryName, &e.ReceiptPath, &e.CreatedAt); err != nil {
 			return nil, err
 		}
 		expenses = append(expenses, e)
@@ -103,6 +112,36 @@ func (s *Store) GetExpenseReceipt(id int) (string, string, error) {
 		return "", "", err
 	}
 	return path, data.String, nil
+}
+
+func (s *Store) GetExpense(id int) (Expense, error) {
+	var e Expense
+	err := s.DB.QueryRow(`
+		SELECT e.id, e.description, e.amount, e.date, e.tax_rate, e.category_id, COALESCE(ec.name, ''), e.receipt_path, e.receipt_data, e.created_at
+		FROM expenses e
+		LEFT JOIN expense_categories ec ON e.category_id = ec.id
+		WHERE e.id = ?
+	`, id).Scan(&e.ID, &e.Description, &e.Amount, &e.Date, &e.TaxRate, &e.CategoryID, &e.CategoryName, &e.ReceiptPath, &e.ReceiptData, &e.CreatedAt)
+	return e, err
+}
+
+func (s *Store) UpdateExpense(e Expense) error {
+	query := `
+		UPDATE expenses 
+		SET description = ?, amount = ?, date = ?, tax_rate = ?, category_id = ?
+	`
+	args := []interface{}{e.Description, e.Amount, e.Date, e.TaxRate, e.CategoryID}
+
+	if e.ReceiptData != "" {
+		query += ", receipt_path = ?, receipt_data = ?"
+		args = append(args, e.ReceiptPath, e.ReceiptData)
+	}
+
+	query += " WHERE id = ?"
+	args = append(args, e.ID)
+
+	_, err := s.DB.Exec(query, args...)
+	return err
 }
 
 func (s *Store) DeleteExpense(id int) error {

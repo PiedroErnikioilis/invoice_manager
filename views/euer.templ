@@ -24,20 +24,68 @@ templ EuerDashboard(stats *models.EuerStats, years []int) {
 				</a>
 			</div>
 		</div>
-		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-			<div class="bg-white rounded shadow p-6 border-l-4 border-green-500">
-				<div class="text-gray-500 text-sm font-bold uppercase">Einnahmen</div>
-				<div class="text-2xl font-bold text-green-700">{ models.FormatCurrency(stats.TotalIncome) }</div>
+		<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+			<div class="bg-white rounded shadow p-4 border-l-4 border-green-500">
+				<div class="text-gray-500 text-xs font-bold uppercase mb-1">Einnahmen (Netto)</div>
+				<div class="text-xl font-bold text-green-700">{ models.FormatCurrency(stats.TotalIncomeNet) }</div>
+				<div class="text-xs text-gray-400">Brutto: { models.FormatCurrency(stats.TotalIncomeGross) }</div>
 			</div>
-			<div class="bg-white rounded shadow p-6 border-l-4 border-red-500">
-				<div class="text-gray-500 text-sm font-bold uppercase">Ausgaben</div>
-				<div class="text-2xl font-bold text-red-700">{ models.FormatCurrency(stats.TotalExpenses) }</div>
+			<div class="bg-white rounded shadow p-4 border-l-4 border-red-500">
+				<div class="text-gray-500 text-xs font-bold uppercase mb-1">Ausgaben (Netto)</div>
+				<div class="text-xl font-bold text-red-700">{ models.FormatCurrency(stats.TotalExpensesNet) }</div>
+				<div class="text-xs text-gray-400">Brutto: { models.FormatCurrency(stats.TotalExpensesGross) }</div>
 			</div>
-			<div class="bg-white rounded shadow p-6 border-l-4 border-blue-500">
-				<div class="text-gray-500 text-sm font-bold uppercase">Überschuss</div>
-				<div class={ "text-2xl font-bold", getProfitColor(stats.Profit) }>{ models.FormatCurrency(stats.Profit) }</div>
+			<div class="bg-white rounded shadow p-4 border-l-4 border-blue-500">
+				<div class="text-gray-500 text-xs font-bold uppercase mb-1">Überschuss (EÜR)</div>
+				<div class={ "text-xl font-bold", getProfitColor(stats.Profit) }>{ models.FormatCurrency(stats.Profit) }</div>
+				<div class="text-xs text-gray-400">Einnahmen - Ausgaben (Netto)</div>
+			</div>
+			<div class="bg-white rounded shadow p-4 border-l-4 border-purple-500">
+				<div class="text-gray-500 text-xs font-bold uppercase mb-1">USt-Zahllast</div>
+				<div class={ "text-xl font-bold", getProfitColor(-stats.VatPayable) }>{ models.FormatCurrency(stats.VatPayable) }</div>
+				<div class="text-xs text-gray-400">Einn.USt ({ models.FormatCurrency(stats.TotalIncomeVat) }) - Vorst. ({ models.FormatCurrency(stats.TotalExpensesTax) })</div>
 			</div>
 		</div>
+
+        <!-- Category Analysis -->
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-8">
+            <h2 class="text-xl font-bold mb-4">Ausgaben nach Kategorie (Netto)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-gray-500 border-b">
+                                <th class="text-left py-2">Kategorie</th>
+                                <th class="text-right py-2">Betrag</th>
+                                <th class="text-right py-2">Anteil</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            for _, cs := range stats.CategoryStats {
+                                <tr class="border-b last:border-0 hover:bg-gray-50">
+                                    <td class="py-2 font-medium">{ cs.Name }</td>
+                                    <td class="py-2 text-right font-mono">{ models.FormatCurrency(cs.Total) }</td>
+                                    <td class="py-2 text-right">{ fmt.Sprintf("%.1f", cs.Percentage) }%</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="flex flex-col justify-center gap-4">
+                    for _, cs := range stats.CategoryStats {
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="font-bold">{ cs.Name }</span>
+                                <span>{ fmt.Sprintf("%.1f", cs.Percentage) }%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style={ fmt.Sprintf("width: %.1f%%", cs.Percentage) }></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
 
         <div class="mb-6 flex justify-end">
             <a href="/expenses/new" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
@@ -56,7 +104,8 @@ templ EuerDashboard(stats *models.EuerStats, years []int) {
                                 <th class="text-left py-2">Datum</th>
                                 <th class="text-left py-2">Rechnung #</th>
                                 <th class="text-left py-2">Kunde</th>
-                                <th class="text-right py-2">Betrag</th>
+                                <th class="text-right py-2">Netto</th>
+                                <th class="text-right py-2">USt</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -69,7 +118,8 @@ templ EuerDashboard(stats *models.EuerStats, years []int) {
                                         </a>
                                     </td>
                                     <td class="py-2">{ i.RecipientName }</td>
-                                    <td class="py-2 text-right font-mono text-green-600">+{ models.FormatCurrency(i.TotalGross()) }</td>
+                                    <td class="py-2 text-right font-mono text-green-600">{ models.FormatCurrency(i.TotalNet()) }</td>
+                                    <td class="py-2 text-right font-mono text-gray-500">{ models.FormatCurrency(i.TaxAmount()) }</td>
                                 </tr>
                             }
                         </tbody>
@@ -86,7 +136,8 @@ templ EuerDashboard(stats *models.EuerStats, years []int) {
                             <tr class="text-gray-500 border-b">
                                 <th class="text-left py-2">Datum</th>
                                 <th class="text-left py-2">Beschreibung</th>
-                                <th class="text-right py-2">Betrag</th>
+                                <th class="text-right py-2">Netto</th>
+                                <th class="text-right py-2">VorSt</th>
                                 <th class="text-right py-2"></th>
                             </tr>
                         </thead>
@@ -96,16 +147,24 @@ templ EuerDashboard(stats *models.EuerStats, years []int) {
                                     <td class="py-2">{ e.Date }</td>
                                     <td class="py-2">
                                         <div class="font-medium">{ e.Description }</div>
-                                        <div class="text-xs text-gray-500">{ e.CategoryName }</div>
+                                        <div class="text-xs text-gray-500">{ e.CategoryName } ({ fmt.Sprintf("%.0f", e.TaxRate) }%)</div>
                                         if e.ReceiptPath != "" {
                                             <a href={ templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/receipt", e.ID)) } target="_blank" class="text-blue-500 hover:underline text-xs">Beleg anzeigen</a>
                                         }
                                     </td>
-                                    <td class="py-2 text-right font-mono text-red-600">-{ models.FormatCurrency(e.Amount) }</td>
+                                    <td class="py-2 text-right font-mono text-red-600">{ models.FormatCurrency(e.Net()) }</td>
+                                    <td class="py-2 text-right font-mono text-gray-500">{ models.FormatCurrency(e.Tax()) }</td>
                                     <td class="py-2 text-right">
-                                        <form action={ templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/delete", e.ID)) } method="POST" onsubmit="return confirm('Löschen?');">
-                                            <button type="submit" class="text-red-500 hover:text-red-700 font-bold">×</button>
-                                        </form>
+                                        <div class="flex items-center justify-end gap-2">
+                                            <a href={ templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/edit", e.ID)) } class="text-blue-500 hover:text-blue-700" title="Bearbeiten">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                                </svg>
+                                            </a>
+                                            <form action={ templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/delete", e.ID)) } method="POST" onsubmit="return confirm('Löschen?');">
+                                                <button type="submit" class="text-red-500 hover:text-red-700 font-bold" title="Löschen">×</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             }

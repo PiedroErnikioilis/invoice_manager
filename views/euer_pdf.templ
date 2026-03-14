@@ -45,91 +45,109 @@ templ EuerPDF(stats *models.EuerStats, settings models.AppSettings) {
 					</div>
 				</div>
 				<!-- Summary -->
-				<div class="grid grid-cols-3 gap-4 mb-8">
-					<div class="border rounded p-4" style="border-left: 4px solid #22c55e;">
-						<div class="text-xs font-bold uppercase text-gray-500">Einnahmen</div>
-						<div class="text-xl font-bold text-green-700">{ models.FormatCurrency(stats.TotalIncome) }</div>
+				<div class="grid grid-cols-4 gap-2 mb-8">
+					<div class="border rounded p-2" style="border-left: 4px solid #22c55e;">
+						<div class="text-[7pt] font-bold uppercase text-gray-500">Einnahmen (Netto)</div>
+						<div class="text-base font-bold text-green-700">{ models.FormatCurrency(stats.TotalIncomeNet) }</div>
+						<div class="text-[7pt] text-gray-400">Brutto: { models.FormatCurrency(stats.TotalIncomeGross) }</div>
 					</div>
-					<div class="border rounded p-4" style="border-left: 4px solid #ef4444;">
-						<div class="text-xs font-bold uppercase text-gray-500">Ausgaben</div>
-						<div class="text-xl font-bold text-red-700">{ models.FormatCurrency(stats.TotalExpenses) }</div>
+					<div class="border rounded p-2" style="border-left: 4px solid #ef4444;">
+						<div class="text-[7pt] font-bold uppercase text-gray-500">Ausgaben (Netto)</div>
+						<div class="text-base font-bold text-red-700">{ models.FormatCurrency(stats.TotalExpensesNet) }</div>
+						<div class="text-[7pt] text-gray-400">Brutto: { models.FormatCurrency(stats.TotalExpensesGross) }</div>
 					</div>
-					<div class="border rounded p-4" style="border-left: 4px solid #3b82f6;">
-						<div class="text-xs font-bold uppercase text-gray-500">Überschuss</div>
-						<div class={ "text-xl font-bold", getProfitColor(stats.Profit) }>{ models.FormatCurrency(stats.Profit) }</div>
+					<div class="border rounded p-2" style="border-left: 4px solid #3b82f6;">
+						<div class="text-[7pt] font-bold uppercase text-gray-500">Überschuss</div>
+						<div class={ "text-base font-bold", getProfitColor(stats.Profit) }>{ models.FormatCurrency(stats.Profit) }</div>
+						<div class="text-[7pt] text-gray-400">Einn - Ausg (Netto)</div>
+					</div>
+					<div class="border rounded p-2" style="border-left: 4px solid #a855f7;">
+						<div class="text-[7pt] font-bold uppercase text-gray-500">USt-Zahllast</div>
+						<div class={ "text-base font-bold", getProfitColor(-stats.VatPayable) }>{ models.FormatCurrency(stats.VatPayable) }</div>
+						<div class="text-[7pt] text-gray-400">USt - VorSt</div>
 					</div>
 				</div>
 				<!-- Income Table -->
-				<h2 class="text-lg font-bold mb-2">Einnahmen (Bezahlte Rechnungen)</h2>
-				<table class="w-full text-sm mb-8 border-collapse">
+				<h2 class="text-base font-bold mb-2">Einnahmen (Bezahlte Rechnungen)</h2>
+				<table class="w-full text-[9pt] mb-6 border-collapse">
 					<thead>
-						<tr class="border-b-2 border-gray-300 text-xs uppercase text-gray-500">
-							<th class="text-left py-2">Datum</th>
-							<th class="text-left py-2">Rechnung</th>
-							<th class="text-left py-2">Kunde</th>
-							<th class="text-right py-2">Betrag</th>
+						<tr class="border-b-2 border-gray-300 text-[7pt] uppercase text-gray-500">
+							<th class="text-left py-1">Datum</th>
+							<th class="text-left py-1">Rechnung</th>
+							<th class="text-left py-1">Kunde</th>
+							<th class="text-right py-1">Netto</th>
+							<th class="text-right py-1">USt</th>
 						</tr>
 					</thead>
 					<tbody>
 						for _, i := range stats.Invoices {
-							<tr class="border-b border-gray-200">
-								<td class="py-1.5">{ i.Date }</td>
-								<td class="py-1.5">{ i.InvoiceNumber }</td>
-								<td class="py-1.5">{ i.RecipientName }</td>
-								<td class="py-1.5 text-right font-mono text-green-700 whitespace-nowrap">{ models.FormatCurrency(i.TotalGross()) }</td>
+							<tr class="border-b border-gray-100">
+								<td class="py-1">{ i.Date }</td>
+								<td class="py-1">{ i.InvoiceNumber }</td>
+								<td class="py-1">{ i.RecipientName }</td>
+								<td class="py-1 text-right font-mono text-green-700 whitespace-nowrap">{ models.FormatCurrency(i.TotalNet()) }</td>
+								<td class="py-1 text-right font-mono text-gray-500 whitespace-nowrap">{ models.FormatCurrency(i.TaxAmount()) }</td>
 							</tr>
 						}
 						if len(stats.Invoices) == 0 {
 							<tr>
-								<td colspan="4" class="py-2 text-center text-gray-400">Keine Einnahmen vorhanden.</td>
+								<td colspan="5" class="py-2 text-center text-gray-400">Keine Einnahmen vorhanden.</td>
 							</tr>
 						}
 					</tbody>
 					<tfoot>
-						<tr class="border-t-2 border-gray-300 font-bold">
-							<td colspan="3" class="py-2 text-right">Summe Einnahmen:</td>
-							<td class="py-2 text-right font-mono text-green-700 whitespace-nowrap">{ models.FormatCurrency(stats.TotalIncome) }</td>
+						<tr class="border-t border-gray-300 font-bold">
+							<td colspan="3" class="py-2 text-right">Gesamt Einnahmen:</td>
+							<td class="py-2 text-right font-mono text-green-700 whitespace-nowrap">{ models.FormatCurrency(stats.TotalIncomeNet) }</td>
+							<td class="py-2 text-right font-mono text-gray-500 whitespace-nowrap">{ models.FormatCurrency(stats.TotalIncomeVat) }</td>
 						</tr>
 					</tfoot>
 				</table>
 				<!-- Expense Table -->
-				<h2 class="text-lg font-bold mb-2">Ausgaben</h2>
-				<table class="w-full text-sm mb-8 border-collapse">
+				<h2 class="text-base font-bold mb-2">Ausgaben</h2>
+				<table class="w-full text-[9pt] mb-6 border-collapse">
 					<thead>
-						<tr class="border-b-2 border-gray-300 text-xs uppercase text-gray-500">
-							<th class="text-left py-2">Datum</th>
-							<th class="text-left py-2">Beschreibung</th>
-							<th class="text-left py-2">Kategorie</th>
-							<th class="text-right py-2">Betrag</th>
+						<tr class="border-b-2 border-gray-300 text-[7pt] uppercase text-gray-500">
+							<th class="text-left py-1">Datum</th>
+							<th class="text-left py-1">Beschreibung</th>
+							<th class="text-left py-1">Kategorie</th>
+							<th class="text-right py-1">Netto</th>
+							<th class="text-right py-1">VorSt</th>
 						</tr>
 					</thead>
 					<tbody>
 						for _, e := range stats.Expenses {
-							<tr class="border-b border-gray-200">
-								<td class="py-1.5">{ e.Date }</td>
-								<td class="py-1.5">{ e.Description }</td>
-								<td class="py-1.5 text-gray-500">{ e.CategoryName }</td>
-								<td class="py-1.5 text-right font-mono text-red-700 whitespace-nowrap">{ models.FormatCurrency(e.Amount) }</td>
+							<tr class="border-b border-gray-100">
+								<td class="py-1">{ e.Date }</td>
+								<td class="py-1">{ e.Description }</td>
+								<td class="py-1 text-gray-500">{ e.CategoryName } ({ fmt.Sprintf("%.0f", e.TaxRate) }%)</td>
+								<td class="py-1 text-right font-mono text-red-700 whitespace-nowrap">{ models.FormatCurrency(e.Net()) }</td>
+								<td class="py-1 text-right font-mono text-gray-500 whitespace-nowrap">{ models.FormatCurrency(e.Tax()) }</td>
 							</tr>
 						}
 						if len(stats.Expenses) == 0 {
 							<tr>
-								<td colspan="4" class="py-2 text-center text-gray-400">Keine Ausgaben vorhanden.</td>
+								<td colspan="5" class="py-2 text-center text-gray-400">Keine Ausgaben vorhanden.</td>
 							</tr>
 						}
 					</tbody>
 					<tfoot>
-						<tr class="border-t-2 border-gray-300 font-bold">
-							<td colspan="3" class="py-2 text-right">Summe Ausgaben:</td>
-							<td class="py-2 text-right font-mono text-red-700 whitespace-nowrap">{ models.FormatCurrency(stats.TotalExpenses) }</td>
+						<tr class="border-t border-gray-300 font-bold">
+							<td colspan="3" class="py-2 text-right">Gesamt Ausgaben:</td>
+							<td class="py-2 text-right font-mono text-red-700 whitespace-nowrap">{ models.FormatCurrency(stats.TotalExpensesNet) }</td>
+							<td class="py-2 text-right font-mono text-gray-500 whitespace-nowrap">{ models.FormatCurrency(stats.TotalExpensesTax) }</td>
 						</tr>
 					</tfoot>
 				</table>
 				<!-- Result -->
-				<div class="border-t-2 border-black pt-4">
+				<div class="border-t-2 border-black pt-4 mb-8">
 					<div class="flex justify-between items-center">
-						<span class="text-lg font-bold">Ergebnis (Überschuss):</span>
-						<span class={ "text-xl font-bold font-mono whitespace-nowrap", getProfitColor(stats.Profit) }>{ models.FormatCurrency(stats.Profit) }</span>
+						<span class="text-base font-bold">Jahresüberschuss (EÜR):</span>
+						<span class={ "text-lg font-bold font-mono whitespace-nowrap", getProfitColor(stats.Profit) }>{ models.FormatCurrency(stats.Profit) }</span>
+					</div>
+					<div class="flex justify-between items-center text-sm mt-1">
+						<span>Umsatzsteuer-Zahllast / Vorsteuer-Überschuss:</span>
+						<span class={ "font-bold font-mono whitespace-nowrap", getProfitColor(-stats.VatPayable) }>{ models.FormatCurrency(stats.VatPayable) }</span>
 					</div>
 				</div>
 				<!-- Footer -->

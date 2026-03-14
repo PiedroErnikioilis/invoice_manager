@@ -52,7 +52,91 @@ func (h *EuerHandler) NewExpense(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		categories = []models.ExpenseCategory{}
 	}
-	views.ExpenseForm(products, categories).Render(r.Context(), w)
+	views.ExpenseForm(products, categories, nil).Render(r.Context(), w)
+}
+
+func (h *EuerHandler) EditExpense(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	expense, err := h.Store.GetExpense(id)
+	if err != nil {
+		http.Error(w, "Expense not found", http.StatusNotFound)
+		return
+	}
+
+	products, err := h.Store.ListProducts()
+	if err != nil {
+		products = []models.Product{}
+	}
+	categories, err := h.Store.ListExpenseCategories()
+	if err != nil {
+		categories = []models.ExpenseCategory{}
+	}
+	views.ExpenseForm(products, categories, &expense).Render(r.Context(), w)
+}
+
+func (h *EuerHandler) UpdateExpense(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10MB
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	amount, _ := strconv.ParseFloat(r.FormValue("amount"), 64)
+	taxRate, _ := strconv.ParseFloat(r.FormValue("tax_rate"), 64)
+	if taxRate == 0 && r.FormValue("tax_rate") == "" {
+		taxRate = 19.0
+	}
+
+	expense := models.Expense{
+		ID:          id,
+		Description: r.FormValue("description"),
+		Amount:      amount,
+		TaxRate:     taxRate,
+		Date:        r.FormValue("date"),
+	}
+
+	// Resolve or create category
+	categoryName := strings.TrimSpace(r.FormValue("category"))
+	if categoryName != "" {
+		catID, err := h.Store.CreateExpenseCategory(categoryName)
+		if err == nil {
+			expense.CategoryID = &catID
+		}
+	}
+
+	// Handle Receipt Upload (Optional for update)
+	file, handler, err := r.FormFile("receipt")
+	if err == nil {
+		defer file.Close()
+
+		// Read file content
+		fileBytes, err := io.ReadAll(file)
+		if err == nil {
+			// Encode to Base64
+			expense.ReceiptData = base64.StdEncoding.EncodeToString(fileBytes)
+			expense.ReceiptPath = handler.Filename
+		}
+	}
+
+	err = h.Store.UpdateExpense(expense)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/euer", http.StatusSeeOther)
 }
 
 func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
@@ -62,10 +146,15 @@ func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 	}
 
 	amount, _ := strconv.ParseFloat(r.FormValue("amount"), 64)
+	taxRate, _ := strconv.ParseFloat(r.FormValue("tax_rate"), 64)
+	if taxRate == 0 && r.FormValue("tax_rate") == "" {
+		taxRate = 19.0
+	}
 
 	expense := models.Expense{
 		Description: r.FormValue("description"),
 		Amount:      amount,
+		TaxRate:     taxRate,
 		Date:        r.FormValue("date"),
 	}
 

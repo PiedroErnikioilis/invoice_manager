@@ -68,7 +68,7 @@ func Init(dataSourceName string) (*sql.DB, error) {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
 		quantity INTEGER NOT NULL,
-		movement_type TEXT NOT NULL CHECK(movement_type IN ('INVOICE', 'INVOICE_UPDATE', 'PURCHASE', 'MANUAL_ADD', 'MANUAL_REMOVE')),
+		movement_type TEXT NOT NULL CHECK(movement_type IN ('INVOICE', 'INVOICE_UPDATE', 'PURCHASE', 'MANUAL_ADD', 'MANUAL_REMOVE', 'CANCELLATION')),
 		note TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	);
@@ -88,6 +88,7 @@ func Init(dataSourceName string) (*sql.DB, error) {
 		description TEXT NOT NULL,
 		amount REAL NOT NULL,
 		date TEXT NOT NULL,
+		tax_rate REAL DEFAULT 19.0,
 		category_id INTEGER REFERENCES expense_categories(id) ON DELETE SET NULL,
 		receipt_path TEXT,
 		receipt_data TEXT,
@@ -109,6 +110,7 @@ func Init(dataSourceName string) (*sql.DB, error) {
 		"ALTER TABLE invoices ADD COLUMN customer_id INTEGER",
 		"ALTER TABLE expenses ADD COLUMN receipt_data TEXT",
 		"ALTER TABLE expenses ADD COLUMN category_id INTEGER REFERENCES expense_categories(id) ON DELETE SET NULL",
+		"ALTER TABLE expenses ADD COLUMN tax_rate REAL DEFAULT 19.0",
 	}
 
 	for _, m := range migrations {
