@@ -24,7 +24,7 @@ templ PDFLayout(title string) {
 			body { 
                 margin: 0; 
                 padding: 0; 
-                font-family: sans-serif; 
+                font-family: Calibri, 'Calibri Light', Arial, sans-serif; 
                 background: white;
                 -webkit-print-color-adjust: exact;
             }
@@ -173,10 +173,12 @@ templ InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) {
 					<td class="info-label">Datum:</td>
 					<td>{ invoice.Date }</td>
 				</tr>
-				<tr>
-					<td class="info-label">Kunden-Nr:</td>
-					<td>{ fmt.Sprintf("KD-%d", invoice.ID + 1000) }</td>
-				</tr>
+				if invoice.CustomerID != nil {
+					<tr>
+						<td class="info-label">Kunden-Nr:</td>
+						<td>{ fmt.Sprintf("KD-%04d", *invoice.CustomerID) }</td>
+					</tr>
+				}
 			</table>
 		</div>
 		<!-- Content Zone -->
