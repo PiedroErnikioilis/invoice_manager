@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"din-invoice/models"
+	"din-invoice/services"
 	"din-invoice/views"
 	"encoding/base64"
 	"io"
@@ -23,12 +24,23 @@ func NewEuerHandler(store *models.Store) *EuerHandler {
 }
 
 func (h *EuerHandler) View(w http.ResponseWriter, r *http.Request) {
-	stats, err := h.Store.GetEuerStats()
+	// Default to current year
+	year := time.Now().Year()
+	if y := r.URL.Query().Get("year"); y != "" {
+		if parsed, err := strconv.Atoi(y); err == nil && parsed > 0 {
+			year = parsed
+		}
+	}
+
+	stats, err := h.Store.GetEuerStats(year)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	views.EuerDashboard(stats).Render(r.Context(), w)
+
+	years, _ := h.Store.GetAvailableYears()
+
+	views.EuerDashboard(stats, years).Render(r.Context(), w)
 }
 
 func (h *EuerHandler) NewExpense(w http.ResponseWriter, r *http.Request) {
@@ -102,6 +114,37 @@ func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/euer", http.StatusSeeOther)
+}
+
+func (h *EuerHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
+	year := time.Now().Year()
+	if y := r.URL.Query().Get("year"); y != "" {
+		if parsed, err := strconv.Atoi(y); err == nil && parsed > 0 {
+			year = parsed
+		}
+	}
+
+	stats, err := h.Store.GetEuerStats(year)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	settings, err := h.Store.GetAppSettings()
+	if err != nil {
+		http.Error(w, "Could not load settings", http.StatusInternalServerError)
+		return
+	}
+
+	path, err := services.GenerateEuerPDFHTML(stats, &settings)
+	if err != nil {
+		http.Error(w, "Failed to generate PDF: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", "inline; filename=euer_uebersicht.pdf")
+	http.ServeFile(w, r, path)
 }
 
 func (h *EuerHandler) ServeReceipt(w http.ResponseWriter, r *http.Request) {

@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -68,13 +69,16 @@ func (s *Store) CreateExpense(e Expense) (int, error) {
 	return int(id), err
 }
 
-func (s *Store) ListExpenses() ([]Expense, error) {
-	rows, err := s.DB.Query(`
+func (s *Store) ListExpenses(year ...int) ([]Expense, error) {
+	query := `
 		SELECT e.id, e.description, e.amount, e.date, e.category_id, COALESCE(ec.name, ''), e.receipt_path, e.created_at
 		FROM expenses e
-		LEFT JOIN expense_categories ec ON e.category_id = ec.id
-		ORDER BY e.date DESC
-	`)
+		LEFT JOIN expense_categories ec ON e.category_id = ec.id`
+	if len(year) > 0 && year[0] > 0 {
+		query += fmt.Sprintf(" WHERE e.date LIKE '%d-%%'", year[0])
+	}
+	query += ` ORDER BY e.date DESC`
+	rows, err := s.DB.Query(query)
 	if err != nil {
 		return nil, err
 	}

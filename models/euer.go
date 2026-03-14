@@ -1,6 +1,9 @@
 package models
 
+import "fmt"
+
 type EuerStats struct {
+	Year          int
 	TotalIncome   float64
 	TotalExpenses float64
 	Profit        float64
@@ -8,18 +11,25 @@ type EuerStats struct {
 	Invoices      []Invoice
 }
 
-func (s *Store) GetEuerStats() (*EuerStats, error) {
-	stats := &EuerStats{}
+// GetEuerStats returns income/expense statistics filtered by year.
+// Year 0 means all years.
+func (s *Store) GetEuerStats(year int) (*EuerStats, error) {
+	stats := &EuerStats{Year: year}
 
 	// 1. Calculate Income (Paid Invoices)
-	// We assume Gross amount is the income (Brutto).
+	var dateFilter string
+	if year > 0 {
+		dateFilter = fmt.Sprintf(" AND date LIKE '%d-%%'", year)
+	}
 
-	rows, err := s.DB.Query(`
+	query := fmt.Sprintf(`
 		SELECT id, invoice_number, date, recipient_name, tax_rate, is_small_business, status
 		FROM invoices
-		WHERE status = 'Bezahlt'
+		WHERE status = 'Bezahlt'%s
 		ORDER BY date DESC
-	`)
+	`, dateFilter)
+
+	rows, err := s.DB.Query(query)
 	if err == nil {
 		defer rows.Close()
 		for rows.Next() {
@@ -28,7 +38,6 @@ func (s *Store) GetEuerStats() (*EuerStats, error) {
 				continue
 			}
 
-			// Load items for this invoice to calculate total
 			fullInv, err := s.GetInvoice(i.ID)
 			if err == nil {
 				stats.TotalIncome += fullInv.TotalGross()
@@ -38,7 +47,11 @@ func (s *Store) GetEuerStats() (*EuerStats, error) {
 	}
 
 	// 2. Calculate Expenses
-	err = s.DB.QueryRow(`SELECT COALESCE(SUM(amount), 0) FROM expenses`).Scan(&stats.TotalExpenses)
+	expenseQuery := `SELECT COALESCE(SUM(amount), 0) FROM expenses`
+	if year > 0 {
+		expenseQuery += fmt.Sprintf(" WHERE date LIKE '%d-%%'", year)
+	}
+	err = s.DB.QueryRow(expenseQuery).Scan(&stats.TotalExpenses)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +59,34 @@ func (s *Store) GetEuerStats() (*EuerStats, error) {
 	stats.Profit = stats.TotalIncome - stats.TotalExpenses
 
 	// Load Expenses list for display
-	stats.Expenses, _ = s.ListExpenses()
+	stats.Expenses, _ = s.ListExpenses(year)
 
 	return stats, nil
+}
+
+// GetAvailableYears returns all years that have invoices or expenses.
+func (s *Store) GetAvailableYears() ([]int, error) {
+	rows, err := s.DB.Query(`
+		SELECT DISTINCT year FROM (
+			SELECT CAST(substr(date, 1, 4) AS INTEGER) AS year FROM invoices WHERE date != ''
+			UNION
+			SELECT CAST(substr(date, 1, 4) AS INTEGER) AS year FROM expenses WHERE date != ''
+		) ORDER BY year DESC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var years []int
+	for rows.Next() {
+		var y int
+		if err := rows.Scan(&y); err != nil {
+			continue
+		}
+		if y > 0 {
+			years = append(years, y)
+		}
+	}
+	return years, nil
 }

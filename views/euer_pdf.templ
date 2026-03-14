@@ -1,0 +1,149 @@
+package views
+
+import (
+	"din-invoice/models"
+	"fmt"
+	"time"
+)
+
+templ EuerPDF(stats *models.EuerStats, settings models.AppSettings) {
+	<!DOCTYPE html>
+	<html lang="de">
+		<head>
+			<meta charset="UTF-8"/>
+			<title>Einnahmen-Überschuss-Rechnung</title>
+			<script src="https://cdn.tailwindcss.com"></script>
+			<style>
+				@page { size: A4; margin: 0; }
+				body {
+					margin: 0;
+					padding: 0;
+					font-family: Calibri, 'Calibri Light', Arial, sans-serif;
+					background: white;
+					-webkit-print-color-adjust: exact;
+					font-size: 10pt;
+				}
+				.page {
+					width: 210mm;
+					min-height: 297mm;
+					padding: 20mm;
+					position: relative;
+					box-sizing: border-box;
+				}
+			</style>
+		</head>
+		<body>
+			<div class="page">
+				<!-- Header -->
+				<div class="flex justify-between items-start mb-8">
+					<div>
+						<h1 class="text-2xl font-bold text-gray-800">Einnahmen-Überschuss-Rechnung { fmt.Sprintf("%d", stats.Year) }</h1>
+						<p class="text-sm text-gray-500 mt-1">{ settings.SenderName }</p>
+					</div>
+					<div class="text-right text-sm text-gray-500">
+						<p>Erstellt am { time.Now().Format("02.01.2006") }</p>
+					</div>
+				</div>
+				<!-- Summary -->
+				<div class="grid grid-cols-3 gap-4 mb-8">
+					<div class="border rounded p-4" style="border-left: 4px solid #22c55e;">
+						<div class="text-xs font-bold uppercase text-gray-500">Einnahmen</div>
+						<div class="text-xl font-bold text-green-700">{ models.FormatCurrency(stats.TotalIncome) }</div>
+					</div>
+					<div class="border rounded p-4" style="border-left: 4px solid #ef4444;">
+						<div class="text-xs font-bold uppercase text-gray-500">Ausgaben</div>
+						<div class="text-xl font-bold text-red-700">{ models.FormatCurrency(stats.TotalExpenses) }</div>
+					</div>
+					<div class="border rounded p-4" style="border-left: 4px solid #3b82f6;">
+						<div class="text-xs font-bold uppercase text-gray-500">Überschuss</div>
+						<div class={ "text-xl font-bold", getProfitColor(stats.Profit) }>{ models.FormatCurrency(stats.Profit) }</div>
+					</div>
+				</div>
+				<!-- Income Table -->
+				<h2 class="text-lg font-bold mb-2">Einnahmen (Bezahlte Rechnungen)</h2>
+				<table class="w-full text-sm mb-8 border-collapse">
+					<thead>
+						<tr class="border-b-2 border-gray-300 text-xs uppercase text-gray-500">
+							<th class="text-left py-2">Datum</th>
+							<th class="text-left py-2">Rechnung</th>
+							<th class="text-left py-2">Kunde</th>
+							<th class="text-right py-2">Betrag</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, i := range stats.Invoices {
+							<tr class="border-b border-gray-200">
+								<td class="py-1.5">{ i.Date }</td>
+								<td class="py-1.5">{ i.InvoiceNumber }</td>
+								<td class="py-1.5">{ i.RecipientName }</td>
+								<td class="py-1.5 text-right font-mono text-green-700 whitespace-nowrap">{ models.FormatCurrency(i.TotalGross()) }</td>
+							</tr>
+						}
+						if len(stats.Invoices) == 0 {
+							<tr>
+								<td colspan="4" class="py-2 text-center text-gray-400">Keine Einnahmen vorhanden.</td>
+							</tr>
+						}
+					</tbody>
+					<tfoot>
+						<tr class="border-t-2 border-gray-300 font-bold">
+							<td colspan="3" class="py-2 text-right">Summe Einnahmen:</td>
+							<td class="py-2 text-right font-mono text-green-700 whitespace-nowrap">{ models.FormatCurrency(stats.TotalIncome) }</td>
+						</tr>
+					</tfoot>
+				</table>
+				<!-- Expense Table -->
+				<h2 class="text-lg font-bold mb-2">Ausgaben</h2>
+				<table class="w-full text-sm mb-8 border-collapse">
+					<thead>
+						<tr class="border-b-2 border-gray-300 text-xs uppercase text-gray-500">
+							<th class="text-left py-2">Datum</th>
+							<th class="text-left py-2">Beschreibung</th>
+							<th class="text-left py-2">Kategorie</th>
+							<th class="text-right py-2">Betrag</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, e := range stats.Expenses {
+							<tr class="border-b border-gray-200">
+								<td class="py-1.5">{ e.Date }</td>
+								<td class="py-1.5">{ e.Description }</td>
+								<td class="py-1.5 text-gray-500">{ e.CategoryName }</td>
+								<td class="py-1.5 text-right font-mono text-red-700 whitespace-nowrap">{ models.FormatCurrency(e.Amount) }</td>
+							</tr>
+						}
+						if len(stats.Expenses) == 0 {
+							<tr>
+								<td colspan="4" class="py-2 text-center text-gray-400">Keine Ausgaben vorhanden.</td>
+							</tr>
+						}
+					</tbody>
+					<tfoot>
+						<tr class="border-t-2 border-gray-300 font-bold">
+							<td colspan="3" class="py-2 text-right">Summe Ausgaben:</td>
+							<td class="py-2 text-right font-mono text-red-700 whitespace-nowrap">{ models.FormatCurrency(stats.TotalExpenses) }</td>
+						</tr>
+					</tfoot>
+				</table>
+				<!-- Result -->
+				<div class="border-t-2 border-black pt-4">
+					<div class="flex justify-between items-center">
+						<span class="text-lg font-bold">Ergebnis (Überschuss):</span>
+						<span class={ "text-xl font-bold font-mono whitespace-nowrap", getProfitColor(stats.Profit) }>{ models.FormatCurrency(stats.Profit) }</span>
+					</div>
+				</div>
+				<!-- Footer -->
+				<div class="absolute bottom-[15mm] left-[20mm] right-[20mm] text-[8pt] text-gray-400 border-t border-gray-200 pt-2">
+					<div class="flex justify-between">
+						<span>{ settings.SenderName }</span>
+						<span>Erstellt am { time.Now().Format("02.01.2006") } — Seite 1</span>
+					</div>
+				</div>
+			</div>
+		</body>
+	</html>
+}
+
+func euerYear() string {
+	return fmt.Sprintf("%d", time.Now().Year())
+}

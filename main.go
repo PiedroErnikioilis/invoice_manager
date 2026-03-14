@@ -74,6 +74,7 @@ func run() error {
 	r.Get("/statistics", statsHandler.View)
 
 	r.Get("/euer", euerHandler.View)
+	r.Get("/euer/pdf", euerHandler.DownloadPDF)
 	r.Get("/expenses/new", euerHandler.NewExpense)
 	r.Post("/euer/expenses", euerHandler.CreateExpense)
 	r.Get("/euer/expenses/{id}/receipt", euerHandler.ServeReceipt)

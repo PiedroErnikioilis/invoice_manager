@@ -182,8 +182,60 @@ func (s *Store) UpdateInvoice(inv *Invoice) error {
 }
 
 func (s *Store) CancelInvoice(id int) error {
-	_, err := s.DB.Exec(`UPDATE invoices SET status = 'Storniert' WHERE id = ?`, id)
-	return err
+	stx, err := s.Begin()
+	if err != nil {
+		return err
+	}
+	tx := stx.Tx
+
+	// Get invoice number for movement note
+	var invoiceNumber string
+	err = tx.QueryRow(`SELECT invoice_number FROM invoices WHERE id = ?`, id).Scan(&invoiceNumber)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Restore stock for all items with a product_id
+	rows, err := tx.Query(`SELECT product_id, quantity FROM invoice_items WHERE invoice_id = ? AND product_id IS NOT NULL`, id)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	type itemToRestore struct {
+		ProductID int
+		Quantity  int
+	}
+	var toRestore []itemToRestore
+
+	for rows.Next() {
+		var itr itemToRestore
+		if err := rows.Scan(&itr.ProductID, &itr.Quantity); err != nil {
+			rows.Close()
+			tx.Rollback()
+			return err
+		}
+		toRestore = append(toRestore, itr)
+	}
+	rows.Close()
+
+	for _, itr := range toRestore {
+		err := s.RecordStockMovementTx(stx, itr.ProductID, itr.Quantity, "CANCELLATION", "Storno Rechnung "+invoiceNumber)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	// Set status to cancelled
+	_, err = tx.Exec(`UPDATE invoices SET status = 'Storniert' WHERE id = ?`, id)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit()
 }
 
 func (s *Store) ListInvoices() ([]Invoice, error) {

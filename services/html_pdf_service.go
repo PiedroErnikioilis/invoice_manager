@@ -19,6 +19,66 @@ import (
 
 func toPtr(f float64) *float64 { return &f }
 
+// renderHTMLToPDF takes an HTML string and produces a PDF file at the given path.
+func renderHTMLToPDF(htmlContent, outputPath string) error {
+	u := launcher.New().NoSandbox(true).Leakless(false).MustLaunch()
+	browser := rod.New().ControlURL(u).MustConnect()
+	defer browser.MustClose()
+
+	page := browser.MustPage()
+	if err := page.SetDocumentContent(htmlContent); err != nil {
+		return fmt.Errorf("failed to set page content: %w", err)
+	}
+	page.MustWaitLoad()
+
+	pdfStream, err := page.PDF(&proto.PagePrintToPDF{
+		PaperWidth:      toPtr(8.27),
+		PaperHeight:     toPtr(11.69),
+		MarginTop:       toPtr(0.0),
+		MarginBottom:    toPtr(0.0),
+		MarginLeft:      toPtr(0.0),
+		MarginRight:     toPtr(0.0),
+		PrintBackground: true,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to generate pdf: %w", err)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+		return err
+	}
+
+	f, err := os.Create(outputPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = io.Copy(f, pdfStream)
+	return err
+}
+
+// GenerateEuerPDFHTML renders the EÜR overview as a PDF.
+func GenerateEuerPDFHTML(stats *models.EuerStats, settings *models.AppSettings) (string, error) {
+	htmlComponent := views.EuerPDF(stats, *settings)
+
+	var htmlBuilder strings.Builder
+	if err := htmlComponent.Render(context.Background(), &htmlBuilder); err != nil {
+		return "", fmt.Errorf("failed to render html: %w", err)
+	}
+
+	outDir := settings.PDFOutputPath
+	if outDir == "" {
+		outDir = "./invoices/"
+	}
+	filename := filepath.Join(outDir, "euer_uebersicht.pdf")
+
+	if err := renderHTMLToPDF(htmlBuilder.String(), filename); err != nil {
+		return "", err
+	}
+	return filename, nil
+}
+
 // GenerateInvoicePDFHTML renders the HTML view and converts it to PDF using Rod.
 func GenerateInvoicePDFHTML(inv *models.Invoice, settings *models.AppSettings) (string, error) {
 	// 1. Prepare Logo (Base64)
