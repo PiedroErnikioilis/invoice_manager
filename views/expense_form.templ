@@ -3,7 +3,7 @@ package views
 import "din-invoice/models"
 import "fmt"
 
-templ ExpenseForm(products []models.Product) {
+templ ExpenseForm(products []models.Product, categories []models.ExpenseCategory) {
 	@Layout("Ausgabe erfassen") {
 		<div class="max-w-2xl mx-auto">
 			<div class="flex justify-between items-center mb-6">
@@ -17,7 +17,16 @@ templ ExpenseForm(products []models.Product) {
 					@Input("Betrag (€)", "amount", "number", "", "0.00", true, "Bruttobetrag der Rechnung.")
 					@Input("Datum", "date", "date", "", "", true, "Datum des Belegs.")
 				</div>
-				@Input("Kategorie", "category", "text", "", "z.B. Material, Werkzeug", false, "Kategorie für die Auswertung.")
+				<div class="mb-4">
+					<label class="block text-gray-700 text-sm font-bold mb-2">Kategorie</label>
+					<input name="category" list="category-list" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="z.B. Material, Werkzeug"/>
+					<datalist id="category-list">
+						for _, c := range categories {
+							<option value={ c.Name }></option>
+						}
+					</datalist>
+					<p class="text-xs text-gray-500 mt-1 italic">Kategorie für die Auswertung. Bestehende wählen oder neue eingeben.</p>
+				</div>
 				<div class="mb-6">
 					<label class="block text-gray-700 text-sm font-bold mb-2">Beleg / Rechnung (PDF/Bild)</label>
 					<input type="file" name="receipt" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>

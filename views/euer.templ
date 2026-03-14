@@ -78,7 +78,7 @@ templ EuerDashboard(stats *models.EuerStats) {
                                     <td class="py-2">{ e.Date }</td>
                                     <td class="py-2">
                                         <div class="font-medium">{ e.Description }</div>
-                                        <div class="text-xs text-gray-500">{ e.Category }</div>
+                                        <div class="text-xs text-gray-500">{ e.CategoryName }</div>
                                         if e.ReceiptPath != "" {
                                             <a href={ templ.SafeURL(e.ReceiptPath) } target="_blank" class="text-blue-500 hover:underline text-xs">Beleg anzeigen</a>
                                         }
@@ -121,7 +121,7 @@ templ EuerDashboard(stats *models.EuerStats) {
 									<td class="py-2">{ e.Date }</td>
 									<td class="py-2">
 										<div class="font-medium">{ e.Description }</div>
-										<div class="text-xs text-gray-500">{ e.Category }</div>
+										<div class="text-xs text-gray-500">{ e.CategoryName }</div>
 										if e.ReceiptPath != "" {
 											<a href={ templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/receipt", e.ID)) } target="_blank" class="text-blue-500 hover:underline text-xs">Beleg anzeigen</a>
 										}

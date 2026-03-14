@@ -190,12 +190,15 @@ func (h *ProductHandler) handleStockMovement(w http.ResponseWriter, r *http.Requ
 
 		cost, _ := strconv.ParseFloat(r.FormValue("cost_total"), 64)
 		if cost > 0 {
-			h.Store.CreateExpense(models.Expense{
+			expense := models.Expense{
 				Description: "Warenzugang: " + product.Name,
 				Amount:      cost,
 				Date:        time.Now().Format("2006-01-02"),
-				Category:    "Warenkauf",
-			})
+			}
+			if catID, err := h.Store.CreateExpenseCategory("Warenkauf"); err == nil {
+				expense.CategoryID = &catID
+			}
+			h.Store.CreateExpense(expense)
 		}
 	}
 

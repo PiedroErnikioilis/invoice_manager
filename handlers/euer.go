@@ -34,10 +34,13 @@ func (h *EuerHandler) View(w http.ResponseWriter, r *http.Request) {
 func (h *EuerHandler) NewExpense(w http.ResponseWriter, r *http.Request) {
 	products, err := h.Store.ListProducts()
 	if err != nil {
-		// Just log or empty list?
 		products = []models.Product{}
 	}
-	views.ExpenseForm(products).Render(r.Context(), w)
+	categories, err := h.Store.ListExpenseCategories()
+	if err != nil {
+		categories = []models.ExpenseCategory{}
+	}
+	views.ExpenseForm(products, categories).Render(r.Context(), w)
 }
 
 func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +55,15 @@ func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 		Description: r.FormValue("description"),
 		Amount:      amount,
 		Date:        r.FormValue("date"),
-		Category:    r.FormValue("category"),
+	}
+
+	// Resolve or create category
+	categoryName := strings.TrimSpace(r.FormValue("category"))
+	if categoryName != "" {
+		catID, err := h.Store.CreateExpenseCategory(categoryName)
+		if err == nil {
+			expense.CategoryID = &catID
+		}
 	}
 
 	if expense.Date == "" {

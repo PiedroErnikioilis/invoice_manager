@@ -11,7 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import "din-invoice/models"
 import "fmt"
 
-func ExpenseForm(products []models.Product) templ.Component {
+func ExpenseForm(products []models.Product, categories []models.ExpenseCategory) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -64,64 +64,79 @@ func ExpenseForm(products []models.Product) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"mb-4\"><label class=\"block text-gray-700 text-sm font-bold mb-2\">Kategorie</label> <input name=\"category\" list=\"category-list\" class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\" placeholder=\"z.B. Material, Werkzeug\"> <datalist id=\"category-list\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = Input("Kategorie", "category", "text", "", "z.B. Material, Werkzeug", false, "Kategorie für die Auswertung.").Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"mb-6\"><label class=\"block text-gray-700 text-sm font-bold mb-2\">Beleg / Rechnung (PDF/Bild)</label> <input type=\"file\" name=\"receipt\" class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"><p class=\"text-xs text-gray-500 mt-1 italic\">Lade hier die Rechnung hoch.</p></div><div class=\"bg-blue-50 p-4 rounded border border-blue-200 mb-6\"><h2 class=\"text-lg font-bold mb-2 text-blue-800\">Inventar verknüpfen (Optional)</h2><p class=\"text-sm text-blue-600 mb-4\">Hier kannst du direkt den Bestand eines Produkts erhöhen.</p><div class=\"mb-4\"><label class=\"flex items-center cursor-pointer\"><input type=\"checkbox\" id=\"update_inventory\" name=\"update_inventory\" class=\"mr-2 w-5 h-5\" onchange=\"toggleInventory(this.checked)\"> <span class=\"text-sm font-bold text-gray-700\">Bestand aktualisieren?</span></label></div><div id=\"inventory_fields\" class=\"hidden\"><div class=\"grid grid-cols-1 md:grid-cols-2 gap-4\"><div class=\"mb-4\"><label class=\"block text-gray-700 text-sm font-bold mb-2\" for=\"product_id\">Produkt</label> <select name=\"product_id\" id=\"product_id\" class=\"shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"><option value=\"\">Wähle ein Produkt...</option> ")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			for _, p := range products {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<option value=\"")
+			for _, c := range categories {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<option value=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var3 string
-				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", p.ID))
+				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(c.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 42, Col: 49}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 25, Col: 29}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\"></option>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</datalist><p class=\"text-xs text-gray-500 mt-1 italic\">Kategorie für die Auswertung. Bestehende wählen oder neue eingeben.</p></div><div class=\"mb-6\"><label class=\"block text-gray-700 text-sm font-bold mb-2\">Beleg / Rechnung (PDF/Bild)</label> <input type=\"file\" name=\"receipt\" class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"><p class=\"text-xs text-gray-500 mt-1 italic\">Lade hier die Rechnung hoch.</p></div><div class=\"bg-blue-50 p-4 rounded border border-blue-200 mb-6\"><h2 class=\"text-lg font-bold mb-2 text-blue-800\">Inventar verknüpfen (Optional)</h2><p class=\"text-sm text-blue-600 mb-4\">Hier kannst du direkt den Bestand eines Produkts erhöhen.</p><div class=\"mb-4\"><label class=\"flex items-center cursor-pointer\"><input type=\"checkbox\" id=\"update_inventory\" name=\"update_inventory\" class=\"mr-2 w-5 h-5\" onchange=\"toggleInventory(this.checked)\"> <span class=\"text-sm font-bold text-gray-700\">Bestand aktualisieren?</span></label></div><div id=\"inventory_fields\" class=\"hidden\"><div class=\"grid grid-cols-1 md:grid-cols-2 gap-4\"><div class=\"mb-4\"><label class=\"block text-gray-700 text-sm font-bold mb-2\" for=\"product_id\">Produkt</label> <select name=\"product_id\" id=\"product_id\" class=\"shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"><option value=\"\">Wähle ein Produkt...</option> ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			for _, p := range products {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<option value=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var4 string
-				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
+				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", p.ID))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 42, Col: 60}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 51, Col: 49}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, " (Bestand: ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var5 string
-				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", p.Stock))
+				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 42, Col: 101}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 51, Col: 60}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, ")</option>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, " (Bestand: ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var6 string
+				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", p.Stock))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 51, Col: 101}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, ")</option>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</select></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</select></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -129,7 +144,7 @@ func ExpenseForm(products []models.Product) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div></div></div><div class=\"flex items-center justify-end\"><button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\" type=\"submit\">Speichern & Buchen</button></div></form></div><script>\n            function toggleInventory(checked) {\n                const el = document.getElementById('inventory_fields');\n                const pSelect = document.getElementById('product_id');\n                const qtyInput = document.getElementById('quantity');\n                \n                if (checked) {\n                    el.classList.remove('hidden');\n                    pSelect.required = true;\n                    qtyInput.required = true;\n                } else {\n                    el.classList.add('hidden');\n                    pSelect.required = false;\n                    qtyInput.required = false;\n                }\n            }\n        </script>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</div></div></div><div class=\"flex items-center justify-end\"><button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\" type=\"submit\">Speichern & Buchen</button></div></form></div><script>\n            function toggleInventory(checked) {\n                const el = document.getElementById('inventory_fields');\n                const pSelect = document.getElementById('product_id');\n                const qtyInput = document.getElementById('quantity');\n                \n                if (checked) {\n                    el.classList.remove('hidden');\n                    pSelect.required = true;\n                    qtyInput.required = true;\n                } else {\n                    el.classList.add('hidden');\n                    pSelect.required = false;\n                    qtyInput.required = false;\n                }\n            }\n        </script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
