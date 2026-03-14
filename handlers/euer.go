@@ -5,6 +5,7 @@ import (
 	"din-invoice/services"
 	"din-invoice/views"
 	"encoding/base64"
+	"fmt"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -24,6 +25,9 @@ func NewEuerHandler(store *models.Store) *EuerHandler {
 }
 
 func (h *EuerHandler) View(w http.ResponseWriter, r *http.Request) {
+	// 0. Process recurring expenses before viewing
+	h.Store.ProcessRecurringExpenses()
+
 	// Default to current year
 	year := time.Now().Year()
 	if y := r.URL.Query().Get("year"); y != "" {
@@ -41,6 +45,74 @@ func (h *EuerHandler) View(w http.ResponseWriter, r *http.Request) {
 	years, _ := h.Store.GetAvailableYears()
 
 	views.EuerDashboard(stats, years).Render(r.Context(), w)
+}
+
+func (h *EuerHandler) ListRecurring(w http.ResponseWriter, r *http.Request) {
+	list, err := h.Store.ListRecurringExpenses()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	views.RecurringExpenseList(list).Render(r.Context(), w)
+}
+
+func (h *EuerHandler) NewRecurring(w http.ResponseWriter, r *http.Request) {
+	categories, _ := h.Store.ListExpenseCategories()
+	views.RecurringExpenseForm(categories).Render(r.Context(), w)
+}
+
+func (h *EuerHandler) CreateRecurring(w http.ResponseWriter, r *http.Request) {
+	amount, _ := strconv.ParseFloat(r.FormValue("amount"), 64)
+	taxRate, _ := strconv.ParseFloat(r.FormValue("tax_rate"), 64)
+	if taxRate == 0 && r.FormValue("tax_rate") == "" {
+		taxRate = 19.0
+	}
+
+	re := models.RecurringExpense{
+		Description: r.FormValue("description"),
+		Amount:      amount,
+		TaxRate:     taxRate,
+		Interval:    r.FormValue("interval"),
+		StartDate:   r.FormValue("start_date"),
+		IsActive:    true,
+	}
+
+	categoryName := strings.TrimSpace(r.FormValue("category"))
+	if categoryName != "" {
+		catID, err := h.Store.CreateExpenseCategory(categoryName)
+		if err == nil {
+			re.CategoryID = &catID
+		}
+	}
+
+	if re.StartDate == "" {
+		re.StartDate = time.Now().Format("2006-01-02")
+	}
+
+	_, err := h.Store.CreateRecurringExpense(re)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/euer/recurring", http.StatusSeeOther)
+}
+
+func (h *EuerHandler) DeleteRecurring(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	err = h.Store.DeleteRecurringExpense(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/euer/recurring", http.StatusSeeOther)
 }
 
 func (h *EuerHandler) NewExpense(w http.ResponseWriter, r *http.Request) {
@@ -234,6 +306,55 @@ func (h *EuerHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/pdf")
 	w.Header().Set("Content-Disposition", "inline; filename=euer_uebersicht.pdf")
 	http.ServeFile(w, r, path)
+}
+
+func (h *EuerHandler) DownloadCSV(w http.ResponseWriter, r *http.Request) {
+	year := time.Now().Year()
+	if y := r.URL.Query().Get("year"); y != "" {
+		if parsed, err := strconv.Atoi(y); err == nil && parsed > 0 {
+			year = parsed
+		}
+	}
+
+	stats, err := h.Store.GetEuerStats(year)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=euer_export_%d.csv", year))
+
+	// German Excel uses semicolon as separator
+	fmt.Fprintf(w, "Datum;Typ;Beleg-Nr;Beschreibung;Kategorie;Netto;USt%%;USt-Betrag;Brutto\n")
+
+	// 1. Invoices (Income)
+	for _, i := range stats.Invoices {
+		fmt.Fprintf(w, "%s;Einnahme;%s;%s;%s;%.2f;%.1f;%.2f;%.2f\n",
+			i.Date,
+			i.InvoiceNumber,
+			"Rechnung an "+i.RecipientName,
+			"Umsatzerlöse",
+			i.TotalNet(),
+			i.TaxRate,
+			i.TaxAmount(),
+			i.TotalGross(),
+		)
+	}
+
+	// 2. Expenses
+	for _, e := range stats.Expenses {
+		fmt.Fprintf(w, "%s;Ausgabe;%d;%s;%s;%.2f;%.1f;%.2f;%.2f\n",
+			e.Date,
+			e.ID,
+			e.Description,
+			e.CategoryName,
+			e.Net(),
+			e.TaxRate,
+			e.Tax(),
+			e.Amount,
+		)
+	}
 }
 
 func (h *EuerHandler) ServeReceipt(w http.ResponseWriter, r *http.Request) {

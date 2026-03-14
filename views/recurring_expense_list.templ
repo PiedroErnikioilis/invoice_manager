@@ -1,0 +1,90 @@
+package views
+
+import (
+	"din-invoice/models"
+	"fmt"
+)
+
+templ RecurringExpenseList(list []models.RecurringExpense) {
+	@Layout("Wiederkehrende Ausgaben") {
+		<div class="flex justify-between items-center mb-6">
+			<h1 class="text-3xl font-bold text-gray-800">Wiederkehrende Ausgaben</h1>
+			<div class="flex gap-2">
+				<a href="/euer" class="text-gray-600 hover:text-gray-800 flex items-center">
+					Zurück zur EÜR
+				</a>
+				<a href="/euer/recurring/new" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
+					+ Neue Dauerbuchung
+				</a>
+			</div>
+		</div>
+
+		<div class="bg-white shadow-md rounded-lg overflow-hidden">
+			<table class="min-w-full divide-y divide-gray-200">
+				<thead class="bg-gray-50">
+					<tr>
+						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Beschreibung</th>
+						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Intervall</th>
+						<th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Betrag (Brutto)</th>
+						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategorie</th>
+						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zuletzt gebucht</th>
+						<th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aktionen</th>
+					</tr>
+				</thead>
+				<tbody class="bg-white divide-y divide-gray-200">
+					if len(list) == 0 {
+						<tr>
+							<td colspan="6" class="px-6 py-4 text-center text-gray-500">Keine Dauerbuchungen vorhanden.</td>
+						</tr>
+					}
+					for _, re := range list {
+						<tr class="hover:bg-gray-50">
+							<td class="px-6 py-4 whitespace-nowrap">
+								<div class="text-sm font-medium text-gray-900">{ re.Description }</div>
+								if !re.IsActive {
+									<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inaktiv</span>
+								}
+							</td>
+							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+								{ translateInterval(re.Interval) }
+							</td>
+							<td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 font-mono">
+								{ models.FormatCurrency(re.Amount) }
+							</td>
+							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+								{ re.CategoryName }
+							</td>
+							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+								if re.LastBookedAt != "" {
+									{ re.LastBookedAt }
+								} else {
+									<span class="italic">Noch nie</span>
+								}
+							</td>
+							<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+								<form action={ templ.SafeURL(fmt.Sprintf("/euer/recurring/%d/delete", re.ID)) } method="POST" onsubmit="return confirm('Wirklich löschen?');" class="inline">
+									<button type="submit" class="text-red-600 hover:text-red-900">Löschen</button>
+								</form>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+        <p class="mt-4 text-sm text-gray-500 italic">
+            Hinweis: Dauerbuchungen werden automatisch beim Aufruf der EÜR-Übersicht für fällige Zeiträume erstellt.
+        </p>
+	}
+}
+
+func translateInterval(i string) string {
+	switch i {
+	case "monthly":
+		return "Monatlich"
+	case "quarterly":
+		return "Quartalsweise"
+	case "yearly":
+		return "Jährlich"
+	}
+	return i
+}

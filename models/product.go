@@ -6,14 +6,15 @@ type Product struct {
 	Description string
 	Price       float64
 	Stock       int
+	MinStock    int
 	Unit        string
 }
 
 func (s *Store) CreateProduct(p Product) (int, error) {
 	res, err := s.DB.Exec(`
-		INSERT INTO products (name, description, price, stock, unit)
-		VALUES (?, ?, ?, ?, ?)
-	`, p.Name, p.Description, p.Price, p.Stock, p.Unit)
+		INSERT INTO products (name, description, price, stock, min_stock, unit)
+		VALUES (?, ?, ?, ?, ?, ?)
+	`, p.Name, p.Description, p.Price, p.Stock, p.MinStock, p.Unit)
 	if err != nil {
 		return 0, err
 	}
@@ -24,9 +25,9 @@ func (s *Store) CreateProduct(p Product) (int, error) {
 func (s *Store) UpdateProduct(p Product) error {
 	_, err := s.DB.Exec(`
 		UPDATE products
-		SET name = ?, description = ?, price = ?, stock = ?, unit = ?
+		SET name = ?, description = ?, price = ?, stock = ?, min_stock = ?, unit = ?
 		WHERE id = ?
-	`, p.Name, p.Description, p.Price, p.Stock, p.Unit, p.ID)
+	`, p.Name, p.Description, p.Price, p.Stock, p.MinStock, p.Unit, p.ID)
 	return err
 }
 
@@ -36,7 +37,7 @@ func (s *Store) DeleteProduct(id int) error {
 }
 
 func (s *Store) ListProducts() ([]Product, error) {
-	rows, err := s.DB.Query(`SELECT id, name, description, price, stock, unit FROM products ORDER BY name ASC`)
+	rows, err := s.DB.Query(`SELECT id, name, description, price, stock, min_stock, unit FROM products ORDER BY name ASC`)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +46,7 @@ func (s *Store) ListProducts() ([]Product, error) {
 	var products []Product
 	for rows.Next() {
 		var p Product
-		if err := rows.Scan(&p.ID, &p.Name, &p.Description, &p.Price, &p.Stock, &p.Unit); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Description, &p.Price, &p.Stock, &p.MinStock, &p.Unit); err != nil {
 			return nil, err
 		}
 		products = append(products, p)
@@ -56,9 +57,9 @@ func (s *Store) ListProducts() ([]Product, error) {
 func (s *Store) GetProduct(id int) (*Product, error) {
 	var p Product
 	err := s.DB.QueryRow(`
-		SELECT id, name, description, price, stock, unit
+		SELECT id, name, description, price, stock, min_stock, unit
 		FROM products WHERE id = ?
-	`, id).Scan(&p.ID, &p.Name, &p.Description, &p.Price, &p.Stock, &p.Unit)
+	`, id).Scan(&p.ID, &p.Name, &p.Description, &p.Price, &p.Stock, &p.MinStock, &p.Unit)
 	if err != nil {
 		return nil, err
 	}

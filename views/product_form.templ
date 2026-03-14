@@ -31,13 +31,25 @@ templ ProductForm(product *models.Product, movements []models.StockMovement) {
 							</div>
 						</div>
 						if product.ID == 0 {
-							@Input("Anfangsbestand", "stock", "number", "0", "0", false, "Startmenge im Lager.")
+							<div class="flex flex-wrap -mx-3 mb-6">
+								<div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+									@Input("Anfangsbestand", "stock", "number", "0", "0", false, "Startmenge im Lager.")
+								</div>
+								<div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+									@Input("Mindestbestand", "min_stock", "number", "0", "0", false, "Warnung wenn unterschritten.")
+								</div>
+							</div>
 						} else {
-							<div class="mb-4">
-								<label class="block text-gray-700 text-sm font-bold mb-2">
-									Aktueller Bestand
-								</label>
-								<div class="text-xl font-bold">{ fmt.Sprintf("%d", product.Stock) } { product.Unit }</div>
+							<div class="flex flex-wrap -mx-3 mb-6">
+								<div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+									<label class="block text-gray-700 text-sm font-bold mb-2">
+										Aktueller Bestand
+									</label>
+									<div class="text-xl font-bold">{ fmt.Sprintf("%d", product.Stock) } { product.Unit }</div>
+								</div>
+								<div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+									@Input("Mindestbestand", "min_stock", "number", fmt.Sprintf("%d", product.MinStock), "0", false, "Warnung wenn unterschritten.")
+								</div>
 							</div>
 						}
 						<div class="flex items-center justify-between">

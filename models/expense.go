@@ -144,6 +144,134 @@ func (s *Store) UpdateExpense(e Expense) error {
 	return err
 }
 
+type RecurringExpense struct {
+	ID           int
+	Description  string
+	Amount       float64
+	TaxRate      float64
+	Interval     string // monthly, quarterly, yearly
+	CategoryID   *int
+	CategoryName string
+	StartDate    string
+	LastBookedAt string
+	IsActive     bool
+	CreatedAt    time.Time
+}
+
+func (s *Store) CreateRecurringExpense(re RecurringExpense) (int, error) {
+	res, err := s.DB.Exec(`
+		INSERT INTO recurring_expenses (description, amount, tax_rate, interval, category_id, start_date, last_booked_at, is_active)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+	`, re.Description, re.Amount, re.TaxRate, re.Interval, re.CategoryID, re.StartDate, re.LastBookedAt, re.IsActive)
+	if err != nil {
+		return 0, err
+	}
+	id, err := res.LastInsertId()
+	return int(id), err
+}
+
+func (s *Store) ListRecurringExpenses() ([]RecurringExpense, error) {
+	rows, err := s.DB.Query(`
+		SELECT re.id, re.description, re.amount, re.tax_rate, re.interval, re.category_id, COALESCE(ec.name, ''), re.start_date, COALESCE(re.last_booked_at, ''), re.is_active, re.created_at
+		FROM recurring_expenses re
+		LEFT JOIN expense_categories ec ON re.category_id = ec.id
+		ORDER BY re.description ASC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []RecurringExpense
+	for rows.Next() {
+		var re RecurringExpense
+		if err := rows.Scan(&re.ID, &re.Description, &re.Amount, &re.TaxRate, &re.Interval, &re.CategoryID, &re.CategoryName, &re.StartDate, &re.LastBookedAt, &re.IsActive, &re.CreatedAt); err != nil {
+			return nil, err
+		}
+		results = append(results, re)
+	}
+	return results, nil
+}
+
+func (s *Store) DeleteRecurringExpense(id int) error {
+	_, err := s.DB.Exec(`DELETE FROM recurring_expenses WHERE id = ?`, id)
+	return err
+}
+
+func (s *Store) UpdateRecurringExpense(re RecurringExpense) error {
+	_, err := s.DB.Exec(`
+		UPDATE recurring_expenses
+		SET description = ?, amount = ?, tax_rate = ?, interval = ?, category_id = ?, start_date = ?, last_booked_at = ?, is_active = ?
+		WHERE id = ?
+	`, re.Description, re.Amount, re.TaxRate, re.Interval, re.CategoryID, re.StartDate, re.LastBookedAt, re.IsActive, re.ID)
+	return err
+}
+
+func (s *Store) ProcessRecurringExpenses() error {
+	recurring, err := s.ListRecurringExpenses()
+	if err != nil {
+		return err
+	}
+
+	today := time.Now()
+
+	for _, re := range recurring {
+		if !re.IsActive {
+			continue
+		}
+
+		startDate, _ := time.Parse("2006-01-02", re.StartDate)
+		lastBooked := startDate.AddDate(0, 0, -1) // Default to day before start
+		if re.LastBookedAt != "" {
+			lastBooked, _ = time.Parse("2006-01-02", re.LastBookedAt)
+		}
+
+		// Calculate next due date
+		nextDue := lastBooked
+		for {
+			switch re.Interval {
+			case "monthly":
+				nextDue = nextDue.AddDate(0, 1, 0)
+			case "quarterly":
+				nextDue = nextDue.AddDate(0, 3, 0)
+			case "yearly":
+				nextDue = nextDue.AddDate(1, 0, 0)
+			default:
+				goto next_re // Invalid interval
+			}
+
+			// If nextDue is in the future, we are done for this RE
+			if nextDue.After(today) {
+				break
+			}
+
+			// Book it!
+			expense := Expense{
+				Description: re.Description + " (automatisch)",
+				Amount:      re.Amount,
+				TaxRate:     re.TaxRate,
+				Date:        nextDue.Format("2006-01-02"),
+				CategoryID:  re.CategoryID,
+			}
+
+			_, err := s.CreateExpense(expense)
+			if err != nil {
+				return err
+			}
+
+			// Update LastBookedAt in DB
+			re.LastBookedAt = nextDue.Format("2006-01-02")
+			err = s.UpdateRecurringExpense(re)
+			if err != nil {
+				return err
+			}
+		}
+	next_re:
+	}
+
+	return nil
+}
+
 func (s *Store) DeleteExpense(id int) error {
 	_, err := s.DB.Exec("DELETE FROM expenses WHERE id = ?", id)
 	return err

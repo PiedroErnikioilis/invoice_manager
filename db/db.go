@@ -52,6 +52,7 @@ func Init(dataSourceName string) (*sql.DB, error) {
 		description TEXT,
 		price REAL DEFAULT 0.0,
 		stock INTEGER DEFAULT 0,
+		min_stock INTEGER DEFAULT 0,
 		unit TEXT DEFAULT 'Stk'
 	);
 
@@ -94,6 +95,19 @@ func Init(dataSourceName string) (*sql.DB, error) {
 		receipt_data TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	);
+
+	CREATE TABLE IF NOT EXISTS recurring_expenses (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		description TEXT NOT NULL,
+		amount REAL NOT NULL,
+		tax_rate REAL DEFAULT 19.0,
+		interval TEXT NOT NULL CHECK(interval IN ('monthly', 'quarterly', 'yearly')),
+		category_id INTEGER REFERENCES expense_categories(id) ON DELETE SET NULL,
+		start_date TEXT NOT NULL,
+		last_booked_at TEXT,
+		is_active BOOLEAN DEFAULT 1,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	);
 	`
 
 	_, err = db.Exec(createTables)
@@ -111,6 +125,7 @@ func Init(dataSourceName string) (*sql.DB, error) {
 		"ALTER TABLE expenses ADD COLUMN receipt_data TEXT",
 		"ALTER TABLE expenses ADD COLUMN category_id INTEGER REFERENCES expense_categories(id) ON DELETE SET NULL",
 		"ALTER TABLE expenses ADD COLUMN tax_rate REAL DEFAULT 19.0",
+		"ALTER TABLE products ADD COLUMN min_stock INTEGER DEFAULT 0",
 	}
 
 	for _, m := range migrations {

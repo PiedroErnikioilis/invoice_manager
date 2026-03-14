@@ -45,21 +45,21 @@ Audit der bestehenden EÜR- und Inventar-Funktionen des Invoice Managers. Ziel: 
 | #   | Funktion                             | Status      | Beschreibung                                                                                                                  |
 | --- | ------------------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 5   | **Kategorien-Auswertung**            | **DONE**    | Ausgaben nach Kategorie gruppiert anzeigen (Summe pro Kategorie, Prozentanteil).                                              |
-| 6   | **Mindestbestand / Bestandswarnung** | OFFEN       | Produkte sollten einen Mindestbestand haben. Warnung wenn Bestand unter Minimum fällt.                                        |
-| 7   | **Inventar-PDF / Inventurliste**     | OFFEN       | PDF-Export der aktuellen Bestände als Inventurliste (z.B. für Jahresabschluss).                                               |
-| 8   | **Wiederkehrende Ausgaben**          | OFFEN       | Monatliche Fixkosten (Miete, Versicherung, Software-Abos) automatisch buchen.                                                 |
-| 9   | **CSV/DATEV-Export**                 | OFFEN       | Export von Einnahmen/Ausgaben als CSV oder DATEV-Format für den Steuerberater.                                                |
+| 6   | **Mindestbestand / Bestandswarnung** | **DONE**    | Feld min_stock hinzugefügt, Warn-Icons in Liste implementiert.                                                                |
+| 7   | **Inventar-PDF / Inventurliste**     | **DONE**    | PDF-Export der aktuellen Bestände inkl. Gesamtwert des Lagers.                                                                |
+| 8   | **Wiederkehrende Ausgaben**          | **DONE**    | Automatische Buchung von Fixkosten (Miete etc.) beim Aufruf der EÜR.                                                          |
+| 9   | **CSV/DATEV-Export**                 | **DONE**    | CSV-Export für Einnahmen/Ausgaben (Semicolon-separiert für Excel).                                                            |
 
 ### Priorität 3 — Nice-to-have
 
-| #   | Funktion                             | Beschreibung                                                                               |
-| --- | ------------------------------------ | ------------------------------------------------------------------------------------------ |
-| 10  | **Zahlungserinnerung / Mahnung**     | Automatische Erinnerung für offene Rechnungen nach X Tagen. PDF-Mahnung generieren.        |
-| 11  | **Angebote / Kostenvoranschläge**    | Angebote erstellen, die später in Rechnungen umgewandelt werden können.                    |
-| 12  | **Gutschriften**                     | Teilweise oder vollständige Gutschrift zu einer Rechnung erstellen.                        |
-| 13  | **Abschreibungen (AfA)**             | Anlagegüter mit Abschreibungsdauer erfassen, jährliche AfA automatisch als Ausgabe buchen. |
-| 14  | **Inventar-Bewertung**               | Gesamtwert des Lagers berechnen (Menge × Einkaufspreis pro Produkt).                       |
-| 15  | **Bewegungshistorie filtern/suchen** | Lagerbewegungen nach Datum, Typ oder Produkt filtern.                                      |
+| #   | Funktion                             | Status      | Beschreibung                                                                               |
+| --- | ------------------------------------ | ----------- | ------------------------------------------------------------------------------------------ |
+| 10  | **Zahlungserinnerung / Mahnung**     | OFFEN       | Automatische Erinnerung für offene Rechnungen nach X Tagen. PDF-Mahnung generieren.        |
+| 11  | **Angebote / Kostenvoranschläge**    | OFFEN       | Angebote erstellen, die später in Rechnungen umgewandelt werden können.                    |
+| 12  | **Gutschriften**                     | OFFEN       | Teilweise oder vollständige Gutschrift zu einer Rechnung erstellen.                        |
+| 13  | **Abschreibungen (AfA)**             | OFFEN       | Anlagegüter mit Abschreibungsdauer erfassen, jährliche AfA automatisch als Ausgabe buchen. |
+| 14  | **Inventar-Bewertung**               | **DONE**    | Berechnet im Inventar-PDF (Menge × Einkaufspreis).                                         |
+| 15  | **Bewegungshistorie filtern/suchen** | OFFEN       | Lagerbewegungen nach Datum, Typ oder Produkt filtern.                                      |
 
 ---
 
@@ -73,7 +73,7 @@ Audit der bestehenden EÜR- und Inventar-Funktionen des Invoice Managers. Ziel: 
 
 ## Nächste Schritte
 
-1. Mindestbestand (#6) + Inventar-PDF (#7)
-2. CSV/DATEV-Export (#9)
-3. Wiederkehrende Ausgaben (#8)
-4. Rest nach Bedarf
+1. Angebote / Kostenvoranschläge (#11)
+2. Gutschriften (#12)
+3. Zahlungserinnerung / Mahnung (#10)
+4. Abschreibungen (AfA) (#13)

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"din-invoice/models"
+	"din-invoice/services"
 	"din-invoice/views"
 	"net/http"
 	"strconv"
@@ -27,6 +28,30 @@ func (h *ProductHandler) List(w http.ResponseWriter, r *http.Request) {
 	views.ProductList(products).Render(r.Context(), w)
 }
 
+func (h *ProductHandler) DownloadInventoryPDF(w http.ResponseWriter, r *http.Request) {
+	products, err := h.Store.ListProducts()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	settings, err := h.Store.GetAppSettings()
+	if err != nil {
+		http.Error(w, "Could not load settings", http.StatusInternalServerError)
+		return
+	}
+
+	path, err := services.GenerateInventoryPDFHTML(products, &settings)
+	if err != nil {
+		http.Error(w, "Failed to generate PDF: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", "inline; filename=inventarliste.pdf")
+	http.ServeFile(w, r, path)
+}
+
 func (h *ProductHandler) New(w http.ResponseWriter, r *http.Request) {
 	views.ProductForm(&models.Product{}, nil).Render(r.Context(), w)
 }
@@ -39,12 +64,14 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	price, _ := strconv.ParseFloat(r.FormValue("price"), 64)
 	initialStock, _ := strconv.Atoi(r.FormValue("stock"))
+	minStock, _ := strconv.Atoi(r.FormValue("min_stock"))
 
 	product := models.Product{
 		Name:        r.FormValue("name"),
 		Description: r.FormValue("description"),
 		Price:       price,
 		Stock:       0, // Stock is set via RecordStockMovement below to avoid double counting
+		MinStock:    minStock,
 		Unit:        r.FormValue("unit"),
 	}
 
@@ -97,11 +124,7 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 	// Stock is not updated here anymore, only basic info
 
 	price, _ := strconv.ParseFloat(r.FormValue("price"), 64)
-	// stock, _ := strconv.Atoi(r.FormValue("stock")) // Ignored
-
-	// We need to fetch current stock to preserve it if we use UpdateProduct
-	// Or we just update fields excluding stock.
-	// UpdateProduct in models updates everything.
+	minStock, _ := strconv.Atoi(r.FormValue("min_stock"))
 
 	existing, err := h.Store.GetProduct(id)
 	if err != nil {
@@ -115,6 +138,7 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Description: r.FormValue("description"),
 		Price:       price,
 		Stock:       existing.Stock, // Preserve
+		MinStock:    minStock,
 		Unit:        r.FormValue("unit"),
 	}
 

@@ -79,6 +79,27 @@ func GenerateEuerPDFHTML(stats *models.EuerStats, settings *models.AppSettings) 
 	return filename, nil
 }
 
+// GenerateInventoryPDFHTML renders the inventory list as a PDF.
+func GenerateInventoryPDFHTML(products []models.Product, settings *models.AppSettings) (string, error) {
+	htmlComponent := views.InventarPDF(products, *settings)
+
+	var htmlBuilder strings.Builder
+	if err := htmlComponent.Render(context.Background(), &htmlBuilder); err != nil {
+		return "", fmt.Errorf("failed to render html: %w", err)
+	}
+
+	outDir := settings.PDFOutputPath
+	if outDir == "" {
+		outDir = "./invoices/"
+	}
+	filename := filepath.Join(outDir, "inventar_liste.pdf")
+
+	if err := renderHTMLToPDF(htmlBuilder.String(), filename); err != nil {
+		return "", err
+	}
+	return filename, nil
+}
+
 // GenerateInvoicePDFHTML renders the HTML view and converts it to PDF using Rod.
 func GenerateInvoicePDFHTML(inv *models.Invoice, settings *models.AppSettings) (string, error) {
 	// 1. Prepare Logo (Base64)
