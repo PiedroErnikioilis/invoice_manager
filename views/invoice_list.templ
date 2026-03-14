@@ -52,6 +52,7 @@ templ InvoiceList(invoices []models.Invoice) {
 									<a href={ templ.SafeURL(fmt.Sprintf("/invoices/%d/edit", invoice.ID)) } class="text-green-600 hover:text-green-900 mr-4">Bearbeiten</a>
 								}
 								if invoice.Status != "Storniert" && invoice.Status != "Entwurf" {
+									<a href={ templ.SafeURL(fmt.Sprintf("/credit-notes/new?invoice_id=%d", invoice.ID)) } class="text-orange-600 hover:text-orange-900 mr-4" title="Gutschrift erstellen">Gutschrift</a>
 									<form action={ templ.SafeURL(fmt.Sprintf("/invoices/%d/cancel", invoice.ID)) } method="POST" class="inline" onsubmit="return confirm('Rechnung wirklich stornieren?');">
 										<button type="submit" class="text-red-600 hover:text-red-900">Stornieren</button>
 									</form>

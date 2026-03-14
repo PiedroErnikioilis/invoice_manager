@@ -59,6 +59,32 @@ func (s *Store) GetEuerStats(year int) (*EuerStats, error) {
 		}
 	}
 
+	// 1b. Calculate Credits (Credit Notes)
+	creditQuery := fmt.Sprintf(`
+		SELECT id, credit_note_number, date, recipient_name, tax_rate, is_small_business, status
+		FROM credit_notes
+		WHERE status != 'Entwurf'%s
+		ORDER BY date DESC
+	`, dateFilter)
+
+	cRows, err := s.DB.Query(creditQuery)
+	if err == nil {
+		defer cRows.Close()
+		for cRows.Next() {
+			var cn CreditNote
+			if err := cRows.Scan(&cn.ID, &cn.CreditNoteNumber, &cn.Date, &cn.RecipientName, &cn.TaxRate, &cn.IsSmallBusiness, &cn.Status); err != nil {
+				continue
+			}
+
+			fullCn, err := s.GetCreditNote(cn.ID)
+			if err == nil {
+				stats.TotalIncomeNet += fullCn.TotalNet()
+				stats.TotalIncomeVat += fullCn.TaxAmount()
+				stats.TotalIncomeGross += fullCn.TotalGross()
+			}
+		}
+	}
+
 	// 2. Load Expenses list
 	stats.Expenses, _ = s.ListExpenses(year)
 	for _, e := range stats.Expenses {
@@ -98,6 +124,8 @@ func (s *Store) GetAvailableYears() ([]int, error) {
 			SELECT CAST(substr(date, 1, 4) AS INTEGER) AS year FROM invoices WHERE date != ''
 			UNION
 			SELECT CAST(substr(date, 1, 4) AS INTEGER) AS year FROM expenses WHERE date != ''
+            UNION
+            SELECT CAST(substr(date, 1, 4) AS INTEGER) AS year FROM credit_notes WHERE date != ''
 		) ORDER BY year DESC
 	`)
 	if err != nil {

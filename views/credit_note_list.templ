@@ -1,0 +1,52 @@
+package views
+
+import (
+	"din-invoice/models"
+	"fmt"
+)
+
+templ CreditNoteList(notes []models.CreditNote) {
+	@Layout("Gutschriften") {
+		<div class="flex justify-between items-center mb-6">
+			<h1 class="text-3xl font-bold text-gray-800">Gutschriften</h1>
+            <p class="text-sm text-gray-500 italic">Erstellen Sie Gutschriften direkt aus einer Rechnung.</p>
+		</div>
+		<div class="bg-white rounded-lg shadow overflow-hidden">
+			<table class="min-w-full divide-y divide-gray-200">
+				<thead class="bg-gray-50">
+					<tr>
+						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nr.</th>
+						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Datum</th>
+						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kunde</th>
+						<th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Betrag</th>
+						<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+						<th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aktionen</th>
+					</tr>
+				</thead>
+				<tbody class="bg-white divide-y divide-gray-200">
+					if len(notes) == 0 {
+						<tr>
+							<td colspan="6" class="px-6 py-4 text-center text-gray-500">Keine Gutschriften vorhanden.</td>
+						</tr>
+					}
+					for _, n := range notes {
+						<tr class="hover:bg-gray-50">
+							<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ n.CreditNoteNumber }</td>
+							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ n.Date }</td>
+							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{ n.RecipientName }</td>
+							<td class="px-6 py-4 whitespace-nowrap text-sm text-right text-red-600 font-mono font-bold">{ models.FormatCurrency(n.TotalGross()) }</td>
+							<td class="px-6 py-4 whitespace-nowrap text-center">
+								<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+									{ n.Status }
+								</span>
+							</td>
+							<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+								<a href={ templ.SafeURL(fmt.Sprintf("/credit-notes/%d", n.ID)) } class="text-indigo-600 hover:text-indigo-900">Ansehen</a>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}

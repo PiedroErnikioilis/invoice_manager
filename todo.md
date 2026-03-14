@@ -55,8 +55,8 @@ Audit der bestehenden EÜR- und Inventar-Funktionen des Invoice Managers. Ziel: 
 | #   | Funktion                             | Status      | Beschreibung                                                                               |
 | --- | ------------------------------------ | ----------- | ------------------------------------------------------------------------------------------ |
 | 10  | **Zahlungserinnerung / Mahnung**     | OFFEN       | Automatische Erinnerung für offene Rechnungen nach X Tagen. PDF-Mahnung generieren.        |
-| 11  | **Angebote / Kostenvoranschläge**    | OFFEN       | Angebote erstellen, die später in Rechnungen umgewandelt werden können.                    |
-| 12  | **Gutschriften**                     | OFFEN       | Teilweise oder vollständige Gutschrift zu einer Rechnung erstellen.                        |
+| 11  | **Angebote / Kostenvoranschläge**    | **DONE**    | Angebote erstellen und in Rechnungen umwandeln.                                            |
+| 12  | **Gutschriften**                     | **DONE**    | Gutschriften erstellen (aus Rechnung), wirkt sich negativ auf EÜR aus.                     |
 | 13  | **Abschreibungen (AfA)**             | OFFEN       | Anlagegüter mit Abschreibungsdauer erfassen, jährliche AfA automatisch als Ausgabe buchen. |
 | 14  | **Inventar-Bewertung**               | **DONE**    | Berechnet im Inventar-PDF (Menge × Einkaufspreis).                                         |
 | 15  | **Bewegungshistorie filtern/suchen** | OFFEN       | Lagerbewegungen nach Datum, Typ oder Produkt filtern.                                      |

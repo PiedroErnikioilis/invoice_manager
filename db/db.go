@@ -65,6 +65,55 @@ func Init(dataSourceName string) (*sql.DB, error) {
 		product_id INTEGER REFERENCES products(id) ON DELETE SET NULL
 	);
 
+	CREATE TABLE IF NOT EXISTS quotes (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		quote_number TEXT NOT NULL,
+		date TEXT NOT NULL,
+		sender_name TEXT NOT NULL,
+		sender_address TEXT NOT NULL,
+		recipient_name TEXT NOT NULL,
+		recipient_address TEXT NOT NULL,
+		tax_rate REAL DEFAULT 19.0,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		status TEXT DEFAULT 'Entwurf' CHECK(status IN ('Entwurf', 'Verschickt', 'Angenommen', 'Abgelehnt', 'Umgewandelt')),
+		is_small_business BOOLEAN DEFAULT 0,
+		customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL
+	);
+
+	CREATE TABLE IF NOT EXISTS quote_items (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		quote_id INTEGER NOT NULL REFERENCES quotes(id) ON DELETE CASCADE,
+		description TEXT NOT NULL,
+		quantity INTEGER NOT NULL,
+		price_per_unit REAL NOT NULL,
+		product_id INTEGER REFERENCES products(id) ON DELETE SET NULL
+	);
+
+	CREATE TABLE IF NOT EXISTS credit_notes (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		credit_note_number TEXT NOT NULL,
+		date TEXT NOT NULL,
+		sender_name TEXT NOT NULL,
+		sender_address TEXT NOT NULL,
+		recipient_name TEXT NOT NULL,
+		recipient_address TEXT NOT NULL,
+		tax_rate REAL DEFAULT 19.0,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		status TEXT DEFAULT 'Offen' CHECK(status IN ('Entwurf', 'Offen', 'Abgeschlossen')),
+		is_small_business BOOLEAN DEFAULT 0,
+		customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+		invoice_id INTEGER REFERENCES invoices(id) ON DELETE SET NULL
+	);
+
+	CREATE TABLE IF NOT EXISTS credit_note_items (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		credit_note_id INTEGER NOT NULL REFERENCES credit_notes(id) ON DELETE CASCADE,
+		description TEXT NOT NULL,
+		quantity INTEGER NOT NULL,
+		price_per_unit REAL NOT NULL,
+		product_id INTEGER REFERENCES products(id) ON DELETE SET NULL
+	);
+
 	CREATE TABLE IF NOT EXISTS stock_movements (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,

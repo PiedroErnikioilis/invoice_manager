@@ -1,0 +1,166 @@
+package views
+
+import (
+	"din-invoice/models"
+	"fmt"
+	"strconv"
+)
+
+templ CreditNoteForm(note *models.CreditNote, customers []models.Customer, products []models.Product) {
+	@Layout("Gutschrift erstellen") {
+		<div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+			<h1 class="text-2xl font-bold mb-6">Gutschrift erstellen</h1>
+			<form action="/credit-notes" method="POST">
+                <input type="hidden" name="invoice_id" value={ func() string { if note.InvoiceID != nil { return fmt.Sprintf("%d", *note.InvoiceID) } else { return "" } }() }/>
+				<div class="mb-4 bg-gray-50 p-4 rounded border">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div>
+							<label class="block text-gray-700 text-sm font-bold mb-2">Status</label>
+							<select name="status" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+								<option value="Entwurf" selected?={ note.Status == "Entwurf" }>Entwurf</option>
+								<option value="Offen" selected?={ note.Status == "Offen" }>Offen</option>
+								<option value="Abgeschlossen" selected?={ note.Status == "Abgeschlossen" }>Abgeschlossen</option>
+							</select>
+						</div>
+						<div class="flex items-center mt-6">
+							<label class="flex items-center cursor-pointer">
+								<input type="checkbox" name="is_small_business" class="mr-2 w-5 h-5" value="true" checked?={ note.IsSmallBusiness }/>
+								<span class="text-sm font-bold text-gray-700">Kleinunternehmerregelung (§ 19 UStG)</span>
+							</label>
+						</div>
+					</div>
+				</div>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					@Input("Gutschriftsnummer", "credit_note_number", "text", note.CreditNoteNumber, "z.B. GS-2023-001", true, "Die eindeutige Nummer der Gutschrift.")
+					@Input("Datum", "date", "date", note.Date, "", true, "Das Ausstellungsdatum.")
+				</div>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div class="border p-4 rounded bg-gray-50">
+						<h3 class="font-bold mb-2">Absender</h3>
+						@Input("Name / Firma", "sender_name", "text", note.SenderName, "Deine Firma", true, "Dein Name oder Firmenname.")
+						@Textarea("Anschrift", "sender_address", note.SenderAddress, 3)
+					</div>
+					<div class="border p-4 rounded bg-gray-50">
+						<div class="flex justify-between items-center mb-2">
+							<h3 class="font-bold">Empfänger</h3>
+							<select id="customer-select" class="text-xs border rounded p-1" onchange="selectCustomer(this)">
+								<option value="">Kunde wählen...</option>
+								for _, c := range customers {
+									<option value={ fmt.Sprintf("%d", c.ID) } selected?={ note.CustomerID != nil && *note.CustomerID == c.ID }>{ c.Name }</option>
+								}
+							</select>
+							<input type="hidden" name="customer_id" id="customer_id" value={ func() string { if note.CustomerID != nil { return fmt.Sprintf("%d", *note.CustomerID) } else { return "" } }() }/>
+						</div>
+						@Input("Name / Firma", "recipient_name", "text", note.RecipientName, "Kunde GmbH", true, "Name oder Firma des Kunden.")
+						@Textarea("Anschrift", "recipient_address", note.RecipientAddress, 3)
+					</div>
+				</div>
+				<div class="mt-6">
+					<h3 class="font-bold mb-2">Positionen (Gutschriftsbeträge positiv eingeben, werden negativ verbucht)</h3>
+					<table class="w-full text-left" id="items-table">
+						<thead>
+							<tr>
+								<th class="w-1/2 p-2">Beschreibung</th>
+								<th class="w-24 p-2">Menge</th>
+								<th class="w-32 p-2">Preis (€)</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							if len(note.Items) > 0 {
+								for _, item := range note.Items {
+									<tr>
+										<td class="p-1">
+											<div class="flex flex-col">
+												<select class="text-xs text-gray-500 mb-1 border rounded p-1" onchange="selectProduct(this)">
+													<option value="">Produkt wählen...</option>
+													for _, p := range products {
+														<option value={ fmt.Sprintf("%d", p.ID) } selected?={ item.ProductID != nil && *item.ProductID == p.ID }>{ p.Name }</option>
+													}
+												</select>
+												<input name="item_description[]" class="border rounded w-full p-2" required value={ item.Description }/>
+												<input type="hidden" name="item_product_id[]" value={ func() string { if item.ProductID != nil { return fmt.Sprintf("%d", *item.ProductID) } else { return "" } }() }/>
+											</div>
+										</td>
+										<td class="p-1 align-top"><input name="item_quantity[]" type="number" class="border rounded w-full p-2" required value={ strconv.Itoa(item.Quantity) }/></td>
+										<td class="p-1 align-top"><input name="item_price[]" type="number" step="0.01" class="border rounded w-full p-2" required value={ fmt.Sprintf("%.2f", item.PricePerUnit) }/></td>
+										<td class="p-1 align-top"><button type="button" class="text-red-500 font-bold px-2 py-2" onclick="this.closest('tr').remove()">×</button></td>
+									</tr>
+								}
+							}
+						</tbody>
+					</table>
+					<button type="button" class="mt-2 text-sm text-blue-600 hover:text-blue-800 font-bold" onclick="addItemRow()">+ Position hinzufügen</button>
+				</div>
+				<div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+					@Input("Steuersatz (%)", "tax_rate", "number", fmt.Sprintf("%g", note.TaxRate), "19", true, "Umsatzsteuersatz (z.B. 19 oder 7).")
+				</div>
+				<div class="flex items-center justify-end mt-8">
+					<button class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+						Gutschrift speichern
+					</button>
+				</div>
+			</form>
+		</div>
+		<div id="products-data" data-products={ jsonString(products) } style="display:none;"></div>
+		<div id="customers-data" data-customers={ jsonString(customers) } style="display:none;"></div>
+		<script>
+            let products = [];
+            let customers = [];
+            try {
+                products = JSON.parse(document.getElementById('products-data').dataset.products);
+                customers = JSON.parse(document.getElementById('customers-data').dataset.customers);
+            } catch(e) {
+                console.error("Failed to parse data", e);
+            }
+
+            function selectCustomer(select) {
+                const id = parseInt(select.value);
+                const customer = customers.find(c => c.ID === id);
+                if (customer) {
+                    document.querySelector('input[name="recipient_name"]').value = customer.Name;
+                    document.querySelector('textarea[name="recipient_address"]').value = customer.Address;
+                    document.getElementById('customer_id').value = customer.ID;
+                }
+            }
+
+            function selectProduct(select) {
+                const id = parseInt(select.value);
+                const row = select.closest('tr');
+                const descInput = row.querySelector('input[name="item_description[]"]');
+                const priceInput = row.querySelector('input[name="item_price[]"]');
+                const idInput = row.querySelector('input[name="item_product_id[]"]');
+
+                if (id) {
+                    const product = products.find(p => p.ID === id);
+                    if (product) {
+                        descInput.value = product.Name;
+                        priceInput.value = product.Price.toFixed(2);
+                        idInput.value = product.ID;
+                    }
+                }
+            }
+
+            function addItemRow() {
+                const tbody = document.querySelector('#items-table tbody');
+                const tr = document.createElement('tr');
+                let options = '<option value="">Produkt wählen...</option>';
+                products.forEach(p => { options += `<option value="${p.ID}">${p.Name}</option>`; });
+
+                tr.innerHTML = `
+                    <td class="p-1">
+                        <div class="flex flex-col">
+                            <select class="text-xs text-gray-500 mb-1 border rounded p-1" onchange="selectProduct(this)">${options}</select>
+                            <input name="item_description[]" class="border rounded w-full p-2" required placeholder="Gutschrift für..." />
+                            <input type="hidden" name="item_product_id[]" value="" />
+                        </div>
+                    </td>
+                    <td class="p-1 align-top"><input name="item_quantity[]" type="number" class="border rounded w-full p-2" required value="1" /></td>
+                    <td class="p-1 align-top"><input name="item_price[]" type="number" step="0.01" class="border rounded w-full p-2" required placeholder="0.00" /></td>
+                    <td class="p-1 align-top"><button type="button" class="text-red-500 font-bold px-2 py-2" onclick="this.closest('tr').remove()">×</button></td>
+                `;
+                tbody.appendChild(tr);
+            }
+        </script>
+	}
+}

@@ -40,6 +40,8 @@ func run() error {
 	customerHandler := handlers.NewCustomerHandler(store)
 	statsHandler := handlers.NewStatsHandler(store)
 	euerHandler := handlers.NewEuerHandler(store)
+	quoteHandler := handlers.NewQuoteHandler(store)
+	creditNoteHandler := handlers.NewCreditNoteHandler(store)
 
 	// 2. Setup Router
 	r := chi.NewRouter()
@@ -54,6 +56,17 @@ func run() error {
 	r.Get("/invoices/{id}/edit", invoiceHandler.Edit)
 	r.Post("/invoices/{id}", invoiceHandler.Update)
 	r.Post("/invoices/{id}/cancel", invoiceHandler.Cancel)
+
+	r.Get("/quotes", quoteHandler.List)
+	r.Get("/quotes/new", quoteHandler.New)
+	r.Post("/quotes", quoteHandler.Create)
+	r.Get("/quotes/{id}/edit", quoteHandler.Edit)
+	r.Post("/quotes/{id}", quoteHandler.Update)
+	r.Post("/quotes/{id}/convert", quoteHandler.ConvertToInvoice)
+
+	r.Get("/credit-notes", creditNoteHandler.List)
+	r.Get("/credit-notes/new", creditNoteHandler.NewFromInvoice)
+	r.Post("/credit-notes", creditNoteHandler.Create)
 
 	r.Get("/products", productHandler.List)
 	r.Get("/products/new", productHandler.New)
