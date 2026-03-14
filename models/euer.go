@@ -33,11 +33,6 @@ func (s *Store) GetEuerStats() (*EuerStats, error) {
 			if err == nil {
 				stats.TotalIncome += fullInv.TotalGross()
 				stats.Invoices = append(stats.Invoices, *fullInv)
-			net := float64(qty) * price
-			if !isSmall {
-				stats.TotalIncome += net * (1 + taxRate/100)
-			} else {
-				stats.TotalIncome += net
 			}
 		}
 	}
