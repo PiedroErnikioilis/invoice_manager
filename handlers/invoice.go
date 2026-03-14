@@ -271,6 +271,23 @@ func (h *InvoiceHandler) View(w http.ResponseWriter, r *http.Request) {
 	views.InvoiceView(invoice, settings).Render(r.Context(), w)
 }
 
+func (h *InvoiceHandler) Cancel(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	err = h.Store.CancelInvoice(id)
+	if err != nil {
+		http.Error(w, "Fehler beim Stornieren", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
 func (h *InvoiceHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)

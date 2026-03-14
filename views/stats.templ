@@ -77,6 +77,13 @@ templ StatsDashboard(stats *models.Stats) {
 						</div>
 						<div class="w-12 text-right text-sm">{ fmt.Sprintf("%d", stats.PaidCount) }</div>
 					</div>
+					<div class="flex items-center">
+						<div class="w-32 font-bold text-gray-600">Storniert</div>
+						<div class="flex-1 bg-gray-200 rounded h-4 overflow-hidden">
+							<div class="bg-red-500 h-full" style={ fmt.Sprintf("width: %d%%", percent(stats.CancelledCount, stats.InvoicesCount)) }></div>
+						</div>
+						<div class="w-12 text-right text-sm">{ fmt.Sprintf("%d", stats.CancelledCount) }</div>
+					</div>
 				</div>
 			</div>
 		</div>

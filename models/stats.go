@@ -7,6 +7,7 @@ type Stats struct {
 	DraftCount        int
 	OpenCount         int
 	PaidCount         int
+	CancelledCount    int
 	TopProducts       []TopProduct
 }
 
@@ -21,13 +22,14 @@ func (s *Store) GetStats() (*Stats, error) {
 
 	// Revenue & Count
 	err := s.DB.QueryRow(`
-		SELECT 
+		SELECT
 			COUNT(*),
 			COALESCE(SUM(CASE WHEN status = 'Entwurf' THEN 1 ELSE 0 END), 0),
 			COALESCE(SUM(CASE WHEN status = 'Offen' THEN 1 ELSE 0 END), 0),
-			COALESCE(SUM(CASE WHEN status = 'Bezahlt' THEN 1 ELSE 0 END), 0)
+			COALESCE(SUM(CASE WHEN status = 'Bezahlt' THEN 1 ELSE 0 END), 0),
+			COALESCE(SUM(CASE WHEN status = 'Storniert' THEN 1 ELSE 0 END), 0)
 		FROM invoices
-	`).Scan(&stats.InvoicesCount, &stats.DraftCount, &stats.OpenCount, &stats.PaidCount)
+	`).Scan(&stats.InvoicesCount, &stats.DraftCount, &stats.OpenCount, &stats.PaidCount, &stats.CancelledCount)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +45,7 @@ func (s *Store) GetStats() (*Stats, error) {
 		SELECT i.tax_rate, i.is_small_business, ii.quantity, ii.price_per_unit
 		FROM invoices i
 		JOIN invoice_items ii ON i.id = ii.invoice_id
-		WHERE i.status != 'Entwurf' -- Only count real invoices? Or all? Usually valid ones.
+		WHERE i.status NOT IN ('Entwurf', 'Storniert')
 	`)
 	if err != nil {
 		return nil, err
@@ -75,7 +77,7 @@ func (s *Store) GetStats() (*Stats, error) {
 		FROM invoice_items ii
 		JOIN products p ON ii.product_id = p.id
 		JOIN invoices i ON ii.invoice_id = i.id
-		WHERE i.status != 'Entwurf'
+		WHERE i.status NOT IN ('Entwurf', 'Storniert')
 		GROUP BY p.id
 		ORDER BY rev DESC
 		LIMIT 5

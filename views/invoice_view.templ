@@ -36,6 +36,10 @@ templ InvoiceView(inv *models.Invoice, settings models.AppSettings) {
 				<div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none z-0 overflow-hidden">
 					<div class="transform -rotate-45 text-[100pt] font-bold text-green-600 border-8 border-green-600 p-10 rounded">BEZAHLT</div>
 				</div>
+			} else if inv.Status == "Storniert" {
+				<div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none z-0 overflow-hidden">
+					<div class="transform -rotate-45 text-[80pt] font-bold text-red-600 border-8 border-red-600 p-10 rounded">STORNIERT</div>
+				</div>
 			}
 			<!-- Address Field -->
 			<div class="address-field z-10">

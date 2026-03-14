@@ -32,6 +32,7 @@ templ InvoiceForm(invoice *models.Invoice, products []models.Product, customers 
 								<option value="Entwurf" selected?={ invoice.Status == "Entwurf" }>Entwurf</option>
 								<option value="Offen" selected?={ invoice.Status == "Offen" }>Offen</option>
 								<option value="Bezahlt" selected?={ invoice.Status == "Bezahlt" }>Bezahlt</option>
+								<option value="Storniert" selected?={ invoice.Status == "Storniert" }>Storniert</option>
 							</select>
 						</div>
 						<div class="flex items-center mt-6">

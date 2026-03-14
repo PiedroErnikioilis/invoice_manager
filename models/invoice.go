@@ -181,6 +181,11 @@ func (s *Store) UpdateInvoice(inv *Invoice) error {
 	return tx.Commit()
 }
 
+func (s *Store) CancelInvoice(id int) error {
+	_, err := s.DB.Exec(`UPDATE invoices SET status = 'Storniert' WHERE id = ?`, id)
+	return err
+}
+
 func (s *Store) ListInvoices() ([]Invoice, error) {
 	rows, err := s.DB.Query(`SELECT id, invoice_number, date, sender_name, recipient_name, tax_rate, status, is_small_business FROM invoices ORDER BY id DESC`)
 	if err != nil {

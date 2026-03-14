@@ -53,6 +53,7 @@ func run() error {
 	r.Get("/invoices/{id}/pdf", invoiceHandler.DownloadPDF)
 	r.Get("/invoices/{id}/edit", invoiceHandler.Edit)
 	r.Post("/invoices/{id}", invoiceHandler.Update)
+	r.Post("/invoices/{id}/cancel", invoiceHandler.Cancel)
 
 	r.Get("/products", productHandler.List)
 	r.Get("/products/new", productHandler.New)

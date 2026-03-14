@@ -11,6 +11,8 @@ func statusColor(status string) string {
 		return "bg-yellow-100 text-yellow-800"
 	case "Bezahlt":
 		return "bg-green-100 text-green-800"
+	case "Storniert":
+		return "bg-red-100 text-red-800"
 	default:
 		return "bg-gray-100 text-gray-800"
 	}
@@ -47,7 +49,12 @@ templ InvoiceList(invoices []models.Invoice) {
 							<td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
 								<a href={ templ.SafeURL(fmt.Sprintf("/invoices/%d", invoice.ID)) } class="text-blue-600 hover:text-blue-900 mr-4">Ansehen</a>
 								if invoice.Status == "Entwurf" {
-									<a href={ templ.SafeURL(fmt.Sprintf("/invoices/%d/edit", invoice.ID)) } class="text-green-600 hover:text-green-900">Bearbeiten</a>
+									<a href={ templ.SafeURL(fmt.Sprintf("/invoices/%d/edit", invoice.ID)) } class="text-green-600 hover:text-green-900 mr-4">Bearbeiten</a>
+								}
+								if invoice.Status != "Storniert" && invoice.Status != "Entwurf" {
+									<form action={ templ.SafeURL(fmt.Sprintf("/invoices/%d/cancel", invoice.ID)) } method="POST" class="inline" onsubmit="return confirm('Rechnung wirklich stornieren?');">
+										<button type="submit" class="text-red-600 hover:text-red-900">Stornieren</button>
+									</form>
 								}
 							</td>
 						</tr>
