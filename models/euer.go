@@ -5,6 +5,7 @@ type EuerStats struct {
 	TotalExpenses float64
 	Profit        float64
 	Expenses      []Expense
+	Invoices      []Invoice
 }
 
 func (s *Store) GetEuerStats() (*EuerStats, error) {
@@ -14,22 +15,24 @@ func (s *Store) GetEuerStats() (*EuerStats, error) {
 	// We assume Gross amount is the income (Brutto).
 
 	rows, err := s.DB.Query(`
-		SELECT i.tax_rate, i.is_small_business, ii.quantity, ii.price_per_unit
-		FROM invoices i
-		JOIN invoice_items ii ON i.id = ii.invoice_id
-		WHERE i.status = 'Bezahlt'
+		SELECT id, invoice_number, date, recipient_name, tax_rate, is_small_business, status
+		FROM invoices
+		WHERE status = 'Bezahlt'
+		ORDER BY date DESC
 	`)
 	if err == nil {
 		defer rows.Close()
 		for rows.Next() {
-			var taxRate float64
-			var isSmall bool
-			var qty int
-			var price float64
-			if err := rows.Scan(&taxRate, &isSmall, &qty, &price); err != nil {
+			var i Invoice
+			if err := rows.Scan(&i.ID, &i.InvoiceNumber, &i.Date, &i.RecipientName, &i.TaxRate, &i.IsSmallBusiness, &i.Status); err != nil {
 				continue
 			}
 
+			// Load items for this invoice to calculate total
+			fullInv, err := s.GetInvoice(i.ID)
+			if err == nil {
+				stats.TotalIncome += fullInv.TotalGross()
+				stats.Invoices = append(stats.Invoices, *fullInv)
 			net := float64(qty) * price
 			if !isSmall {
 				stats.TotalIncome += net * (1 + taxRate/100)

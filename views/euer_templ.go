@@ -105,17 +105,17 @@ func EuerDashboard(stats *models.EuerStats) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></div></div><div class=\"mb-6 flex justify-end\"><a href=\"/expenses/new\" class=\"bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow\">+ Ausgabe / Rechnung erfassen</a></div><div class=\"grid grid-cols-1 gap-6\"><!-- Expense List --><div class=\"bg-white shadow-md rounded px-8 pt-6 pb-8\"><h2 class=\"text-xl font-bold mb-4\">Ausgaben Liste</h2><div class=\"overflow-y-auto max-h-96\"><table class=\"w-full text-sm\"><thead><tr class=\"text-gray-500 border-b\"><th class=\"text-left py-2\">Datum</th><th class=\"text-left py-2\">Beschreibung</th><th class=\"text-right py-2\">Betrag</th><th class=\"text-right py-2\"></th></tr></thead> <tbody>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></div></div><div class=\"mb-6 flex justify-end\"><a href=\"/expenses/new\" class=\"bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow\">+ Ausgabe / Rechnung erfassen</a></div><div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\"><!-- Income List (Invoices) --><div class=\"bg-white shadow-md rounded px-8 pt-6 pb-8\"><h2 class=\"text-xl font-bold mb-4\">Einnahmen Liste (Bezahlte Rechnungen)</h2><div class=\"overflow-y-auto max-h-96\"><table class=\"w-full text-sm\"><thead><tr class=\"text-gray-500 border-b\"><th class=\"text-left py-2\">Datum</th><th class=\"text-left py-2\">Rechnung #</th><th class=\"text-left py-2\">Kunde</th><th class=\"text-right py-2\">Betrag</th></tr></thead> <tbody>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			for _, e := range stats.Expenses {
+			for _, i := range stats.Invoices {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<tr class=\"border-b last:border-0 hover:bg-gray-50\"><td class=\"py-2\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var8 string
-				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(e.Date)
+				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(i.Date)
 				if templ_7745c5c3_Err != nil {
 					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 45, Col: 34}
 				}
@@ -123,87 +123,170 @@ func EuerDashboard(stats *models.EuerStats) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</td><td class=\"py-2\"><div class=\"font-medium\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</td><td class=\"py-2\"><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var9 string
-				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(e.Description)
+				var templ_7745c5c3_Var9 templ.SafeURL
+				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/invoices/%d", i.ID)))
 				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 50, Col: 98}
 					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 47, Col: 50}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div><div class=\"text-xs text-gray-500\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\" class=\"text-blue-600 hover:underline font-medium\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var10 string
-				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(e.Category)
+				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(i.InvoiceNumber)
 				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 51, Col: 61}
 					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 48, Col: 57}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</a></td><td class=\"py-2\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				if e.ReceiptPath != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<a href=\"")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					var templ_7745c5c3_Var11 templ.SafeURL
-					templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/receipt", e.ID)))
-					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 50, Col: 82}
-					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" target=\"_blank\" class=\"text-blue-500 hover:underline text-xs\">Beleg anzeigen</a>")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
+				var templ_7745c5c3_Var11 string
+				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(i.RecipientName)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 54, Col: 70}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</td><td class=\"py-2 text-right font-mono text-red-600\">-")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</td><td class=\"py-2 text-right font-mono text-green-600\">+")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var12 string
-				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", e.Amount))
+				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", i.TotalGross()))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 53, Col: 96}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 55, Col: 131}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</td><td class=\"py-2 text-right\"><form action=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</td></tr>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var13 templ.SafeURL
-				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/delete", e.ID)))
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</tbody></table></div></div><!-- Expense List --><div class=\"bg-white shadow-md rounded px-8 pt-6 pb-8\"><h2 class=\"text-xl font-bold mb-4\">Ausgaben Liste</h2><div class=\"overflow-y-auto max-h-96\"><table class=\"w-full text-sm\"><thead><tr class=\"text-gray-500 border-b\"><th class=\"text-left py-2\">Datum</th><th class=\"text-left py-2\">Beschreibung</th><th class=\"text-right py-2\">Betrag</th><th class=\"text-right py-2\"></th></tr></thead> <tbody>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			for _, e := range stats.Expenses {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<tr class=\"border-b last:border-0 hover:bg-gray-50\"><td class=\"py-2\">")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 55, Col: 85}
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var13 string
+				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(e.Date)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 79, Col: 61}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\" method=\"POST\" onsubmit=\"return confirm('Löschen?');\"><button type=\"submit\" class=\"text-red-500 hover:text-red-700 font-bold\">×</button></form></td></tr>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</td><td class=\"py-2\"><div class=\"font-medium\">")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var14 string
+				templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(e.Description)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 81, Col: 80}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</div><div class=\"text-xs text-gray-500\">")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var15 string
+				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(e.Category)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 82, Col: 87}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</div>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				if e.ReceiptPath != "" {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<a href=\"")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var16 templ.SafeURL
+					templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(e.ReceiptPath))
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 84, Col: 82}
+					var templ_7745c5c3_Var11 templ.SafeURL
+					templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/receipt", e.ID)))
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 50, Col: 82}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\" target=\"_blank\" class=\"text-blue-500 hover:underline text-xs\">Beleg anzeigen</a>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</td><td class=\"py-2 text-right font-mono text-red-600\">-")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var17 string
+				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f €", e.Amount))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 87, Col: 123}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 53, Col: 96}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</td><td class=\"py-2 text-right\"><form action=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var18 templ.SafeURL
+				templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/delete", e.ID)))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 89, Col: 115}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer.templ`, Line: 55, Col: 85}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\" method=\"POST\" onsubmit=\"return confirm('Löschen?');\"><button type=\"submit\" class=\"text-red-500 hover:text-red-700 font-bold\">×</button></form></td></tr>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</tbody></table></div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</tbody></table></div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
