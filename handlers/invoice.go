@@ -21,6 +21,22 @@ func NewInvoiceHandler(store *models.Store) *InvoiceHandler {
 	return &InvoiceHandler{Store: store}
 }
 
+// syncCustomerFromInvoice updates the customer record's name and address
+// from the invoice recipient data. Errors are logged but not fatal since
+// the invoice has already been persisted successfully.
+func (h *InvoiceHandler) syncCustomerFromInvoice(inv *models.Invoice) {
+	if inv.CustomerID == nil {
+		return
+	}
+	if err := h.Store.UpdateCustomer(models.Customer{
+		ID:      *inv.CustomerID,
+		Name:    inv.RecipientName,
+		Address: inv.RecipientAddress,
+	}); err != nil {
+		fmt.Printf("Failed to sync customer %d from invoice %s: %v\n", *inv.CustomerID, inv.InvoiceNumber, err)
+	}
+}
+
 func (h *InvoiceHandler) List(w http.ResponseWriter, r *http.Request) {
 	invoices, err := h.Store.ListInvoices()
 	if err != nil {
@@ -133,6 +149,9 @@ func (h *InvoiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Sync customer name/address from invoice recipient data
+	h.syncCustomerFromInvoice(invoice)
+
 	http.Redirect(w, r, "/invoices/"+strconv.Itoa(id), http.StatusSeeOther)
 }
 
@@ -223,6 +242,9 @@ func (h *InvoiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Sync customer name/address from invoice recipient data
+	h.syncCustomerFromInvoice(invoice)
 
 	http.Redirect(w, r, "/invoices/"+strconv.Itoa(id), http.StatusSeeOther)
 }
