@@ -1,7 +1,7 @@
 run:
-	templ generate
+	go tool templ generate
 	go run main.go
 
 build:
-	templ generate
+	go tool templ generate
 	go build -o invoice-app main.go
