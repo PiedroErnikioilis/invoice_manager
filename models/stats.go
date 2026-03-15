@@ -1,5 +1,7 @@
 package models
 
+import "log/slog"
+
 type Stats struct {
 	TotalRevenueNet   float64
 	TotalRevenueGross float64
@@ -31,15 +33,9 @@ func (s *Store) GetStats() (*Stats, error) {
 		FROM invoices
 	`).Scan(&stats.InvoicesCount, &stats.DraftCount, &stats.OpenCount, &stats.PaidCount, &stats.CancelledCount)
 	if err != nil {
+		slog.Error("Failed to query stats", "error", err)
 		return nil, err
 	}
-
-	// Calculate Revenue (More complex due to structure, lets iterate or use advanced SQL)
-	// Simple SQL for Gross/Net is hard because tax is per invoice and items are separate.
-	// But we can approximate or join.
-	// Let's do a join.
-	// Net = Sum(quantity * price)
-	// Gross = Net + Tax (if not small business)
 
 	rows, err := s.DB.Query(`
 		SELECT i.tax_rate, i.is_small_business, ii.quantity, ii.price_per_unit
@@ -48,6 +44,7 @@ func (s *Store) GetStats() (*Stats, error) {
 		WHERE i.status NOT IN ('Entwurf', 'Storniert')
 	`)
 	if err != nil {
+		slog.Error("Failed to query revenue rows", "error", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -82,7 +79,9 @@ func (s *Store) GetStats() (*Stats, error) {
 		ORDER BY rev DESC
 		LIMIT 5
 	`)
-	if err == nil {
+	if err != nil {
+		slog.Error("Failed to query top products", "error", err)
+	} else {
 		defer pRows.Close()
 		for pRows.Next() {
 			var tp TopProduct

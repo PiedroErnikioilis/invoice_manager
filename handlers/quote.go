@@ -4,6 +4,7 @@ import (
 	"din-invoice/models"
 	"din-invoice/views"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -20,8 +21,10 @@ func NewQuoteHandler(store *models.Store) *QuoteHandler {
 }
 
 func (h *QuoteHandler) List(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Listing quotes")
 	quotes, err := h.Store.ListQuotes()
 	if err != nil {
+		slog.Error("Failed to list quotes", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -29,6 +32,7 @@ func (h *QuoteHandler) List(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *QuoteHandler) New(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Rendering new quote form")
 	customers, _ := h.Store.ListCustomers()
 	products, _ := h.Store.ListProducts()
 	settings, _ := h.Store.GetAppSettings()
@@ -49,9 +53,12 @@ func (h *QuoteHandler) New(w http.ResponseWriter, r *http.Request) {
 func (h *QuoteHandler) Create(w http.ResponseWriter, r *http.Request) {
 	quote, err := h.parseForm(r)
 	if err != nil {
+		slog.Error("Failed to parse quote form", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	slog.Info("Creating quote", "quote_number", quote.QuoteNumber)
 
 	// Increment quote number if it matches the auto-generated one
 	settings, _ := h.Store.GetAppSettings()
@@ -60,12 +67,14 @@ func (h *QuoteHandler) Create(w http.ResponseWriter, r *http.Request) {
 		h.Store.IncrementNextQuoteNumber()
 	}
 
-	_, err = h.Store.CreateQuote(quote)
+	id, err := h.Store.CreateQuote(quote)
 	if err != nil {
+		slog.Error("Failed to create quote", "quote_number", quote.QuoteNumber, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Quote created successfully", "id", id, "quote_number", quote.QuoteNumber)
 	http.Redirect(w, r, "/quotes", http.StatusSeeOther)
 }
 
@@ -73,8 +82,10 @@ func (h *QuoteHandler) Edit(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, _ := strconv.Atoi(idStr)
 
+	slog.Debug("Editing quote", "id", id)
 	quote, err := h.Store.GetQuote(id)
 	if err != nil {
+		slog.Error("Quote not found for edit", "id", id, "error", err)
 		http.Error(w, "Quote not found", http.StatusNotFound)
 		return
 	}
@@ -91,17 +102,21 @@ func (h *QuoteHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	quote, err := h.parseForm(r)
 	if err != nil {
+		slog.Error("Failed to parse quote update form", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	quote.ID = id
 
+	slog.Info("Updating quote", "id", id, "quote_number", quote.QuoteNumber)
 	err = h.Store.UpdateQuote(quote)
 	if err != nil {
+		slog.Error("Failed to update quote", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Quote updated successfully", "id", id)
 	http.Redirect(w, r, "/quotes", http.StatusSeeOther)
 }
 
@@ -109,8 +124,10 @@ func (h *QuoteHandler) ConvertToInvoice(w http.ResponseWriter, r *http.Request) 
 	idStr := chi.URLParam(r, "id")
 	id, _ := strconv.Atoi(idStr)
 
+	slog.Info("Converting quote to invoice", "quote_id", id)
 	quote, err := h.Store.GetQuote(id)
 	if err != nil {
+		slog.Error("Quote not found for conversion", "id", id, "error", err)
 		http.Error(w, "Quote not found", http.StatusNotFound)
 		return
 	}
@@ -140,9 +157,12 @@ func (h *QuoteHandler) ConvertToInvoice(w http.ResponseWriter, r *http.Request) 
 
 	invID, err := h.Store.CreateInvoice(invoice)
 	if err != nil {
+		slog.Error("Failed to create invoice from quote", "quote_id", id, "error", err)
 		http.Error(w, "Failed to create invoice: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	slog.Info("Invoice created from quote", "quote_id", id, "invoice_id", invID, "invoice_number", invoice.InvoiceNumber)
 
 	// 2. Update Quote Status
 	quote.Status = "Umgewandelt"

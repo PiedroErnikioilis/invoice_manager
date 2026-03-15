@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"time"
 )
 
@@ -40,17 +41,25 @@ func (s *Store) CreateExpenseCategory(name string) (int, error) {
 		return id, nil
 	}
 
+	slog.Info("Creating new expense category", "name", name)
 	res, err := s.DB.Exec(`INSERT INTO expense_categories (name) VALUES (?)`, name)
 	if err != nil {
+		slog.Error("Failed to create expense category", "name", name, "error", err)
 		return 0, err
 	}
 	insertedID, err := res.LastInsertId()
-	return int(insertedID), err
+	if err != nil {
+		slog.Error("Failed to get last insert id for expense category", "error", err)
+		return 0, err
+	}
+	return int(insertedID), nil
 }
 
 func (s *Store) ListExpenseCategories() ([]ExpenseCategory, error) {
+	slog.Debug("Listing expense categories from database")
 	rows, err := s.DB.Query(`SELECT id, name FROM expense_categories ORDER BY name`)
 	if err != nil {
+		slog.Error("Failed to query expense categories", "error", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -59,6 +68,7 @@ func (s *Store) ListExpenseCategories() ([]ExpenseCategory, error) {
 	for rows.Next() {
 		var c ExpenseCategory
 		if err := rows.Scan(&c.ID, &c.Name); err != nil {
+			slog.Error("Failed to scan expense category row", "error", err)
 			return nil, err
 		}
 		categories = append(categories, c)
@@ -67,28 +77,41 @@ func (s *Store) ListExpenseCategories() ([]ExpenseCategory, error) {
 }
 
 func (s *Store) CreateExpense(e Expense) (int, error) {
+	slog.Info("Creating expense", "description", e.Description, "amount", e.Amount, "date", e.Date)
 	res, err := s.DB.Exec(`
 		INSERT INTO expenses (description, amount, date, tax_rate, category_id, receipt_path, receipt_data)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`, e.Description, e.Amount, e.Date, e.TaxRate, e.CategoryID, e.ReceiptPath, e.ReceiptData)
 	if err != nil {
+		slog.Error("Failed to insert expense", "description", e.Description, "error", err)
 		return 0, err
 	}
 	id, err := res.LastInsertId()
-	return int(id), err
+	if err != nil {
+		slog.Error("Failed to get last insert id for expense", "error", err)
+		return 0, err
+	}
+	slog.Info("Expense created successfully", "id", id)
+	return int(id), nil
 }
 
 func (s *Store) ListExpenses(year ...int) ([]Expense, error) {
+	y := 0
+	if len(year) > 0 {
+		y = year[0]
+	}
+	slog.Debug("Listing expenses from database", "year", y)
 	query := `
 		SELECT e.id, e.description, e.amount, e.date, e.tax_rate, e.category_id, COALESCE(ec.name, ''), e.receipt_path, e.created_at
 		FROM expenses e
 		LEFT JOIN expense_categories ec ON e.category_id = ec.id`
-	if len(year) > 0 && year[0] > 0 {
-		query += fmt.Sprintf(" WHERE e.date LIKE '%d-%%'", year[0])
+	if y > 0 {
+		query += fmt.Sprintf(" WHERE e.date LIKE '%d-%%'", y)
 	}
 	query += ` ORDER BY e.date DESC`
 	rows, err := s.DB.Query(query)
 	if err != nil {
+		slog.Error("Failed to query expenses", "year", y, "error", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -97,6 +120,7 @@ func (s *Store) ListExpenses(year ...int) ([]Expense, error) {
 	for rows.Next() {
 		var e Expense
 		if err := rows.Scan(&e.ID, &e.Description, &e.Amount, &e.Date, &e.TaxRate, &e.CategoryID, &e.CategoryName, &e.ReceiptPath, &e.CreatedAt); err != nil {
+			slog.Error("Failed to scan expense row", "error", err)
 			return nil, err
 		}
 		expenses = append(expenses, e)
@@ -105,16 +129,19 @@ func (s *Store) ListExpenses(year ...int) ([]Expense, error) {
 }
 
 func (s *Store) GetExpenseReceipt(id int) (string, string, error) {
+	slog.Debug("Getting expense receipt details", "id", id)
 	var path string
 	var data sql.NullString
 	err := s.DB.QueryRow(`SELECT receipt_path, receipt_data FROM expenses WHERE id = ?`, id).Scan(&path, &data)
 	if err != nil {
+		slog.Error("Failed to get expense receipt", "id", id, "error", err)
 		return "", "", err
 	}
 	return path, data.String, nil
 }
 
 func (s *Store) GetExpense(id int) (Expense, error) {
+	slog.Debug("Getting expense details", "id", id)
 	var e Expense
 	err := s.DB.QueryRow(`
 		SELECT e.id, e.description, e.amount, e.date, e.tax_rate, e.category_id, COALESCE(ec.name, ''), e.receipt_path, e.receipt_data, e.created_at
@@ -122,10 +149,14 @@ func (s *Store) GetExpense(id int) (Expense, error) {
 		LEFT JOIN expense_categories ec ON e.category_id = ec.id
 		WHERE e.id = ?
 	`, id).Scan(&e.ID, &e.Description, &e.Amount, &e.Date, &e.TaxRate, &e.CategoryID, &e.CategoryName, &e.ReceiptPath, &e.ReceiptData, &e.CreatedAt)
+	if err != nil {
+		slog.Error("Failed to get expense", "id", id, "error", err)
+	}
 	return e, err
 }
 
 func (s *Store) UpdateExpense(e Expense) error {
+	slog.Info("Updating expense", "id", e.ID, "description", e.Description)
 	query := `
 		UPDATE expenses 
 		SET description = ?, amount = ?, date = ?, tax_rate = ?, category_id = ?
@@ -141,7 +172,12 @@ func (s *Store) UpdateExpense(e Expense) error {
 	args = append(args, e.ID)
 
 	_, err := s.DB.Exec(query, args...)
-	return err
+	if err != nil {
+		slog.Error("Failed to update expense", "id", e.ID, "error", err)
+		return err
+	}
+	slog.Info("Expense updated successfully", "id", e.ID)
+	return nil
 }
 
 type RecurringExpense struct {
@@ -159,18 +195,26 @@ type RecurringExpense struct {
 }
 
 func (s *Store) CreateRecurringExpense(re RecurringExpense) (int, error) {
+	slog.Info("Creating recurring expense", "description", re.Description, "amount", re.Amount, "interval", re.Interval)
 	res, err := s.DB.Exec(`
 		INSERT INTO recurring_expenses (description, amount, tax_rate, interval, category_id, start_date, last_booked_at, is_active)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	`, re.Description, re.Amount, re.TaxRate, re.Interval, re.CategoryID, re.StartDate, re.LastBookedAt, re.IsActive)
 	if err != nil {
+		slog.Error("Failed to insert recurring expense", "description", re.Description, "error", err)
 		return 0, err
 	}
 	id, err := res.LastInsertId()
-	return int(id), err
+	if err != nil {
+		slog.Error("Failed to get last insert id for recurring expense", "error", err)
+		return 0, err
+	}
+	slog.Info("Recurring expense created successfully", "id", id)
+	return int(id), nil
 }
 
 func (s *Store) ListRecurringExpenses() ([]RecurringExpense, error) {
+	slog.Debug("Listing recurring expenses from database")
 	rows, err := s.DB.Query(`
 		SELECT re.id, re.description, re.amount, re.tax_rate, re.interval, re.category_id, COALESCE(ec.name, ''), re.start_date, COALESCE(re.last_booked_at, ''), re.is_active, re.created_at
 		FROM recurring_expenses re
@@ -178,6 +222,7 @@ func (s *Store) ListRecurringExpenses() ([]RecurringExpense, error) {
 		ORDER BY re.description ASC
 	`)
 	if err != nil {
+		slog.Error("Failed to query recurring expenses", "error", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -186,6 +231,7 @@ func (s *Store) ListRecurringExpenses() ([]RecurringExpense, error) {
 	for rows.Next() {
 		var re RecurringExpense
 		if err := rows.Scan(&re.ID, &re.Description, &re.Amount, &re.TaxRate, &re.Interval, &re.CategoryID, &re.CategoryName, &re.StartDate, &re.LastBookedAt, &re.IsActive, &re.CreatedAt); err != nil {
+			slog.Error("Failed to scan recurring expense row", "error", err)
 			return nil, err
 		}
 		results = append(results, re)
@@ -194,20 +240,32 @@ func (s *Store) ListRecurringExpenses() ([]RecurringExpense, error) {
 }
 
 func (s *Store) DeleteRecurringExpense(id int) error {
+	slog.Info("Deleting recurring expense", "id", id)
 	_, err := s.DB.Exec(`DELETE FROM recurring_expenses WHERE id = ?`, id)
-	return err
+	if err != nil {
+		slog.Error("Failed to delete recurring expense", "id", id, "error", err)
+		return err
+	}
+	slog.Info("Recurring expense deleted successfully", "id", id)
+	return nil
 }
 
 func (s *Store) UpdateRecurringExpense(re RecurringExpense) error {
+	slog.Debug("Updating recurring expense record", "id", re.ID)
 	_, err := s.DB.Exec(`
 		UPDATE recurring_expenses
 		SET description = ?, amount = ?, tax_rate = ?, interval = ?, category_id = ?, start_date = ?, last_booked_at = ?, is_active = ?
 		WHERE id = ?
 	`, re.Description, re.Amount, re.TaxRate, re.Interval, re.CategoryID, re.StartDate, re.LastBookedAt, re.IsActive, re.ID)
-	return err
+	if err != nil {
+		slog.Error("Failed to update recurring expense record", "id", re.ID, "error", err)
+		return err
+	}
+	return nil
 }
 
 func (s *Store) ProcessRecurringExpenses() error {
+	slog.Debug("Processing recurring expenses")
 	recurring, err := s.ListRecurringExpenses()
 	if err != nil {
 		return err
@@ -237,6 +295,7 @@ func (s *Store) ProcessRecurringExpenses() error {
 			case "yearly":
 				nextDue = nextDue.AddDate(1, 0, 0)
 			default:
+				slog.Error("Invalid interval for recurring expense", "id", re.ID, "interval", re.Interval)
 				goto next_re // Invalid interval
 			}
 
@@ -246,6 +305,7 @@ func (s *Store) ProcessRecurringExpenses() error {
 			}
 
 			// Book it!
+			slog.Info("Booking recurring expense", "id", re.ID, "description", re.Description, "date", nextDue.Format("2006-01-02"))
 			expense := Expense{
 				Description: re.Description + " (automatisch)",
 				Amount:      re.Amount,
@@ -256,6 +316,7 @@ func (s *Store) ProcessRecurringExpenses() error {
 
 			_, err := s.CreateExpense(expense)
 			if err != nil {
+				slog.Error("Failed to create expense from recurring", "id", re.ID, "error", err)
 				return err
 			}
 
@@ -263,6 +324,7 @@ func (s *Store) ProcessRecurringExpenses() error {
 			re.LastBookedAt = nextDue.Format("2006-01-02")
 			err = s.UpdateRecurringExpense(re)
 			if err != nil {
+				slog.Error("Failed to update last_booked_at for recurring expense", "id", re.ID, "error", err)
 				return err
 			}
 		}
@@ -273,6 +335,12 @@ func (s *Store) ProcessRecurringExpenses() error {
 }
 
 func (s *Store) DeleteExpense(id int) error {
+	slog.Info("Deleting expense", "id", id)
 	_, err := s.DB.Exec("DELETE FROM expenses WHERE id = ?", id)
-	return err
+	if err != nil {
+		slog.Error("Failed to delete expense", "id", id, "error", err)
+		return err
+	}
+	slog.Info("Expense deleted successfully", "id", id)
+	return nil
 }

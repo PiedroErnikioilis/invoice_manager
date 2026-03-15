@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sort"
@@ -57,7 +58,9 @@ func (s *Store) validatedBackupPath(filename string) (string, error) {
 
 func (s *Store) CreateBackup(dbPath string) (*BackupInfo, error) {
 	settings, _ := s.GetAppSettings()
+	slog.Info("Creating database backup", "db_path", dbPath, "backup_dir", settings.BackupPath)
 	if err := os.MkdirAll(settings.BackupPath, 0755); err != nil {
+		slog.Error("Failed to create backup directory", "path", settings.BackupPath, "error", err)
 		return nil, fmt.Errorf("backup-Verzeichnis erstellen: %w", err)
 	}
 
@@ -70,12 +73,14 @@ func (s *Store) CreateBackup(dbPath string) (*BackupInfo, error) {
 
 	n, err := copyFile(dbPath, destPath)
 	if err != nil {
+		slog.Error("Failed to copy database file for backup", "src", dbPath, "dst", destPath, "error", err)
 		return nil, fmt.Errorf("Datenbank kopieren: %w", err)
 	}
 
 	// Rotate old backups
 	s.rotateBackups(settings)
 
+	slog.Info("Backup created successfully", "filename", filename, "size", n)
 	return &BackupInfo{
 		Filename:  filename,
 		Path:      destPath,
@@ -86,11 +91,13 @@ func (s *Store) CreateBackup(dbPath string) (*BackupInfo, error) {
 
 func (s *Store) ListBackups() ([]BackupInfo, error) {
 	settings, _ := s.GetAppSettings()
+	slog.Debug("Listing backups from directory", "path", settings.BackupPath)
 	entries, err := os.ReadDir(settings.BackupPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
 		}
+		slog.Error("Failed to read backup directory", "path", settings.BackupPath, "error", err)
 		return nil, err
 	}
 
@@ -119,11 +126,18 @@ func (s *Store) ListBackups() ([]BackupInfo, error) {
 }
 
 func (s *Store) DeleteBackup(filename string) error {
+	slog.Info("Deleting backup file", "filename", filename)
 	path, err := s.validatedBackupPath(filename)
 	if err != nil {
+		slog.Error("Invalid backup filename for deletion", "filename", filename, "error", err)
 		return err
 	}
-	return os.Remove(path)
+	if err := os.Remove(path); err != nil {
+		slog.Error("Failed to remove backup file", "path", path, "error", err)
+		return err
+	}
+	slog.Info("Backup file deleted", "path", path)
+	return nil
 }
 
 func (s *Store) GetBackupPath(filename string) (string, error) {
@@ -138,8 +152,10 @@ func (s *Store) GetBackupPath(filename string) (string, error) {
 }
 
 func (s *Store) RestoreBackup(filename, dbPath string) error {
+	slog.Info("Restoring database from backup", "filename", filename, "target", dbPath)
 	backupPath, err := s.GetBackupPath(filename)
 	if err != nil {
+		slog.Error("Failed to get backup path for restore", "filename", filename, "error", err)
 		return err
 	}
 
@@ -152,33 +168,40 @@ func (s *Store) RestoreBackup(filename, dbPath string) error {
 	safetyName := fmt.Sprintf("vor_wiederherstellung_%s.db", time.Now().Format("2006-01-02_15-04-05"))
 	safetyPath := filepath.Join(settings.BackupPath, safetyName)
 
+	slog.Info("Creating safety backup before restore", "path", safetyPath)
 	if _, err := copyFile(dbPath, safetyPath); err != nil {
+		slog.Error("Failed to create safety backup", "path", safetyPath, "error", err)
 		return fmt.Errorf("Sicherheitsbackup erstellen: %w", err)
 	}
 
 	// Restore: copy backup over current DB
 	if _, err := copyFile(backupPath, dbPath); err != nil {
+		slog.Error("Failed to restore backup over database", "src", backupPath, "dst", dbPath, "error", err)
 		return fmt.Errorf("Backup wiederherstellen: %w", err)
 	}
 
+	slog.Info("Database restored successfully from backup", "filename", filename)
 	return nil
 }
 
 func (s *Store) rotateBackups(settings AppSettings) {
+	maxCount := settings.BackupMaxCount
+	if maxCount < 1 {
+		maxCount = DefaultBackupMaxCount
+	}
+	slog.Debug("Rotating backups", "max_count", maxCount)
+
 	backups, err := s.ListBackups()
 	if err != nil {
 		return
 	}
 
-	maxCount := settings.BackupMaxCount
-	if maxCount < 1 {
-		maxCount = DefaultBackupMaxCount
-	}
 	if len(backups) <= maxCount {
 		return
 	}
 
 	for _, b := range backups[maxCount:] {
+		slog.Info("Deleting old backup during rotation", "path", b.Path)
 		os.Remove(b.Path)
 	}
 }

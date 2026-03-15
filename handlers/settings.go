@@ -4,6 +4,7 @@ import (
 	"din-invoice/models"
 	"din-invoice/views"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -19,8 +20,10 @@ func NewSettingsHandler(store *models.Store) *SettingsHandler {
 }
 
 func (h *SettingsHandler) View(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Viewing settings")
 	settings, err := h.Store.GetAppSettings()
 	if err != nil {
+		slog.Error("Failed to load settings", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -28,8 +31,10 @@ func (h *SettingsHandler) View(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
+	slog.Info("Saving app settings")
 	// ParseMultipartForm to handle file uploads
 	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10MB max
+		slog.Error("Failed to parse settings multipart form", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -104,6 +109,7 @@ func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
 	file, handler, err := r.FormFile("logo")
 	if err == nil {
 		defer file.Close()
+		slog.Debug("Uploading new logo", "filename", handler.Filename)
 
 		// Create uploads dir
 		uploadDir := "uploads"
@@ -118,12 +124,14 @@ func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
 
 		dst, err := os.Create(filePath)
 		if err != nil {
+			slog.Error("Failed to create logo file", "path", filePath, "error", err)
 			http.Error(w, "Failed to create logo file", http.StatusInternalServerError)
 			return
 		}
 		defer dst.Close()
 
 		if _, err := io.Copy(dst, file); err != nil {
+			slog.Error("Failed to save logo file", "path", filePath, "error", err)
 			http.Error(w, "Failed to save logo file", http.StatusInternalServerError)
 			return
 		}
@@ -136,9 +144,11 @@ func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.Store.SaveAppSettings(settings); err != nil {
+		slog.Error("Failed to save settings", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Settings saved successfully")
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

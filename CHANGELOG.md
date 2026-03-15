@@ -5,6 +5,11 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten
 ## [v0.4.0] - 2026-03-15
 
 ### Hinzugefügt
+- **Umfangreiches strukturiertes Logging**:
+    - Vollständige Umstellung auf `log/slog` im gesamten Projekt (Handler, Modelle, Services).
+    - Neue HTTP-Middleware für detaillierte Request-Logs inklusive Fehlermeldungen und Performance-Daten.
+    - Detaillierte Protokollierung von PDF-Generierungsprozessen und Datenbanktransaktionen.
+    - Steuerbar über Umgebungsvariablen: `DEBUG=1` für Debug-Level und `JSON_LOG=1` für Maschinen-lesbares Format.
 - **Konfigurierbare Nummernschemata**:
     - Rechnungen, Angebote und Gutschriften unterstützen nun benutzerdefinierte Schemata (z.B. `RE-{YYYY}-{N:4}`).
     - **Echte Kundennummern**: Kunden haben nun eine eigene `customer_number` in der Datenbank.

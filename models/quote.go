@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log/slog"
 	"time"
 )
 
@@ -50,8 +51,10 @@ func (q *Quote) TotalGross() float64 {
 }
 
 func (s *Store) CreateQuote(q *Quote) (int, error) {
+	slog.Info("Creating quote", "quote_number", q.QuoteNumber, "customer_id", q.CustomerID)
 	stx, err := s.Begin()
 	if err != nil {
+		slog.Error("Failed to begin transaction for quote creation", "error", err)
 		return 0, err
 	}
 	tx := stx.Tx
@@ -65,12 +68,14 @@ func (s *Store) CreateQuote(q *Quote) (int, error) {
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`, q.QuoteNumber, q.Date, q.SenderName, q.SenderAddress, q.RecipientName, q.RecipientAddress, q.TaxRate, q.Status, q.IsSmallBusiness, q.CustomerID)
 	if err != nil {
+		slog.Error("Failed to insert quote", "quote_number", q.QuoteNumber, "error", err)
 		tx.Rollback()
 		return 0, err
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
+		slog.Error("Failed to get last insert id for quote", "error", err)
 		tx.Rollback()
 		return 0, err
 	}
@@ -81,15 +86,23 @@ func (s *Store) CreateQuote(q *Quote) (int, error) {
 			VALUES (?, ?, ?, ?, ?)
 		`, id, item.Description, item.Quantity, item.PricePerUnit, item.ProductID)
 		if err != nil {
+			slog.Error("Failed to insert quote item", "quote_id", id, "description", item.Description, "error", err)
 			tx.Rollback()
 			return 0, err
 		}
 	}
 
-	return int(id), tx.Commit()
+	if err := tx.Commit(); err != nil {
+		slog.Error("Failed to commit quote transaction", "quote_number", q.QuoteNumber, "error", err)
+		return 0, err
+	}
+
+	slog.Info("Quote created successfully", "id", id, "quote_number", q.QuoteNumber)
+	return int(id), nil
 }
 
 func (s *Store) ListQuotes() ([]Quote, error) {
+	slog.Debug("Listing quotes from database")
 	rows, err := s.DB.Query(`
 		SELECT q.id, q.quote_number, q.date, q.recipient_name, q.status, q.tax_rate, q.is_small_business, q.customer_id, COALESCE(c.customer_number, '')
 		FROM quotes q
@@ -97,6 +110,7 @@ func (s *Store) ListQuotes() ([]Quote, error) {
 		ORDER BY q.id DESC
 	`)
 	if err != nil {
+		slog.Error("Failed to query quotes", "error", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -105,6 +119,7 @@ func (s *Store) ListQuotes() ([]Quote, error) {
 	for rows.Next() {
 		var q Quote
 		if err := rows.Scan(&q.ID, &q.QuoteNumber, &q.Date, &q.RecipientName, &q.Status, &q.TaxRate, &q.IsSmallBusiness, &q.CustomerID, &q.CustomerNumber); err != nil {
+			slog.Error("Failed to scan quote row", "error", err)
 			return nil, err
 		}
 		quotes = append(quotes, q)
@@ -113,6 +128,7 @@ func (s *Store) ListQuotes() ([]Quote, error) {
 }
 
 func (s *Store) GetQuote(id int) (*Quote, error) {
+	slog.Debug("Getting quote details", "id", id)
 	var q Quote
 	err := s.DB.QueryRow(`
 		SELECT q.id, q.quote_number, q.date, q.sender_name, q.sender_address, q.recipient_name, q.recipient_address, q.tax_rate, q.created_at, q.status, q.is_small_business, q.customer_id, COALESCE(c.customer_number, '')
@@ -121,11 +137,13 @@ func (s *Store) GetQuote(id int) (*Quote, error) {
 		WHERE q.id = ?
 	`, id).Scan(&q.ID, &q.QuoteNumber, &q.Date, &q.SenderName, &q.SenderAddress, &q.RecipientName, &q.RecipientAddress, &q.TaxRate, &q.CreatedAt, &q.Status, &q.IsSmallBusiness, &q.CustomerID, &q.CustomerNumber)
 	if err != nil {
+		slog.Error("Failed to get quote", "id", id, "error", err)
 		return nil, err
 	}
 
 	rows, err := s.DB.Query(`SELECT id, description, quantity, price_per_unit, product_id FROM quote_items WHERE quote_id = ?`, id)
 	if err != nil {
+		slog.Error("Failed to query quote items", "quote_id", id, "error", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -134,6 +152,7 @@ func (s *Store) GetQuote(id int) (*Quote, error) {
 		var item QuoteItem
 		item.QuoteID = id
 		if err := rows.Scan(&item.ID, &item.Description, &item.Quantity, &item.PricePerUnit, &item.ProductID); err != nil {
+			slog.Error("Failed to scan quote item row", "quote_id", id, "error", err)
 			return nil, err
 		}
 		q.Items = append(q.Items, item)
@@ -143,8 +162,10 @@ func (s *Store) GetQuote(id int) (*Quote, error) {
 }
 
 func (s *Store) UpdateQuote(q *Quote) error {
+	slog.Info("Updating quote", "id", q.ID, "quote_number", q.QuoteNumber)
 	stx, err := s.Begin()
 	if err != nil {
+		slog.Error("Failed to begin transaction for quote update", "id", q.ID, "error", err)
 		return err
 	}
 	tx := stx.Tx
@@ -155,12 +176,14 @@ func (s *Store) UpdateQuote(q *Quote) error {
 		WHERE id = ?
 	`, q.QuoteNumber, q.Date, q.SenderName, q.SenderAddress, q.RecipientName, q.RecipientAddress, q.TaxRate, q.Status, q.IsSmallBusiness, q.CustomerID, q.ID)
 	if err != nil {
+		slog.Error("Failed to update quote record", "id", q.ID, "error", err)
 		tx.Rollback()
 		return err
 	}
 
 	_, err = tx.Exec(`DELETE FROM quote_items WHERE quote_id = ?`, q.ID)
 	if err != nil {
+		slog.Error("Failed to delete old quote items", "id", q.ID, "error", err)
 		tx.Rollback()
 		return err
 	}
@@ -171,15 +194,27 @@ func (s *Store) UpdateQuote(q *Quote) error {
 			VALUES (?, ?, ?, ?, ?)
 		`, q.ID, item.Description, item.Quantity, item.PricePerUnit, item.ProductID)
 		if err != nil {
+			slog.Error("Failed to insert quote item during update", "id", q.ID, "description", item.Description, "error", err)
 			tx.Rollback()
 			return err
 		}
 	}
 
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		slog.Error("Failed to commit quote update transaction", "id", q.ID, "error", err)
+		return err
+	}
+	slog.Info("Quote updated successfully", "id", q.ID)
+	return nil
 }
 
 func (s *Store) DeleteQuote(id int) error {
+	slog.Info("Deleting quote", "id", id)
 	_, err := s.DB.Exec(`DELETE FROM quotes WHERE id = ?`, id)
-	return err
+	if err != nil {
+		slog.Error("Failed to delete quote", "id", id, "error", err)
+		return err
+	}
+	slog.Info("Quote deleted successfully", "id", id)
+	return nil
 }

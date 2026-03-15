@@ -3,6 +3,7 @@ package handlers
 import (
 	"din-invoice/models"
 	"din-invoice/views"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -18,8 +19,10 @@ func NewCustomerHandler(store *models.Store) *CustomerHandler {
 }
 
 func (h *CustomerHandler) List(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Listing customers")
 	customers, err := h.Store.ListCustomers()
 	if err != nil {
+		slog.Error("Failed to list customers", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -27,6 +30,7 @@ func (h *CustomerHandler) List(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CustomerHandler) New(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Rendering new customer form")
 	settings, _ := h.Store.GetAppSettings()
 	custNum := models.FormatDocumentNumber(settings.CustomerIDSchema, settings.NextCustomerID)
 
@@ -37,6 +41,7 @@ func (h *CustomerHandler) New(w http.ResponseWriter, r *http.Request) {
 
 func (h *CustomerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
+		slog.Error("Failed to parse customer form", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -48,6 +53,8 @@ func (h *CustomerHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Email:          r.FormValue("email"),
 	}
 
+	slog.Info("Creating customer", "customer_number", customer.CustomerNumber, "name", customer.Name)
+
 	// Increment customer number if it matches the auto-generated one
 	settings, _ := h.Store.GetAppSettings()
 	expectedNum := models.FormatDocumentNumber(settings.CustomerIDSchema, settings.NextCustomerID)
@@ -55,12 +62,14 @@ func (h *CustomerHandler) Create(w http.ResponseWriter, r *http.Request) {
 		h.Store.IncrementNextCustomerID()
 	}
 
-	_, err := h.Store.CreateCustomer(customer)
+	id, err := h.Store.CreateCustomer(customer)
 	if err != nil {
+		slog.Error("Failed to create customer", "customer_number", customer.CustomerNumber, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Customer created successfully", "id", id, "customer_number", customer.CustomerNumber)
 	http.Redirect(w, r, "/customers", http.StatusSeeOther)
 }
 
@@ -72,8 +81,10 @@ func (h *CustomerHandler) Edit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	slog.Debug("Editing customer", "id", id)
 	customer, err := h.Store.GetCustomer(id)
 	if err != nil {
+		slog.Error("Customer not found for edit", "id", id, "error", err)
 		http.Error(w, "Customer not found", http.StatusNotFound)
 		return
 	}
@@ -90,6 +101,7 @@ func (h *CustomerHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := r.ParseForm(); err != nil {
+		slog.Error("Failed to parse customer update form", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -102,12 +114,15 @@ func (h *CustomerHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Email:          r.FormValue("email"),
 	}
 
+	slog.Info("Updating customer", "id", id, "customer_number", customer.CustomerNumber)
 	err = h.Store.UpdateCustomer(customer)
 	if err != nil {
+		slog.Error("Failed to update customer", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Customer updated successfully", "id", id)
 	http.Redirect(w, r, "/customers", http.StatusSeeOther)
 }
 
@@ -119,11 +134,14 @@ func (h *CustomerHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	slog.Info("Deleting customer", "id", id)
 	err = h.Store.DeleteCustomer(id)
 	if err != nil {
+		slog.Error("Failed to delete customer", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Customer deleted successfully", "id", id)
 	http.Redirect(w, r, "/customers", http.StatusSeeOther)
 }

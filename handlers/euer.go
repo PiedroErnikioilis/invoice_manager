@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -36,8 +37,10 @@ func (h *EuerHandler) View(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	slog.Debug("Viewing EÜR dashboard", "year", year)
 	stats, err := h.Store.GetEuerStats(year)
 	if err != nil {
+		slog.Error("Failed to get EÜR stats", "year", year, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -48,8 +51,10 @@ func (h *EuerHandler) View(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *EuerHandler) ListRecurring(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Listing recurring expenses")
 	list, err := h.Store.ListRecurringExpenses()
 	if err != nil {
+		slog.Error("Failed to list recurring expenses", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -57,6 +62,7 @@ func (h *EuerHandler) ListRecurring(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *EuerHandler) NewRecurring(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Rendering new recurring expense form")
 	categories, _ := h.Store.ListExpenseCategories()
 	views.RecurringExpenseForm(categories).Render(r.Context(), w)
 }
@@ -77,6 +83,8 @@ func (h *EuerHandler) CreateRecurring(w http.ResponseWriter, r *http.Request) {
 		IsActive:    true,
 	}
 
+	slog.Info("Creating recurring expense", "description", re.Description, "amount", re.Amount)
+
 	categoryName := strings.TrimSpace(r.FormValue("category"))
 	if categoryName != "" {
 		catID, err := h.Store.CreateExpenseCategory(categoryName)
@@ -89,12 +97,14 @@ func (h *EuerHandler) CreateRecurring(w http.ResponseWriter, r *http.Request) {
 		re.StartDate = time.Now().Format("2006-01-02")
 	}
 
-	_, err := h.Store.CreateRecurringExpense(re)
+	id, err := h.Store.CreateRecurringExpense(re)
 	if err != nil {
+		slog.Error("Failed to create recurring expense", "description", re.Description, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Recurring expense created successfully", "id", id)
 	http.Redirect(w, r, "/euer/recurring", http.StatusSeeOther)
 }
 
@@ -106,16 +116,20 @@ func (h *EuerHandler) DeleteRecurring(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	slog.Info("Deleting recurring expense", "id", id)
 	err = h.Store.DeleteRecurringExpense(id)
 	if err != nil {
+		slog.Error("Failed to delete recurring expense", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Recurring expense deleted successfully", "id", id)
 	http.Redirect(w, r, "/euer/recurring", http.StatusSeeOther)
 }
 
 func (h *EuerHandler) NewExpense(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Rendering new expense form")
 	products, err := h.Store.ListProducts()
 	if err != nil {
 		products = []models.Product{}
@@ -135,8 +149,10 @@ func (h *EuerHandler) EditExpense(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	slog.Debug("Editing expense", "id", id)
 	expense, err := h.Store.GetExpense(id)
 	if err != nil {
+		slog.Error("Expense not found for edit", "id", id, "error", err)
 		http.Error(w, "Expense not found", http.StatusNotFound)
 		return
 	}
@@ -161,6 +177,7 @@ func (h *EuerHandler) UpdateExpense(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10MB
+		slog.Error("Failed to parse multipart form for expense update", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -179,6 +196,8 @@ func (h *EuerHandler) UpdateExpense(w http.ResponseWriter, r *http.Request) {
 		Date:        r.FormValue("date"),
 	}
 
+	slog.Info("Updating expense", "id", id, "description", expense.Description)
+
 	// Resolve or create category
 	categoryName := strings.TrimSpace(r.FormValue("category"))
 	if categoryName != "" {
@@ -192,6 +211,7 @@ func (h *EuerHandler) UpdateExpense(w http.ResponseWriter, r *http.Request) {
 	file, handler, err := r.FormFile("receipt")
 	if err == nil {
 		defer file.Close()
+		slog.Debug("Uploading new receipt for expense", "id", id, "filename", handler.Filename)
 
 		// Read file content
 		fileBytes, err := io.ReadAll(file)
@@ -199,20 +219,25 @@ func (h *EuerHandler) UpdateExpense(w http.ResponseWriter, r *http.Request) {
 			// Encode to Base64
 			expense.ReceiptData = base64.StdEncoding.EncodeToString(fileBytes)
 			expense.ReceiptPath = handler.Filename
+		} else {
+			slog.Error("Failed to read receipt file", "id", id, "error", err)
 		}
 	}
 
 	err = h.Store.UpdateExpense(expense)
 	if err != nil {
+		slog.Error("Failed to update expense", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Expense updated successfully", "id", id)
 	http.Redirect(w, r, "/euer", http.StatusSeeOther)
 }
 
 func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10MB
+		slog.Error("Failed to parse multipart form for expense creation", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -229,6 +254,8 @@ func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 		TaxRate:     taxRate,
 		Date:        r.FormValue("date"),
 	}
+
+	slog.Info("Creating expense", "description", expense.Description, "amount", expense.Amount)
 
 	// Resolve or create category
 	categoryName := strings.TrimSpace(r.FormValue("category"))
@@ -247,6 +274,7 @@ func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 	file, handler, err := r.FormFile("receipt")
 	if err == nil {
 		defer file.Close()
+		slog.Debug("Uploading receipt for new expense", "filename", handler.Filename)
 
 		// Read file content
 		fileBytes, err := io.ReadAll(file)
@@ -254,14 +282,19 @@ func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 			// Encode to Base64
 			expense.ReceiptData = base64.StdEncoding.EncodeToString(fileBytes)
 			expense.ReceiptPath = handler.Filename // Store original filename for extension/mime
+		} else {
+			slog.Error("Failed to read receipt file", "error", err)
 		}
 	}
 
-	_, err = h.Store.CreateExpense(expense)
+	id, err := h.Store.CreateExpense(expense)
 	if err != nil {
+		slog.Error("Failed to create expense", "description", expense.Description, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	slog.Info("Expense created successfully", "id", id)
 
 	// Handle Inventory Link
 	if r.FormValue("update_inventory") == "on" {
@@ -269,6 +302,7 @@ func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 		quantity, _ := strconv.Atoi(r.FormValue("quantity"))
 
 		if productID > 0 && quantity > 0 {
+			slog.Info("Recording inventory link for expense", "expense_id", id, "product_id", productID, "quantity", quantity)
 			// Record stock addition (Purchase)
 			h.Store.RecordStockMovement(productID, quantity, "PURCHASE", "Einkauf: "+expense.Description)
 		}
@@ -285,20 +319,24 @@ func (h *EuerHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	slog.Info("Generating EÜR PDF", "year", year)
 	stats, err := h.Store.GetEuerStats(year)
 	if err != nil {
+		slog.Error("Failed to get EÜR stats for PDF", "year", year, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	settings, err := h.Store.GetAppSettings()
 	if err != nil {
+		slog.Error("Failed to load settings for EÜR PDF", "error", err)
 		http.Error(w, "Could not load settings", http.StatusInternalServerError)
 		return
 	}
 
 	path, err := services.GenerateEuerPDFHTML(stats, &settings)
 	if err != nil {
+		slog.Error("Failed to generate EÜR PDF", "year", year, "error", err)
 		http.Error(w, "Failed to generate PDF: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -306,6 +344,7 @@ func (h *EuerHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/pdf")
 	filename := models.FormatDocumentNumber(settings.EuerFilenameSchema, 0) + ".pdf"
 	w.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=%s", filename))
+	slog.Debug("Serving EÜR PDF", "path", path)
 	http.ServeFile(w, r, path)
 }
 
@@ -317,8 +356,10 @@ func (h *EuerHandler) DownloadCSV(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	slog.Info("Generating EÜR CSV", "year", year)
 	stats, err := h.Store.GetEuerStats(year)
 	if err != nil {
+		slog.Error("Failed to get EÜR stats for CSV", "year", year, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -369,8 +410,10 @@ func (h *EuerHandler) ServeReceipt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	slog.Debug("Serving expense receipt", "id", id)
 	filename, data, err := h.Store.GetExpenseReceipt(id)
 	if err != nil {
+		slog.Error("Receipt not found", "id", id, "error", err)
 		http.Error(w, "Receipt not found", http.StatusNotFound)
 		return
 	}
@@ -379,6 +422,7 @@ func (h *EuerHandler) ServeReceipt(w http.ResponseWriter, r *http.Request) {
 	if data != "" {
 		decoded, err := base64.StdEncoding.DecodeString(data)
 		if err != nil {
+			slog.Error("Failed to decode receipt data", "id", id, "error", err)
 			http.Error(w, "Error decoding receipt", http.StatusInternalServerError)
 			return
 		}
@@ -401,10 +445,12 @@ func (h *EuerHandler) ServeReceipt(w http.ResponseWriter, r *http.Request) {
 
 	// Fallback to filesystem (Legacy)
 	if filename == "" {
+		slog.Error("No receipt path or data for expense", "id", id)
 		http.Error(w, "No receipt", http.StatusNotFound)
 		return
 	}
 
+	slog.Debug("Serving legacy receipt from filesystem", "id", id, "path", filename)
 	http.ServeFile(w, r, filename)
 }
 
@@ -416,10 +462,13 @@ func (h *EuerHandler) DeleteExpense(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	slog.Info("Deleting expense", "id", id)
 	if err := h.Store.DeleteExpense(id); err != nil {
+		slog.Error("Failed to delete expense", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Expense deleted successfully", "id", id)
 	http.Redirect(w, r, "/euer", http.StatusSeeOther)
 }

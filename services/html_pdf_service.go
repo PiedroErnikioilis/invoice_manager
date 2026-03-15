@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -18,6 +19,7 @@ import (
 )
 
 func toPtr(f float64) *float64 { return &f }
+
 // pageFooterHTML returns a Chrome footer template with page numbers.
 // leftText is shown on the left side, page numbers on the right.
 func pageFooterHTML(leftText string) string {
@@ -35,12 +37,15 @@ func renderHTMLToPDF(htmlContent, outputPath string) error {
 // renderHTMLToPDFWithFooter renders HTML to PDF with an optional footer template.
 // The footerHTML supports Chrome's special classes: pageNumber, totalPages.
 func renderHTMLToPDFWithFooter(htmlContent, outputPath, footerHTML string) error {
+	slog.Debug("Launching browser for PDF generation", "output", outputPath)
+	
 	u := launcher.New().NoSandbox(true).Leakless(false).MustLaunch()
 	browser := rod.New().ControlURL(u).MustConnect()
 	defer browser.MustClose()
 
 	page := browser.MustPage()
 	if err := page.SetDocumentContent(htmlContent); err != nil {
+		slog.Error("Failed to set page content", "error", err)
 		return fmt.Errorf("failed to set page content: %w", err)
 	}
 	page.MustWaitLoad()
@@ -62,31 +67,43 @@ func renderHTMLToPDFWithFooter(htmlContent, outputPath, footerHTML string) error
 		opts.MarginBottom = toPtr(0.5) // ~12mm space for footer
 	}
 
+	slog.Debug("Printing page to PDF", "output", outputPath)
 	pdfStream, err := page.PDF(opts)
 	if err != nil {
+		slog.Error("Failed to generate PDF stream", "error", err)
 		return fmt.Errorf("failed to generate pdf: %w", err)
 	}
 
 	if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+		slog.Error("Failed to create PDF output directory", "path", filepath.Dir(outputPath), "error", err)
 		return err
 	}
 
 	f, err := os.Create(outputPath)
 	if err != nil {
+		slog.Error("Failed to create PDF file", "path", outputPath, "error", err)
 		return err
 	}
 	defer f.Close()
 
-	_, err = io.Copy(f, pdfStream)
-	return err
+	n, err := io.Copy(f, pdfStream)
+	if err != nil {
+		slog.Error("Failed to write PDF file", "path", outputPath, "error", err)
+		return err
+	}
+
+	slog.Info("PDF generated successfully", "path", outputPath, "size_bytes", n)
+	return nil
 }
 
 // GenerateEuerPDFHTML renders the EÜR overview as a PDF.
 func GenerateEuerPDFHTML(stats *models.EuerStats, settings *models.AppSettings) (string, error) {
+	slog.Info("Generating EÜR PDF")
 	htmlComponent := views.EuerPDF(stats, *settings)
 
 	var htmlBuilder strings.Builder
 	if err := htmlComponent.Render(context.Background(), &htmlBuilder); err != nil {
+		slog.Error("Failed to render EÜR HTML", "error", err)
 		return "", fmt.Errorf("failed to render html: %w", err)
 	}
 
@@ -94,7 +111,7 @@ func GenerateEuerPDFHTML(stats *models.EuerStats, settings *models.AppSettings) 
 	if outDir == "" {
 		outDir = "./invoices/"
 	}
-	filename := filepath.Join(outDir, "euer_uebersicht.pdf")
+	filename := filepath.Join(outDir, models.FormatDocumentNumber(settings.EuerFilenameSchema, 0)+".pdf")
 
 	footer := pageFooterHTML(settings.SenderName)
 	if err := renderHTMLToPDFWithFooter(htmlBuilder.String(), filename, footer); err != nil {
@@ -105,10 +122,12 @@ func GenerateEuerPDFHTML(stats *models.EuerStats, settings *models.AppSettings) 
 
 // GenerateInventoryPDFHTML renders the inventory list as a PDF.
 func GenerateInventoryPDFHTML(products []models.Product, settings *models.AppSettings) (string, error) {
+	slog.Info("Generating Inventory PDF")
 	htmlComponent := views.InventarPDF(products, *settings)
 
 	var htmlBuilder strings.Builder
 	if err := htmlComponent.Render(context.Background(), &htmlBuilder); err != nil {
+		slog.Error("Failed to render inventory HTML", "error", err)
 		return "", fmt.Errorf("failed to render html: %w", err)
 	}
 
@@ -127,13 +146,11 @@ func GenerateInventoryPDFHTML(products []models.Product, settings *models.AppSet
 
 // GenerateInvoicePDFHTML renders the HTML view and converts it to PDF using Rod.
 func GenerateInvoicePDFHTML(inv *models.Invoice, settings *models.AppSettings) (string, error) {
+	slog.Info("Generating Invoice PDF", "invoice_number", inv.InvoiceNumber)
+	
 	// 1. Prepare Logo (Base64)
-	// Relative file URLs are tricky with rod.SetDocumentContent. Base64 is safer.
 	if settings.LogoPath != "" {
-		// Clean the path (remove file:// prefix if we added it previously, though now we prefer Base64)
 		cleanPath := strings.TrimPrefix(settings.LogoPath, "file://")
-
-		// If it's a relative path, resolve it relative to CWD
 		if !filepath.IsAbs(cleanPath) {
 			abs, err := filepath.Abs(cleanPath)
 			if err == nil {
@@ -143,48 +160,41 @@ func GenerateInvoicePDFHTML(inv *models.Invoice, settings *models.AppSettings) (
 
 		data, err := os.ReadFile(cleanPath)
 		if err == nil {
-			// Detect MIME type
 			mimeType := http.DetectContentType(data)
 			base64Data := base64.StdEncoding.EncodeToString(data)
-			// Update settings object (passed by value mostly, but it's a pointer here? No, *AppSettings)
-			// We modify the copy or the actual settings struct for this render only.
-			// Ideally we don't mutate global state, but here we modify the struct passed to the view.
 			settings.LogoPath = fmt.Sprintf("data:%s;base64,%s", mimeType, base64Data)
+			slog.Debug("Logo embedded as base64", "path", cleanPath)
 		} else {
-			// Log error? or ignore
-			fmt.Printf("Failed to read logo file for PDF: %v\n", err)
+			slog.Error("Failed to read logo file for PDF", "path", cleanPath, "error", err)
 		}
 	}
 
 	htmlComponent := views.InvoicePDF(inv, settings)
 
-	// Create a buffer to render into
 	var htmlBuilder strings.Builder
 	if err := htmlComponent.Render(context.Background(), &htmlBuilder); err != nil {
+		slog.Error("Failed to render invoice HTML", "error", err)
 		return "", fmt.Errorf("failed to render html: %w", err)
 	}
 
 	htmlContent := htmlBuilder.String()
 
 	// 2. Setup Rod (Browser)
-	// Use NoSandbox for container environments.
-	// Disable Leakless to avoid anti-virus false positives on Windows.
+	slog.Debug("Launching browser for invoice PDF", "invoice_number", inv.InvoiceNumber)
 	u := launcher.New().NoSandbox(true).Leakless(false).MustLaunch()
 	browser := rod.New().ControlURL(u).MustConnect()
 	defer browser.MustClose()
 
 	page := browser.MustPage()
 
-	// 3. Load Content
-	// We use SetDocumentContent to load HTML directly
 	if err := page.SetDocumentContent(htmlContent); err != nil {
+		slog.Error("Failed to set invoice page content", "invoice_number", inv.InvoiceNumber, "error", err)
 		return "", fmt.Errorf("failed to set page content: %w", err)
 	}
 
 	page.MustWaitLoad()
 
 	// 4. Generate PDF
-	// A4 measurements
 	invoiceFooter := `<div style="font-size:7pt; font-family:Calibri,Arial,sans-serif; color:#aaa; width:100%; text-align:center;">
 		<span>Seite <span class="pageNumber"></span> von <span class="totalPages"></span></span>
 	</div>`
@@ -201,6 +211,7 @@ func GenerateInvoicePDFHTML(inv *models.Invoice, settings *models.AppSettings) (
 		FooterTemplate:       invoiceFooter,
 	})
 	if err != nil {
+		slog.Error("Failed to generate invoice PDF stream", "invoice_number", inv.InvoiceNumber, "error", err)
 		return "", fmt.Errorf("failed to generate pdf: %w", err)
 	}
 
@@ -210,22 +221,24 @@ func GenerateInvoicePDFHTML(inv *models.Invoice, settings *models.AppSettings) (
 		outDir = "./invoices/"
 	}
 	if err := os.MkdirAll(outDir, 0755); err != nil {
+		slog.Error("Failed to create PDF output directory", "path", outDir, "error", err)
 		return "", err
 	}
 
-	// Create file
 	filename := filepath.Join(outDir, fmt.Sprintf("rechnung_%s.pdf", inv.InvoiceNumber))
 	f, err := os.Create(filename)
 	if err != nil {
+		slog.Error("Failed to create invoice PDF file", "path", filename, "error", err)
 		return "", err
 	}
 	defer f.Close()
 
-	// Copy stream to file
-	_, err = io.Copy(f, pdfStream)
+	n, err := io.Copy(f, pdfStream)
 	if err != nil {
+		slog.Error("Failed to write invoice PDF file", "path", filename, "error", err)
 		return "", err
 	}
 
+	slog.Info("Invoice PDF generated successfully", "path", filename, "size_bytes", n)
 	return filename, nil
 }

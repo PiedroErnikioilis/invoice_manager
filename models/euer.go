@@ -1,6 +1,9 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+	"log/slog"
+)
 
 type CategoryStat struct {
 	Name       string
@@ -25,6 +28,7 @@ type EuerStats struct {
 
 // GetEuerStats returns income/expense statistics filtered by year.
 func (s *Store) GetEuerStats(year int) (*EuerStats, error) {
+	slog.Debug("Calculating EÜR stats", "year", year)
 	stats := &EuerStats{Year: year}
 
 	// 1. Calculate Income (Paid Invoices)
@@ -41,21 +45,26 @@ func (s *Store) GetEuerStats(year int) (*EuerStats, error) {
 	`, dateFilter)
 
 	rows, err := s.DB.Query(query)
-	if err == nil {
+	if err != nil {
+		slog.Error("Failed to query paid invoices for EÜR", "year", year, "error", err)
+	} else {
 		defer rows.Close()
 		for rows.Next() {
 			var i Invoice
 			if err := rows.Scan(&i.ID, &i.InvoiceNumber, &i.Date, &i.RecipientName, &i.TaxRate, &i.IsSmallBusiness, &i.Status); err != nil {
+				slog.Error("Failed to scan invoice row for EÜR", "error", err)
 				continue
 			}
 
 			fullInv, err := s.GetInvoice(i.ID)
-			if err == nil {
-				stats.TotalIncomeNet += fullInv.TotalNet()
-				stats.TotalIncomeVat += fullInv.TaxAmount()
-				stats.TotalIncomeGross += fullInv.TotalGross()
-				stats.Invoices = append(stats.Invoices, *fullInv)
+			if err != nil {
+				slog.Error("Failed to get full invoice details for EÜR", "id", i.ID, "error", err)
+				continue
 			}
+			stats.TotalIncomeNet += fullInv.TotalNet()
+			stats.TotalIncomeVat += fullInv.TaxAmount()
+			stats.TotalIncomeGross += fullInv.TotalGross()
+			stats.Invoices = append(stats.Invoices, *fullInv)
 		}
 	}
 
@@ -68,25 +77,34 @@ func (s *Store) GetEuerStats(year int) (*EuerStats, error) {
 	`, dateFilter)
 
 	cRows, err := s.DB.Query(creditQuery)
-	if err == nil {
+	if err != nil {
+		slog.Error("Failed to query credit notes for EÜR", "year", year, "error", err)
+	} else {
 		defer cRows.Close()
 		for cRows.Next() {
 			var cn CreditNote
 			if err := cRows.Scan(&cn.ID, &cn.CreditNoteNumber, &cn.Date, &cn.RecipientName, &cn.TaxRate, &cn.IsSmallBusiness, &cn.Status); err != nil {
+				slog.Error("Failed to scan credit note row for EÜR", "error", err)
 				continue
 			}
 
 			fullCn, err := s.GetCreditNote(cn.ID)
-			if err == nil {
-				stats.TotalIncomeNet += fullCn.TotalNet()
-				stats.TotalIncomeVat += fullCn.TaxAmount()
-				stats.TotalIncomeGross += fullCn.TotalGross()
+			if err != nil {
+				slog.Error("Failed to get full credit note details for EÜR", "id", cn.ID, "error", err)
+				continue
 			}
+			stats.TotalIncomeNet += fullCn.TotalNet()
+			stats.TotalIncomeVat += fullCn.TaxAmount()
+			stats.TotalIncomeGross += fullCn.TotalGross()
 		}
 	}
 
 	// 2. Load Expenses list
-	stats.Expenses, _ = s.ListExpenses(year)
+	expenses, err := s.ListExpenses(year)
+	if err != nil {
+		slog.Error("Failed to list expenses for EÜR", "year", year, "error", err)
+	}
+	stats.Expenses = expenses
 	for _, e := range stats.Expenses {
 		stats.TotalExpensesNet += e.Net()
 		stats.TotalExpensesTax += e.Tax()
@@ -129,6 +147,7 @@ func (s *Store) GetAvailableYears() ([]int, error) {
 		) ORDER BY year DESC
 	`)
 	if err != nil {
+		slog.Error("Failed to query available years", "error", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -137,6 +156,7 @@ func (s *Store) GetAvailableYears() ([]int, error) {
 	for rows.Next() {
 		var y int
 		if err := rows.Scan(&y); err != nil {
+			slog.Error("Failed to scan year row", "error", err)
 			continue
 		}
 		if y > 0 {

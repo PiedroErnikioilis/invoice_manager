@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log/slog"
 	"time"
 )
 
@@ -16,6 +17,7 @@ type StockMovement struct {
 func (s *Store) RecordStockMovement(productID int, quantity int, movementType string, note string) error {
 	tx, err := s.DB.Begin()
 	if err != nil {
+		slog.Error("Failed to begin transaction for stock movement", "error", err)
 		return err
 	}
 
@@ -25,30 +27,26 @@ func (s *Store) RecordStockMovement(productID int, quantity int, movementType st
 		VALUES (?, ?, ?, ?)
 	`, productID, quantity, movementType, note)
 	if err != nil {
+		slog.Error("Failed to insert stock movement", "product_id", productID, "error", err)
 		tx.Rollback()
 		return err
 	}
 
 	// 2. Update actual product stock
-	// If it's IN, we add. If OUT, we subtract?
-	// Let's standardise: quantity in movement is raw.
-	// If movementType is 'IN' or 'ADJUST' (positive), we add.
-	// But simplify: The caller decides the sign of 'quantity'.
-	// NO, typical stock logic:
-	// IN: +qty
-	// OUT: -qty
-	// INVOICE: -qty
-	// Let's assume the caller passes the signed quantity (e.g. -5 for invoice).
-	// Or we handle it by type?
-	// Let's stick to: The caller provides the signed integer change.
-
 	_, err = tx.Exec(`UPDATE products SET stock = stock + ? WHERE id = ?`, quantity, productID)
 	if err != nil {
+		slog.Error("Failed to update product stock", "product_id", productID, "error", err)
 		tx.Rollback()
 		return err
 	}
 
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		slog.Error("Failed to commit stock movement", "error", err)
+		return err
+	}
+
+	slog.Info("Stock movement recorded", "product_id", productID, "quantity", quantity, "type", movementType)
+	return nil
 }
 
 // RecordStockMovementTx allows recording within an existing transaction
@@ -58,11 +56,18 @@ func (s *Store) RecordStockMovementTx(tx *Transaction, productID int, quantity i
 		VALUES (?, ?, ?, ?)
 	`, productID, quantity, movementType, note)
 	if err != nil {
+		slog.Error("Failed to insert stock movement in TX", "product_id", productID, "error", err)
 		return err
 	}
 
 	_, err = tx.Tx.Exec(`UPDATE products SET stock = stock + ? WHERE id = ?`, quantity, productID)
-	return err
+	if err != nil {
+		slog.Error("Failed to update product stock in TX", "product_id", productID, "error", err)
+		return err
+	}
+
+	slog.Debug("Stock movement recorded in TX", "product_id", productID, "quantity", quantity, "type", movementType)
+	return nil
 }
 
 func (s *Store) ListStockMovements(productID int) ([]StockMovement, error) {
@@ -73,6 +78,7 @@ func (s *Store) ListStockMovements(productID int) ([]StockMovement, error) {
 		ORDER BY created_at DESC
 	`, productID)
 	if err != nil {
+		slog.Error("Failed to list stock movements", "product_id", productID, "error", err)
 		return nil, err
 	}
 	defer rows.Close()

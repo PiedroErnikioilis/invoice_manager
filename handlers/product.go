@@ -4,6 +4,7 @@ import (
 	"din-invoice/models"
 	"din-invoice/services"
 	"din-invoice/views"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -20,8 +21,10 @@ func NewProductHandler(store *models.Store) *ProductHandler {
 }
 
 func (h *ProductHandler) List(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Listing products")
 	products, err := h.Store.ListProducts()
 	if err != nil {
+		slog.Error("Failed to list products", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -29,35 +32,42 @@ func (h *ProductHandler) List(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) DownloadInventoryPDF(w http.ResponseWriter, r *http.Request) {
+	slog.Info("Generating inventory PDF")
 	products, err := h.Store.ListProducts()
 	if err != nil {
+		slog.Error("Failed to list products for inventory PDF", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	settings, err := h.Store.GetAppSettings()
 	if err != nil {
+		slog.Error("Failed to load settings for inventory PDF", "error", err)
 		http.Error(w, "Could not load settings", http.StatusInternalServerError)
 		return
 	}
 
 	path, err := services.GenerateInventoryPDFHTML(products, &settings)
 	if err != nil {
+		slog.Error("Failed to generate inventory PDF", "error", err)
 		http.Error(w, "Failed to generate PDF: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/pdf")
 	w.Header().Set("Content-Disposition", "inline; filename=inventarliste.pdf")
+	slog.Debug("Serving inventory PDF", "path", path)
 	http.ServeFile(w, r, path)
 }
 
 func (h *ProductHandler) New(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Rendering new product form")
 	views.ProductForm(&models.Product{}, nil).Render(r.Context(), w)
 }
 
 func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
+		slog.Error("Failed to parse product form", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -75,17 +85,21 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Unit:        r.FormValue("unit"),
 	}
 
+	slog.Info("Creating product", "name", product.Name, "price", product.Price)
 	id, err := h.Store.CreateProduct(product)
 	if err != nil {
+		slog.Error("Failed to create product", "name", product.Name, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Initial stock movement if > 0
 	if initialStock > 0 {
+		slog.Info("Recording initial stock movement", "id", id, "quantity", initialStock)
 		h.Store.RecordStockMovement(id, initialStock, "INITIAL", "Anfangsbestand")
 	}
 
+	slog.Info("Product created successfully", "id", id, "name", product.Name)
 	http.Redirect(w, r, "/products", http.StatusSeeOther)
 }
 
@@ -97,8 +111,10 @@ func (h *ProductHandler) Edit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	slog.Debug("Editing product", "id", id)
 	product, err := h.Store.GetProduct(id)
 	if err != nil {
+		slog.Error("Product not found for edit", "id", id, "error", err)
 		http.Error(w, "Product not found", http.StatusNotFound)
 		return
 	}
@@ -117,6 +133,7 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := r.ParseForm(); err != nil {
+		slog.Error("Failed to parse product update form", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -128,6 +145,7 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	existing, err := h.Store.GetProduct(id)
 	if err != nil {
+		slog.Error("Product not found for update", "id", id, "error", err)
 		http.Error(w, "Product not found", http.StatusNotFound)
 		return
 	}
@@ -142,12 +160,15 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Unit:        r.FormValue("unit"),
 	}
 
+	slog.Info("Updating product", "id", id, "name", product.Name)
 	err = h.Store.UpdateProduct(product)
 	if err != nil {
+		slog.Error("Failed to update product", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Product updated successfully", "id", id)
 	http.Redirect(w, r, "/products", http.StatusSeeOther)
 }
 
@@ -159,12 +180,15 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	slog.Info("Deleting product", "id", id)
 	err = h.Store.DeleteProduct(id)
 	if err != nil {
+		slog.Error("Failed to delete product", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Product deleted successfully", "id", id)
 	http.Redirect(w, r, "/products", http.StatusSeeOther)
 }
 
@@ -185,6 +209,7 @@ func (h *ProductHandler) handleStockMovement(w http.ResponseWriter, r *http.Requ
 	}
 
 	if err := r.ParseForm(); err != nil {
+		slog.Error("Failed to parse stock movement form", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -193,6 +218,7 @@ func (h *ProductHandler) handleStockMovement(w http.ResponseWriter, r *http.Requ
 	note := r.FormValue("note")
 
 	if quantity <= 0 {
+		slog.Debug("Skipping stock movement for zero or negative quantity", "id", id, "quantity", quantity)
 		http.Redirect(w, r, "/products/"+idStr+"/edit", http.StatusSeeOther)
 		return
 	}
@@ -202,8 +228,10 @@ func (h *ProductHandler) handleStockMovement(w http.ResponseWriter, r *http.Requ
 		movementType = "OUT"
 	}
 
+	slog.Info("Recording manual stock movement", "id", id, "quantity", quantity*multiplier, "type", movementType, "note", note)
 	err = h.Store.RecordStockMovement(id, quantity*multiplier, movementType, note)
 	if err != nil {
+		slog.Error("Failed to record stock movement", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -214,6 +242,7 @@ func (h *ProductHandler) handleStockMovement(w http.ResponseWriter, r *http.Requ
 
 		cost := parseDecimal(r.FormValue("cost_total"))
 		if cost > 0 {
+			slog.Info("Booking stock addition as expense", "product_id", id, "cost", cost)
 			expense := models.Expense{
 				Description: "Warenzugang: " + product.Name,
 				Amount:      cost,

@@ -3,6 +3,7 @@ package handlers
 import (
 	"din-invoice/models"
 	"din-invoice/views"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -17,8 +18,10 @@ func NewCreditNoteHandler(store *models.Store) *CreditNoteHandler {
 }
 
 func (h *CreditNoteHandler) List(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Listing credit notes")
 	notes, err := h.Store.ListCreditNotes()
 	if err != nil {
+		slog.Error("Failed to list credit notes", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -32,9 +35,11 @@ func (h *CreditNoteHandler) NewFromInvoice(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	invID, _ := strconv.Atoi(invoiceIDStr)
+	slog.Debug("Creating new credit note from invoice", "invoice_id", invID)
 
 	invoice, err := h.Store.GetInvoice(invID)
 	if err != nil {
+		slog.Error("Failed to load invoice for credit note", "invoice_id", invID, "error", err)
 		http.Error(w, "Invoice not found", http.StatusNotFound)
 		return
 	}
@@ -73,9 +78,12 @@ func (h *CreditNoteHandler) NewFromInvoice(w http.ResponseWriter, r *http.Reques
 func (h *CreditNoteHandler) Create(w http.ResponseWriter, r *http.Request) {
 	note, err := h.parseForm(r)
 	if err != nil {
+		slog.Error("Failed to parse credit note form", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	slog.Info("Creating credit note", "credit_note_number", note.CreditNoteNumber)
 
 	// Increment credit note number if it matches the auto-generated one
 	settings, _ := h.Store.GetAppSettings()
@@ -84,12 +92,14 @@ func (h *CreditNoteHandler) Create(w http.ResponseWriter, r *http.Request) {
 		h.Store.IncrementNextCreditNoteNumber()
 	}
 
-	_, err = h.Store.CreateCreditNote(note)
+	id, err := h.Store.CreateCreditNote(note)
 	if err != nil {
+		slog.Error("Failed to create credit note", "credit_note_number", note.CreditNoteNumber, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Credit note created successfully", "id", id, "credit_note_number", note.CreditNoteNumber)
 	http.Redirect(w, r, "/credit-notes", http.StatusSeeOther)
 }
 

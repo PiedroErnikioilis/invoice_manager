@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"log/slog"
 	"strconv"
 	"strings"
 	"time"
@@ -19,7 +20,10 @@ func (s *Store) GetSetting(key string) (string, error) {
 
 // SetSetting saves or updates a setting.
 func (s *Store) SetSetting(key, value string) error {
-	_, err := s.DB.Exec("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", key, value)
+	_, err := s.DB.Exec(`INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)`, key, value)
+	if err != nil {
+		slog.Error("Failed to set setting", "key", key, "error", err)
+	}
 	return err
 }
 
