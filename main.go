@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"log/slog"
 	"net/http"
@@ -36,11 +37,24 @@ func run() error {
 		logLevel = slog.LevelDebug
 	}
 
+	// Always log to file, and also stdout
+	logFile, err := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to open log file: %v\n", err)
+	} else {
+		defer logFile.Close()
+	}
+
+	var logWriter io.Writer = os.Stdout
+	if logFile != nil {
+		logWriter = io.MultiWriter(os.Stdout, logFile)
+	}
+
 	opts := &slog.HandlerOptions{Level: logLevel}
 	if os.Getenv("JSON_LOG") == "1" {
-		handler = slog.NewJSONHandler(os.Stdout, opts)
+		handler = slog.NewJSONHandler(logWriter, opts)
 	} else {
-		handler = slog.NewTextHandler(os.Stdout, opts)
+		handler = slog.NewTextHandler(logWriter, opts)
 	}
 	logger := slog.New(handler)
 	slog.SetDefault(logger)

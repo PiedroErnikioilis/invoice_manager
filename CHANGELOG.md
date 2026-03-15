@@ -7,6 +7,7 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten
 ### Hinzugefügt
 - **Umfangreiches strukturiertes Logging**:
     - Vollständige Umstellung auf `log/slog` im gesamten Projekt (Handler, Modelle, Services).
+    - Alle Log-Ausgaben werden nun permanent in die Datei `app.log` geschrieben (zusätzlich zur Konsole).
     - Neue HTTP-Middleware für detaillierte Request-Logs inklusive Fehlermeldungen und Performance-Daten.
     - Detaillierte Protokollierung von PDF-Generierungsprozessen und Datenbanktransaktionen.
     - Steuerbar über Umgebungsvariablen: `DEBUG=1` für Debug-Level und `JSON_LOG=1` für Maschinen-lesbares Format.
