@@ -3,9 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"din-invoice/db"
@@ -33,12 +35,19 @@ func run() error {
 	}
 
 	// 2. Init DB (erstellt Tabellen und führt Migrationen aus)
-	database, err := db.Init(dbPath)
+	database, isNewDB, err := db.Init(dbPath)
 	if err != nil {
 		return fmt.Errorf("failed to init db: %w", err)
 	}
 	defer database.Close()
 	store := models.NewStore(database)
+
+	// Demo-Modus: Beispieldaten nur bei neuer DB erstellen
+	if isNewDB && slices.Contains(os.Args[1:], "--demo") {
+		if err := store.SeedDemoData(); err != nil {
+			log.Printf("Demo-Daten Fehler: %v", err)
+		}
+	}
 	invoiceHandler := handlers.NewInvoiceHandler(store)
 	settingsHandler := handlers.NewSettingsHandler(store)
 	productHandler := handlers.NewProductHandler(store)

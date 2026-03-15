@@ -2,6 +2,17 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten.
 
+## [v0.3.0] - 2026-03-15
+
+### Hinzugefügt
+- **Demo-Modus**: Automatische Erstellung realistischer Beispieldaten für Tests und Performance-Benchmarks.
+    - 20 Kunden, 15 Produkte, 50 Rechnungen, 15 Angebote, 5 Gutschriften, 32 Ausgaben, 6 wiederkehrende Ausgaben.
+    - Aktivierung via `--demo` Flag beim Start (z.B. `go run . --demo`).
+    - **Sicherheit**: Daten werden nur bei einer neu erstellten Datenbank eingefügt – bestehende Daten werden nie überschrieben.
+    - Deterministischer Seed für reproduzierbare Testdaten.
+
+---
+
 ## [v0.2.0] - 2026-03-15
 
 ### Hinzugefügt

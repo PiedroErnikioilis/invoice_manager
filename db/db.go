@@ -159,19 +159,27 @@ func copyFileSimple(srcPath, dstPath string) error {
 	return nil
 }
 
-func Init(dataSourceName string) (*sql.DB, error) {
+// Init initializes the database and returns the connection plus a flag
+// indicating whether the DB file was newly created (true) or already existed (false).
+func Init(dataSourceName string) (*sql.DB, bool, error) {
+	_, statErr := os.Stat(dataSourceName)
+	isNew := os.IsNotExist(statErr)
+	return initDB(dataSourceName, isNew)
+}
+
+func initDB(dataSourceName string, isNew bool) (*sql.DB, bool, error) {
 	db, err := sql.Open("sqlite", dataSourceName)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	if err := db.Ping(); err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	// Enable foreign key enforcement
 	if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	createTables := `
@@ -314,7 +322,7 @@ func Init(dataSourceName string) (*sql.DB, error) {
 	_, err = db.Exec(createTables)
 	if err != nil {
 		log.Printf("Error creating tables: %q", err)
-		return nil, err
+		return nil, false, err
 	}
 
 	// Migrations for existing DBs (errors are ignored for already-applied migrations)
@@ -336,7 +344,7 @@ func Init(dataSourceName string) (*sql.DB, error) {
 	// Migrate existing category text values into expense_categories table
 	migrateCategories(db)
 
-	return db, nil
+	return db, isNew, nil
 }
 
 // migrateCategories moves existing category text values from expenses
