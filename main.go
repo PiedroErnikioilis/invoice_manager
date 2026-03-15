@@ -31,9 +31,11 @@ func main() {
 func run() error {
 	// Setup structured logging
 	var handler slog.Handler
-	logLevel := slog.LevelInfo
-	if os.Getenv("DEBUG") == "1" {
-		logLevel = slog.LevelDebug
+	logLevel := slog.LevelDebug // Default to Debug
+	if os.Getenv("LOG_LEVEL") == "info" {
+		logLevel = slog.LevelInfo
+	} else if os.Getenv("DEBUG") == "0" {
+		logLevel = slog.LevelInfo
 	}
 
 	// Always log to file, and also stdout
