@@ -76,7 +76,7 @@ func InvoiceForm(invoice *models.Invoice, products []models.Product, customers [
 				}
 			}()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `invoice_form.templ`, Line: 26, Col: 4}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_form.templ`, Line: 26, Col: 4}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -168,7 +168,7 @@ func InvoiceForm(invoice *models.Invoice, products []models.Product, customers [
 				var templ_7745c5c3_Var4 string
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", c.ID))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `invoice_form.templ`, Line: 63, Col: 48}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_form.templ`, Line: 63, Col: 48}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
@@ -191,7 +191,7 @@ func InvoiceForm(invoice *models.Invoice, products []models.Product, customers [
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(c.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `invoice_form.templ`, Line: 63, Col: 130}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_form.templ`, Line: 63, Col: 130}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -215,7 +215,7 @@ func InvoiceForm(invoice *models.Invoice, products []models.Product, customers [
 				}
 			}())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `invoice_form.templ`, Line: 66, Col: 189}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_form.templ`, Line: 66, Col: 189}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -251,7 +251,7 @@ func InvoiceForm(invoice *models.Invoice, products []models.Product, customers [
 						var templ_7745c5c3_Var7 string
 						templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", p.ID))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `invoice_form.templ`, Line: 92, Col: 53}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_form.templ`, Line: 92, Col: 53}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 						if templ_7745c5c3_Err != nil {
@@ -274,7 +274,7 @@ func InvoiceForm(invoice *models.Invoice, products []models.Product, customers [
 						var templ_7745c5c3_Var8 string
 						templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `invoice_form.templ`, Line: 92, Col: 127}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_form.templ`, Line: 92, Col: 127}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 						if templ_7745c5c3_Err != nil {
@@ -292,7 +292,7 @@ func InvoiceForm(invoice *models.Invoice, products []models.Product, customers [
 					var templ_7745c5c3_Var9 string
 					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(item.Description)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `invoice_form.templ`, Line: 95, Col: 107}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_form.templ`, Line: 95, Col: 107}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 					if templ_7745c5c3_Err != nil {
@@ -311,7 +311,7 @@ func InvoiceForm(invoice *models.Invoice, products []models.Product, customers [
 						}
 					}())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `invoice_form.templ`, Line: 96, Col: 170}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_form.templ`, Line: 96, Col: 170}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 					if templ_7745c5c3_Err != nil {
@@ -324,7 +324,7 @@ func InvoiceForm(invoice *models.Invoice, products []models.Product, customers [
 					var templ_7745c5c3_Var11 string
 					templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(item.Quantity))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `invoice_form.templ`, Line: 99, Col: 153}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_form.templ`, Line: 99, Col: 153}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 					if templ_7745c5c3_Err != nil {
@@ -337,7 +337,7 @@ func InvoiceForm(invoice *models.Invoice, products []models.Product, customers [
 					var templ_7745c5c3_Var12 string
 					templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", item.PricePerUnit))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `invoice_form.templ`, Line: 100, Col: 179}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_form.templ`, Line: 100, Col: 179}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 					if templ_7745c5c3_Err != nil {
@@ -361,7 +361,7 @@ func InvoiceForm(invoice *models.Invoice, products []models.Product, customers [
 					var templ_7745c5c3_Var13 string
 					templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", p.ID))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `invoice_form.templ`, Line: 111, Col: 52}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_form.templ`, Line: 111, Col: 52}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 					if templ_7745c5c3_Err != nil {
@@ -374,7 +374,7 @@ func InvoiceForm(invoice *models.Invoice, products []models.Product, customers [
 					var templ_7745c5c3_Var14 string
 					templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `invoice_form.templ`, Line: 111, Col: 63}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_form.templ`, Line: 111, Col: 63}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 					if templ_7745c5c3_Err != nil {
@@ -420,7 +420,7 @@ func InvoiceForm(invoice *models.Invoice, products []models.Product, customers [
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(jsonString(products))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `invoice_form.templ`, Line: 141, Col: 62}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_form.templ`, Line: 141, Col: 62}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -433,7 +433,7 @@ func InvoiceForm(invoice *models.Invoice, products []models.Product, customers [
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(jsonString(customers))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `invoice_form.templ`, Line: 142, Col: 65}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_form.templ`, Line: 142, Col: 65}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {

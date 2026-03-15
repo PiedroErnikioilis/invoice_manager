@@ -60,7 +60,7 @@ func CreditNoteForm(note *models.CreditNote, customers []models.Customer, produc
 				}
 			}())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `credit_note_form.templ`, Line: 14, Col: 172}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/credit_note_form.templ`, Line: 14, Col: 172}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -142,7 +142,7 @@ func CreditNoteForm(note *models.CreditNote, customers []models.Customer, produc
 				var templ_7745c5c3_Var4 string
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", c.ID))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `credit_note_form.templ`, Line: 49, Col: 48}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/credit_note_form.templ`, Line: 49, Col: 48}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
@@ -165,7 +165,7 @@ func CreditNoteForm(note *models.CreditNote, customers []models.Customer, produc
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(c.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `credit_note_form.templ`, Line: 49, Col: 124}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/credit_note_form.templ`, Line: 49, Col: 124}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -189,7 +189,7 @@ func CreditNoteForm(note *models.CreditNote, customers []models.Customer, produc
 				}
 			}())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `credit_note_form.templ`, Line: 52, Col: 183}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/credit_note_form.templ`, Line: 52, Col: 183}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -225,7 +225,7 @@ func CreditNoteForm(note *models.CreditNote, customers []models.Customer, produc
 						var templ_7745c5c3_Var7 string
 						templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", p.ID))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `credit_note_form.templ`, Line: 78, Col: 53}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/credit_note_form.templ`, Line: 78, Col: 53}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 						if templ_7745c5c3_Err != nil {
@@ -248,7 +248,7 @@ func CreditNoteForm(note *models.CreditNote, customers []models.Customer, produc
 						var templ_7745c5c3_Var8 string
 						templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `credit_note_form.templ`, Line: 78, Col: 127}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/credit_note_form.templ`, Line: 78, Col: 127}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 						if templ_7745c5c3_Err != nil {
@@ -266,7 +266,7 @@ func CreditNoteForm(note *models.CreditNote, customers []models.Customer, produc
 					var templ_7745c5c3_Var9 string
 					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(item.Description)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `credit_note_form.templ`, Line: 81, Col: 112}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/credit_note_form.templ`, Line: 81, Col: 112}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 					if templ_7745c5c3_Err != nil {
@@ -285,7 +285,7 @@ func CreditNoteForm(note *models.CreditNote, customers []models.Customer, produc
 						}
 					}())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `credit_note_form.templ`, Line: 82, Col: 175}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/credit_note_form.templ`, Line: 82, Col: 175}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 					if templ_7745c5c3_Err != nil {
@@ -298,7 +298,7 @@ func CreditNoteForm(note *models.CreditNote, customers []models.Customer, produc
 					var templ_7745c5c3_Var11 string
 					templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(item.Quantity))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `credit_note_form.templ`, Line: 85, Col: 158}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/credit_note_form.templ`, Line: 85, Col: 158}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 					if templ_7745c5c3_Err != nil {
@@ -311,7 +311,7 @@ func CreditNoteForm(note *models.CreditNote, customers []models.Customer, produc
 					var templ_7745c5c3_Var12 string
 					templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", item.PricePerUnit))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `credit_note_form.templ`, Line: 86, Col: 184}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/credit_note_form.templ`, Line: 86, Col: 184}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 					if templ_7745c5c3_Err != nil {
@@ -338,7 +338,7 @@ func CreditNoteForm(note *models.CreditNote, customers []models.Customer, produc
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(jsonString(products))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `credit_note_form.templ`, Line: 105, Col: 62}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/credit_note_form.templ`, Line: 105, Col: 62}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
@@ -351,7 +351,7 @@ func CreditNoteForm(note *models.CreditNote, customers []models.Customer, produc
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(jsonString(customers))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `credit_note_form.templ`, Line: 106, Col: 65}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/credit_note_form.templ`, Line: 106, Col: 65}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
