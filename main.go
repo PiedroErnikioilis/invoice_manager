@@ -119,6 +119,8 @@ func run() error {
 	r.Get("/credit-notes", creditNoteHandler.List)
 	r.Get("/credit-notes/new", creditNoteHandler.NewFromInvoice)
 	r.Post("/credit-notes", creditNoteHandler.Create)
+	r.Get("/credit-notes/{id}", creditNoteHandler.View)
+	r.Get("/credit-notes/{id}/pdf", creditNoteHandler.DownloadPDF)
 
 	r.Get("/products", productHandler.List)
 	r.Get("/products/new", productHandler.New)

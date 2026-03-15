@@ -144,6 +144,101 @@ func GenerateInventoryPDFHTML(products []models.Product, settings *models.AppSet
 	return filename, nil
 }
 
+// GenerateCreditNotePDFHTML renders the credit note view and converts it to PDF using Rod.
+func GenerateCreditNotePDFHTML(note *models.CreditNote, settings *models.AppSettings) (string, error) {
+	slog.Info("Generating Credit Note PDF", "credit_note_number", note.CreditNoteNumber)
+	
+	// Prepare Logo (Base64)
+	if settings.LogoPath != "" {
+		cleanPath := strings.TrimPrefix(settings.LogoPath, "file://")
+		if !filepath.IsAbs(cleanPath) {
+			abs, err := filepath.Abs(cleanPath)
+			if err == nil {
+				cleanPath = abs
+			}
+		}
+
+		data, err := os.ReadFile(cleanPath)
+		if err == nil {
+			mimeType := http.DetectContentType(data)
+			base64Data := base64.StdEncoding.EncodeToString(data)
+			settings.LogoPath = fmt.Sprintf("data:%s;base64,%s", mimeType, base64Data)
+			slog.Debug("Logo embedded as base64 for credit note", "path", cleanPath)
+		} else {
+			slog.Error("Failed to read logo file for credit note PDF", "path", cleanPath, "error", err)
+		}
+	}
+
+	htmlComponent := views.CreditNotePDF(note, settings)
+
+	var htmlBuilder strings.Builder
+	if err := htmlComponent.Render(context.Background(), &htmlBuilder); err != nil {
+		slog.Error("Failed to render credit note HTML", "error", err)
+		return "", fmt.Errorf("failed to render html: %w", err)
+	}
+
+	htmlContent := htmlBuilder.String()
+
+	// Setup Rod
+	u := launcher.New().NoSandbox(true).Leakless(false).MustLaunch()
+	browser := rod.New().ControlURL(u).MustConnect()
+	defer browser.MustClose()
+
+	page := browser.MustPage()
+	if err := page.SetDocumentContent(htmlContent); err != nil {
+		slog.Error("Failed to set credit note page content", "credit_note_number", note.CreditNoteNumber, "error", err)
+		return "", fmt.Errorf("failed to set page content: %w", err)
+	}
+	page.MustWaitLoad()
+
+	// Generate PDF
+	footer := `<div style="font-size:7pt; font-family:Calibri,Arial,sans-serif; color:#aaa; width:100%; text-align:center;">
+		<span>Seite <span class="pageNumber"></span> von <span class="totalPages"></span></span>
+	</div>`
+	pdfStream, err := page.PDF(&proto.PagePrintToPDF{
+		PaperWidth:           toPtr(8.27),
+		PaperHeight:          toPtr(11.69),
+		MarginTop:            toPtr(0.0),
+		MarginBottom:         toPtr(0.35),
+		MarginLeft:           toPtr(0.0),
+		MarginRight:          toPtr(0.0),
+		PrintBackground:      true,
+		DisplayHeaderFooter:  true,
+		HeaderTemplate:       "<span></span>",
+		FooterTemplate:       footer,
+	})
+	if err != nil {
+		slog.Error("Failed to generate credit note PDF stream", "credit_note_number", note.CreditNoteNumber, "error", err)
+		return "", fmt.Errorf("failed to generate pdf: %w", err)
+	}
+
+	outDir := settings.PDFOutputPath
+	if outDir == "" {
+		outDir = "./invoices/"
+	}
+	if err := os.MkdirAll(outDir, 0755); err != nil {
+		slog.Error("Failed to create PDF output directory", "path", outDir, "error", err)
+		return "", err
+	}
+
+	filename := filepath.Join(outDir, fmt.Sprintf("gutschrift_%s.pdf", note.CreditNoteNumber))
+	f, err := os.Create(filename)
+	if err != nil {
+		slog.Error("Failed to create credit note PDF file", "path", filename, "error", err)
+		return "", err
+	}
+	defer f.Close()
+
+	n, err := io.Copy(f, pdfStream)
+	if err != nil {
+		slog.Error("Failed to write credit note PDF file", "path", filename, "error", err)
+		return "", err
+	}
+
+	slog.Info("Credit Note PDF generated successfully", "path", filename, "size_bytes", n)
+	return filename, nil
+}
+
 // GenerateInvoicePDFHTML renders the HTML view and converts it to PDF using Rod.
 func GenerateInvoicePDFHTML(inv *models.Invoice, settings *models.AppSettings) (string, error) {
 	slog.Info("Generating Invoice PDF", "invoice_number", inv.InvoiceNumber)

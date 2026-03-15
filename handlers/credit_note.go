@@ -2,11 +2,15 @@ package handlers
 
 import (
 	"din-invoice/models"
+	"din-invoice/services"
 	"din-invoice/views"
 	"log/slog"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type CreditNoteHandler struct {
@@ -100,7 +104,56 @@ func (h *CreditNoteHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	slog.Info("Credit note created successfully", "id", id, "credit_note_number", note.CreditNoteNumber)
-	http.Redirect(w, r, "/credit-notes", http.StatusSeeOther)
+	http.Redirect(w, r, "/credit-notes/"+strconv.Itoa(id), http.StatusSeeOther)
+}
+
+func (h *CreditNoteHandler) View(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	slog.Debug("Viewing credit note", "id", id)
+	note, err := h.Store.GetCreditNote(id)
+	if err != nil {
+		slog.Error("Credit note not found", "id", id, "error", err)
+		http.Error(w, "Credit note not found", http.StatusNotFound)
+		return
+	}
+
+	settings, _ := h.Store.GetAppSettings()
+	views.CreditNoteView(note, settings).Render(r.Context(), w)
+}
+
+func (h *CreditNoteHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	slog.Debug("Downloading credit note PDF", "id", id)
+	note, err := h.Store.GetCreditNote(id)
+	if err != nil {
+		slog.Error("Credit note not found for PDF", "id", id, "error", err)
+		http.Error(w, "Credit note not found", http.StatusNotFound)
+		return
+	}
+
+	settings, _ := h.Store.GetAppSettings()
+	path, err := services.GenerateCreditNotePDFHTML(note, &settings)
+	if err != nil {
+		slog.Error("Failed to generate credit note PDF", "id", id, "error", err)
+		http.Error(w, "Failed to generate PDF: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", "inline; filename="+filepath.Base(path))
+	http.ServeFile(w, r, path)
 }
 
 func (h *CreditNoteHandler) parseForm(r *http.Request) (*models.CreditNote, error) {
