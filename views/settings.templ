@@ -5,163 +5,180 @@ import (
 	"fmt"
 )
 
-templ SettingsForm(settings models.AppSettings) {
+templ Settings(settings models.AppSettings) {
 	@Layout("Einstellungen") {
-		<div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-2xl mx-auto">
-			<h1 class="text-2xl font-bold mb-6">Einstellungen</h1>
+		<div class="max-w-4xl mx-auto">
+			<div class="flex justify-between items-center mb-6">
+				<h1 class="text-3xl font-bold text-gray-800">System-Einstellungen</h1>
+			</div>
+
 			<form action="/settings" method="POST" enctype="multipart/form-data">
-				<div class="mb-6">
-					<h2 class="text-lg font-bold mb-4 border-b pb-2">Absender Standardwerte</h2>
-					@Input("Name / Firma", "sender_name", "text", settings.SenderName, "Deine Firma", false, "Standardname für neue Rechnungen.")
-					@Textarea("Anschrift", "sender_address", settings.SenderAddress, 3)
-					<div class="mb-4">
-						<label class="block text-gray-700 text-sm font-bold mb-2" for="logo">Logo</label>
-						if settings.LogoPath != "" {
-							<div class="mb-2">
-								<p class="text-xs text-gray-500">Aktuelles Logo: { settings.LogoPath }</p>
-							</div>
-						}
-						<input type="file" id="logo" name="logo" accept="image/*" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
-					</div>
-				</div>
-				<div class="mb-6">
-					<h2 class="text-lg font-bold mb-4 border-b pb-2">Fußzeile & Kontakt</h2>
+				<!-- Stammdaten -->
+				<div class="bg-white shadow-md rounded-lg p-6 mb-6">
+					<h2 class="text-lg font-bold mb-4 border-b pb-2">Unternehmensdaten</h2>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-						@Input("Bank Name", "bank_name", "text", settings.BankName, "Musterbank", false, "Name deiner Bank.")
-						@Input("IBAN", "iban", "text", settings.IBAN, "DEXX ...", false, "Deine IBAN.")
-						@Input("BIC", "bic", "text", settings.BIC, "MUSB...", false, "Deine BIC.")
-						@Input("Webseite", "website", "text", settings.Website, "www.example.com", false, "Deine Webseite.")
-						@Input("Email", "email", "email", settings.Email, "info@example.com", false, "Deine Email-Adresse.")
+						@Input("Absender Name", "sender_name", "text", settings.SenderName, "Dein Name / Firma", true, "")
+						@Input("Absender Adresse", "sender_address", "text", settings.SenderAddress, "Musterstr. 1, 12345 Stadt", true, "")
+						@Input("Email", "email", "email", settings.Email, "info@beispiel.de", false, "")
+						@Input("Website", "website", "text", settings.Website, "www.beispiel.de", false, "")
 					</div>
 				</div>
-				<div class="mb-6">
-					<h2 class="text-lg font-bold mb-4 border-b pb-2">Rechnungsoptionen</h2>
-					<div class="mb-4">
-						<label class="flex items-center cursor-pointer">
-							<input type="checkbox" name="default_small_business" class="mr-2 w-5 h-5" checked?={ settings.DefaultSmallBusiness }/>
-							<span class="text-sm font-bold text-gray-700">Standardmäßig Kleinunternehmerregelung (§ 19 UStG)</span>
-						</label>
+
+				<!-- Bankverbindung -->
+				<div class="bg-white shadow-md rounded-lg p-6 mb-6">
+					<h2 class="text-lg font-bold mb-4 border-b pb-2">Bankverbindung</h2>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						@Input("Bank Name", "bank_name", "text", settings.BankName, "Beispielbank", false, "")
+						@Input("IBAN", "iban", "text", settings.IBAN, "DE12 3456...", false, "")
+						@Input("BIC", "bic", "text", settings.BIC, "BANKDEFFXXX", false, "")
 					</div>
 				</div>
-				<div class="mb-6">
-					<h2 class="text-lg font-bold mb-4 border-b pb-2">Nummernkreise</h2>
-					<p class="text-sm text-gray-600 mb-4">
-						Nummern werden automatisch hochgezählt, wenn sie beim Erstellen eines neuen Dokuments verwendet werden.
+
+				<!-- Nummernkreise & Dateinamen -->
+				<div class="bg-white shadow-md rounded-lg p-6 mb-6">
+					<h2 class="text-lg font-bold mb-4 border-b pb-2">Nummernkreise & Dateinamen</h2>
+					<p class="text-gray-500 text-xs italic mb-4">
+						Platzhalter: {YYYY}=Jahr, {MM}=Monat, {DD}=Tag, {N}=Zähler, {N:4}=Zähler mit 4 Stellen, {ID}=Dokumentennummer.
 					</p>
-					<!-- Legende (gemeinsam für alle) -->
-					<div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm">
-						<p class="font-bold text-gray-700 mb-2">Verfügbare Platzhalter:</p>
-						<table class="w-full text-left">
-							<tbody>
-								<tr class="border-b border-blue-100">
-									<td class="py-1 pr-4 font-mono text-blue-800">{ "{YYYY}" }</td>
-									<td class="py-1 text-gray-600">Jahr (4-stellig, z.B. 2026)</td>
-								</tr>
-								<tr class="border-b border-blue-100">
-									<td class="py-1 pr-4 font-mono text-blue-800">{ "{YY}" }</td>
-									<td class="py-1 text-gray-600">Jahr (2-stellig, z.B. 26)</td>
-								</tr>
-								<tr class="border-b border-blue-100">
-									<td class="py-1 pr-4 font-mono text-blue-800">{ "{MM}" }</td>
-									<td class="py-1 text-gray-600">Monat (z.B. 03)</td>
-								</tr>
-								<tr class="border-b border-blue-100">
-									<td class="py-1 pr-4 font-mono text-blue-800">{ "{DD}" }</td>
-									<td class="py-1 text-gray-600">Tag (z.B. 15)</td>
-								</tr>
-								<tr class="border-b border-blue-100">
-									<td class="py-1 pr-4 font-mono text-blue-800">{ "{N}" }</td>
-									<td class="py-1 text-gray-600">Zähler ohne Auffüllung (z.B. 7)</td>
-								</tr>
-								<tr>
-									<td class="py-1 pr-4 font-mono text-blue-800">{ "{N:4}" }</td>
-									<td class="py-1 text-gray-600">Zähler mit Nullen aufgefüllt (z.B. 0007). Breite: 2–6</td>
-								</tr>
-							</tbody>
-						</table>
-						<p class="text-gray-500 text-xs mt-2">
-							Beispiele: <span class="font-mono">RE-{ "{YYYY}" }-{ "{N:4}" }</span> → RE-2026-0042 | <span class="font-mono">{ "{YY}" }{ "{MM}" }-{ "{N:3}" }</span> → 2603-042
-						</p>
-					</div>
+
 					<!-- Rechnungen -->
 					<div class="mb-4 p-4 bg-white border rounded">
 						<h3 class="text-md font-bold text-gray-700 mb-3">Rechnungen</h3>
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 							@Input("Nächste Nr. (Zähler)", "next_invoice_number", "number", fmt.Sprintf("%d", settings.NextInvoiceNumber), "1", true, "")
 							<div class="mb-4">
 								<label class="block text-gray-700 text-sm font-bold mb-2" for="invoice_number_schema">Nummernschema</label>
-								<input
-									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-									id="invoice_number_schema"
-									name="invoice_number_schema"
-									type="text"
+								<input 
+									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+									id="invoice_number_schema" 
+									name="invoice_number_schema" 
+									type="text" 
 									value={ settings.InvoiceNumberSchema }
-									placeholder="RE-{YYYY}-{N:4}"
+									placeholder="{N:4}"
+								/>
+							</div>
+							<div class="mb-4">
+								<label class="block text-gray-700 text-sm font-bold mb-2" for="invoice_filename_schema">Dateiname (PDF)</label>
+								<input 
+									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+									id="invoice_filename_schema" 
+									name="invoice_filename_schema" 
+									type="text" 
+									value={ settings.InvoiceFilenameSchema }
+									placeholder="{ID}"
 								/>
 							</div>
 						</div>
-						<div class="p-2 bg-gray-50 border rounded">
-							<span class="text-xs text-gray-500">Vorschau:</span>
-							<span id="invoice-schema-preview" class="font-mono text-blue-700 ml-1">
-								{ models.FormatDocumentNumber(settings.InvoiceNumberSchema, settings.NextInvoiceNumber) }
-							</span>
+						<div class="p-2 bg-gray-50 border rounded flex flex-wrap gap-4">
+							<div>
+								<span class="text-xs text-gray-500">Vorschau Nummer:</span>
+								<span id="invoice-schema-preview" class="font-mono text-blue-700 ml-1">
+									{ models.FormatDocumentNumber(settings.InvoiceNumberSchema, settings.NextInvoiceNumber) }
+								</span>
+							</div>
+							<div>
+								<span class="text-xs text-gray-500">Vorschau Dateiname:</span>
+								<span id="invoice-filename-preview" class="font-mono text-blue-700 ml-1">
+									{ models.FormatFilename(settings.InvoiceFilenameSchema, models.FormatDocumentNumber(settings.InvoiceNumberSchema, settings.NextInvoiceNumber)) }.pdf
+								</span>
+							</div>
 						</div>
 					</div>
+
 					<!-- Angebote -->
 					<div class="mb-4 p-4 bg-white border rounded">
 						<h3 class="text-md font-bold text-gray-700 mb-3">Angebote</h3>
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 							@Input("Nächste Nr. (Zähler)", "next_quote_number", "number", fmt.Sprintf("%d", settings.NextQuoteNumber), "1", true, "")
 							<div class="mb-4">
 								<label class="block text-gray-700 text-sm font-bold mb-2" for="quote_number_schema">Nummernschema</label>
-								<input
-									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-									id="quote_number_schema"
-									name="quote_number_schema"
-									type="text"
+								<input 
+									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+									id="quote_number_schema" 
+									name="quote_number_schema" 
+									type="text" 
 									value={ settings.QuoteNumberSchema }
-									placeholder="AG-{YYYY}-{N:4}"
+									placeholder="AG-{N:4}"
+								/>
+							</div>
+							<div class="mb-4">
+								<label class="block text-gray-700 text-sm font-bold mb-2" for="quote_filename_schema">Dateiname (PDF)</label>
+								<input 
+									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+									id="quote_filename_schema" 
+									name="quote_filename_schema" 
+									type="text" 
+									value={ settings.QuoteFilenameSchema }
+									placeholder="Angebot_{ID}"
 								/>
 							</div>
 						</div>
-						<div class="p-2 bg-gray-50 border rounded">
-							<span class="text-xs text-gray-500">Vorschau:</span>
-							<span id="quote-schema-preview" class="font-mono text-blue-700 ml-1">
-								{ models.FormatDocumentNumber(settings.QuoteNumberSchema, settings.NextQuoteNumber) }
-							</span>
+						<div class="p-2 bg-gray-50 border rounded flex flex-wrap gap-4">
+							<div>
+								<span class="text-xs text-gray-500">Vorschau Nummer:</span>
+								<span id="quote-schema-preview" class="font-mono text-blue-700 ml-1">
+									{ models.FormatDocumentNumber(settings.QuoteNumberSchema, settings.NextQuoteNumber) }
+								</span>
+							</div>
+							<div>
+								<span class="text-xs text-gray-500">Vorschau Dateiname:</span>
+								<span id="quote-filename-preview" class="font-mono text-blue-700 ml-1">
+									{ models.FormatFilename(settings.QuoteFilenameSchema, models.FormatDocumentNumber(settings.QuoteNumberSchema, settings.NextQuoteNumber)) }.pdf
+								</span>
+							</div>
 						</div>
 					</div>
+
 					<!-- Gutschriften -->
 					<div class="mb-4 p-4 bg-white border rounded">
 						<h3 class="text-md font-bold text-gray-700 mb-3">Gutschriften</h3>
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 							@Input("Nächste Nr. (Zähler)", "next_credit_note_number", "number", fmt.Sprintf("%d", settings.NextCreditNoteNumber), "1", true, "")
 							<div class="mb-4">
 								<label class="block text-gray-700 text-sm font-bold mb-2" for="credit_note_number_schema">Nummernschema</label>
-								<input
-									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-									id="credit_note_number_schema"
-									name="credit_note_number_schema"
-									type="text"
+								<input 
+									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+									id="credit_note_number_schema" 
+									name="credit_note_number_schema" 
+									type="text" 
 									value={ settings.CreditNoteNumberSchema }
-									placeholder="GS-{YYYY}-{N:4}"
+									placeholder="GS-{N:4}"
+								/>
+							</div>
+							<div class="mb-4">
+								<label class="block text-gray-700 text-sm font-bold mb-2" for="credit_note_filename_schema">Dateiname (PDF)</label>
+								<input 
+									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+									id="credit_note_filename_schema" 
+									name="credit_note_filename_schema" 
+									type="text" 
+									value={ settings.CreditNoteFilenameSchema }
+									placeholder="Gutschrift_{ID}"
 								/>
 							</div>
 						</div>
-						<div class="p-2 bg-gray-50 border rounded">
-							<span class="text-xs text-gray-500">Vorschau:</span>
-							<span id="credit-note-schema-preview" class="font-mono text-blue-700 ml-1">
-								{ models.FormatDocumentNumber(settings.CreditNoteNumberSchema, settings.NextCreditNoteNumber) }
+						<div class="p-2 bg-gray-50 border rounded flex flex-wrap gap-4">
+							<div>
+								<span class="text-xs text-gray-500">Vorschau Nummer:</span>
+								<span id="credit-note-schema-preview" class="font-mono text-blue-700 ml-1">
+									{ models.FormatDocumentNumber(settings.CreditNoteNumberSchema, settings.NextCreditNoteNumber) }
 								</span>
-								</div>
-								</div>
+							</div>
+							<div>
+								<span class="text-xs text-gray-500">Vorschau Dateiname:</span>
+								<span id="credit-note-filename-preview" class="font-mono text-blue-700 ml-1">
+									{ models.FormatFilename(settings.CreditNoteFilenameSchema, models.FormatDocumentNumber(settings.CreditNoteNumberSchema, settings.NextCreditNoteNumber)) }.pdf
+								</span>
+							</div>
+						</div>
+					</div>
 
-								<!-- Kunden -->
-								<div class="mb-4 p-4 bg-white border rounded">
-								<h3 class="text-md font-bold text-gray-700 mb-3">Kunden</h3>
-								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-								@Input("Nächste Nr. (Zähler)", "next_customer_id", "number", fmt.Sprintf("%d", settings.NextCustomerID), "1", true, "")
-								<div class="mb-4">
+					<!-- Kunden -->
+					<div class="mb-4 p-4 bg-white border rounded">
+						<h3 class="text-md font-bold text-gray-700 mb-3">Kunden</h3>
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+							@Input("Nächste Nr. (Zähler)", "next_customer_id", "number", fmt.Sprintf("%d", settings.NextCustomerID), "1", true, "")
+							<div class="mb-4">
 								<label class="block text-gray-700 text-sm font-bold mb-2" for="customer_id_schema">Nummernschema</label>
 								<input 
 									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
@@ -171,22 +188,22 @@ templ SettingsForm(settings models.AppSettings) {
 									value={ settings.CustomerIDSchema }
 									placeholder="KD-{N:4}"
 								/>
-								</div>
-								</div>
-								<div class="p-2 bg-gray-50 border rounded">
-								<span class="text-xs text-gray-500">Vorschau:</span>
-								<span id="customer-schema-preview" class="font-mono text-blue-700 ml-1">
+							</div>
+						</div>
+						<div class="p-2 bg-gray-50 border rounded">
+							<span class="text-xs text-gray-500">Vorschau:</span>
+							<span id="customer-schema-preview" class="font-mono text-blue-700 ml-1">
 								{ models.FormatDocumentNumber(settings.CustomerIDSchema, settings.NextCustomerID) }
-								</span>
-								</div>
-								</div>
+							</span>
+						</div>
+					</div>
 
-								<!-- EÜR Dateiname -->
-								<div class="mb-4 p-4 bg-white border rounded">
-								<h3 class="text-md font-bold text-gray-700 mb-3">EÜR Dateiname (Export)</h3>
-								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<div class="mb-4">
-								<label class="block text-gray-700 text-sm font-bold mb-2" for="euer_filename_schema">Schema</label>
+					<!-- EÜR & Inventar -->
+					<div class="mb-4 p-4 bg-white border rounded">
+						<h3 class="text-md font-bold text-gray-700 mb-3">EÜR & Inventar Dateinamen</h3>
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div class="mb-4">
+								<label class="block text-gray-700 text-sm font-bold mb-2" for="euer_filename_schema">EÜR Schema</label>
 								<input 
 									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
 									id="euer_filename_schema" 
@@ -195,74 +212,78 @@ templ SettingsForm(settings models.AppSettings) {
 									value={ settings.EuerFilenameSchema }
 									placeholder="EÜR-{YYYY}"
 								/>
-								</div>
-								</div>
-								<div class="p-2 bg-gray-50 border rounded">
-								<span class="text-xs text-gray-500">Vorschau:</span>
+							</div>
+							<div class="mb-4">
+								<label class="block text-gray-700 text-sm font-bold mb-2" for="inventory_filename_schema">Inventar Schema</label>
+								<input 
+									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+									id="inventory_filename_schema" 
+									name="inventory_filename_schema" 
+									type="text" 
+									value={ settings.InventoryFilenameSchema }
+									placeholder="Inventarliste_{YYYY}-{MM}-{DD}"
+								/>
+							</div>
+						</div>
+						<div class="p-2 bg-gray-50 border rounded flex gap-4">
+							<div>
+								<span class="text-xs text-gray-500">Vorschau EÜR:</span>
 								<span id="euer-filename-preview" class="font-mono text-blue-700 ml-1">
-								{ models.FormatDocumentNumber(settings.EuerFilenameSchema, 0) }
+									{ models.FormatDocumentNumber(settings.EuerFilenameSchema, 0) }.pdf
 								</span>
-								</div>
-								</div>
-
-								<!-- Live-Update Script für alle Nummernkreise -->
-								<script>
-								(function() {
-								function formatSchema(schema, num) {
-								var now = new Date();
-								var result = schema
-									.replace(/\{YYYY\}/g, now.getFullYear().toString())
-									.replace(/\{YY\}/g, now.getFullYear().toString().slice(-2))
-									.replace(/\{MM\}/g, String(now.getMonth() + 1).padStart(2, '0'))
-									.replace(/\{DD\}/g, String(now.getDate()).padStart(2, '0'));
-								result = result.replace(/\{N(?::(\d+))?\}/g, function(match, width) {
-									if (width) { return String(num).padStart(parseInt(width), '0'); }
-									return String(num);
-								});
-								return result;
-								}
-
-								function bindPreview(schemaId, counterId, previewId, defaultSchema) {
-								var schemaInput = document.getElementById(schemaId);
-								var counterInput = document.getElementById(counterId);
-								var preview = document.getElementById(previewId);
-								if (!schemaInput || !preview) return;
-
-								function update() {
-									var schema = schemaInput.value || defaultSchema;
-									var num = counterInput ? (parseInt(counterInput.value) || 1) : 0;
-									preview.textContent = formatSchema(schema, num);
-								}
-								schemaInput.addEventListener('input', update);
-								if (counterInput) counterInput.addEventListener('input', update);
-								}
-
-								bindPreview('invoice_number_schema', 'next_invoice_number', 'invoice-schema-preview', '{N:4}');
-								bindPreview('quote_number_schema', 'next_quote_number', 'quote-schema-preview', 'AG-{N:4}');
-								bindPreview('credit_note_number_schema', 'next_credit_note_number', 'credit-note-schema-preview', 'GS-{N:4}');
-								bindPreview('customer_id_schema', 'next_customer_id', 'customer-schema-preview', 'KD-{N:4}');
-								bindPreview('euer_filename_schema', null, 'euer-filename-preview', 'EÜR-{YYYY}');
-								})();
-								</script>
-				</div>
-				<div class="mb-6">
-					<h2 class="text-lg font-bold mb-4 border-b pb-2">PDF Export</h2>
-					@Input("Speicherpfad für PDFs", "pdf_output_path", "text", settings.PDFOutputPath, "./invoices/", false, "Ordner, in dem PDFs gespeichert werden.")
-				</div>
-				<div class="mb-6">
-					<h2 class="text-lg font-bold mb-4 border-b pb-2">Datensicherung</h2>
-					@Input("Backup-Verzeichnis", "backup_path", "text", settings.BackupPath, "./backups", false, "Ordner für Datenbank-Backups.")
-					@Input("Maximale Anzahl Backups", "backup_max_count", "number", settings.BackupMaxCountStr(), "10", false, "Älteste Backups werden automatisch gelöscht.")
-					@Input("Mindestabstand (Stunden)", "backup_min_interval_hours", "number", settings.BackupMinIntervalHoursStr(), "24", false, "Verhindert zu häufige Backups bei Neustarts. 0 = kein Mindestabstand.")
-					<div class="mb-4">
-						<label class="flex items-center cursor-pointer">
-							<input type="checkbox" name="auto_backup_enabled" class="mr-2 w-5 h-5" checked?={ settings.AutoBackupEnabled }/>
-							<span class="text-sm font-bold text-gray-700">Automatisches Backup beim Start (Pre-Migration)</span>
-						</label>
-						<p class="text-gray-500 text-xs italic mt-1">Sichert die Datenbank automatisch bevor Schema-Änderungen oder Migrationen ausgeführt werden.</p>
+							</div>
+							<div>
+								<span class="text-xs text-gray-500">Vorschau Inventar:</span>
+								<span id="inventory-filename-preview" class="font-mono text-blue-700 ml-1">
+									{ models.FormatDocumentNumber(settings.InventoryFilenameSchema, 0) }.pdf
+								</span>
+							</div>
+						</div>
 					</div>
-					<a href="/backups" class="text-blue-600 hover:underline text-sm">Backups verwalten →</a>
 				</div>
+
+				<!-- PDF & Logo -->
+				<div class="bg-white shadow-md rounded-lg p-6 mb-6">
+					<h2 class="text-lg font-bold mb-4 border-b pb-2">PDF Export & Layout</h2>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						@Input("Speicherpfad für PDFs", "pdf_output_path", "text", settings.PDFOutputPath, "./invoices/", false, "Ordner, in dem PDFs gespeichert werden.")
+						<div class="mb-4">
+							<label class="block text-gray-700 text-sm font-bold mb-2" for="logo">Firmen-Logo (PNG/JPG)</label>
+							<input class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight" id="logo" name="logo" type="file" accept="image/*"/>
+							if settings.LogoPath != "" {
+								<p class="text-xs text-green-600 mt-1">Aktuelles Logo: { settings.LogoPath }</p>
+							}
+						</div>
+					</div>
+					<div class="mt-4">
+						<label class="inline-flex items-center">
+							<input type="checkbox" name="default_small_business" class="form-checkbox" checked?={ settings.DefaultSmallBusiness }/>
+							<span class="ml-2 text-sm font-bold text-gray-700">Kleinunternehmerregelung standardmäßig aktiv</span>
+						</label>
+						<p class="text-gray-500 text-xs italic mt-1">Wenn aktiv, wird auf neuen Rechnungen standardmäßig keine Umsatzsteuer ausgewiesen (§ 19 UStG).</p>
+					</div>
+				</div>
+
+				<!-- Backup-Einstellungen -->
+				<div class="bg-white shadow-md rounded-lg p-6 mb-6">
+					<h2 class="text-lg font-bold mb-4 border-b pb-2">Datenbank & Backup</h2>
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+						@Input("Backup-Pfad", "backup_path", "text", settings.BackupPath, "./backups", false, "")
+						@Input("Max. Anzahl Backups", "backup_max_count", "number", fmt.Sprintf("%d", settings.BackupMaxCount), "10", false, "Älteste Backups werden gelöscht.")
+						@Input("Mindest-Intervall (Stunden)", "backup_min_interval", "number", fmt.Sprintf("%d", settings.BackupMinIntervalHours), "24", false, "Vermeidet zu viele automatische Backups.")
+					</div>
+					<div class="mt-4 flex items-center justify-between">
+						<div>
+							<label class="inline-flex items-center">
+								<input type="checkbox" name="auto_backup_enabled" class="form-checkbox" checked?={ settings.AutoBackupEnabled }/>
+								<span class="ml-2 text-sm font-bold text-gray-700">Automatisches Backup beim Start (Pre-Migration)</span>
+							</label>
+							<p class="text-gray-500 text-xs italic mt-1">Sichert die Datenbank automatisch bevor Schema-Änderungen oder Migrationen ausgeführt werden.</p>
+						</div>
+						<a href="/backups" class="text-blue-600 hover:underline text-sm">Backups verwalten →</a>
+					</div>
+				</div>
+
 				<div class="flex items-center justify-end">
 					<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
 						Speichern
@@ -270,5 +291,72 @@ templ SettingsForm(settings models.AppSettings) {
 				</div>
 			</form>
 		</div>
+
+		<!-- Live-Update Script für alle Nummernkreise -->
+		<script>
+			(function() {
+				function formatSchema(schema, num, docID) {
+					var now = new Date();
+					var result = schema
+						.replace(/\{YYYY\}/g, now.getFullYear().toString())
+						.replace(/\{YY\}/g, now.getFullYear().toString().slice(-2))
+						.replace(/\{MM\}/g, String(now.getMonth() + 1).padStart(2, '0'))
+						.replace(/\{DD\}/g, String(now.getDate()).padStart(2, '0'));
+					
+					if (docID !== undefined) {
+						result = result.replace(/\{ID\}/g, docID);
+					}
+
+					result = result.replace(/\{N(?::(\d+))?\}/g, function(match, width) {
+						if (width) { return String(num).padStart(parseInt(width), '0'); }
+						return String(num);
+					});
+					return result;
+				}
+
+				function bindPreview(schemaId, counterId, previewId, filenameSchemaId, filenamePreviewId, defaultSchema, defaultFilenameSchema) {
+					var schemaInput = document.getElementById(schemaId);
+					var counterInput = document.getElementById(counterId);
+					var preview = document.getElementById(previewId);
+					var filenameInput = document.getElementById(filenameSchemaId);
+					var filenamePreview = document.getElementById(filenamePreviewId);
+					
+					if (!schemaInput || !preview) return;
+
+					function update() {
+						var schema = schemaInput.value || defaultSchema;
+						var num = counterInput ? (parseInt(counterInput.value) || 1) : 0;
+						var formattedID = formatSchema(schema, num);
+						preview.textContent = formattedID;
+
+						if (filenameInput && filenamePreview) {
+							var fnSchema = filenameInput.value || defaultFilenameSchema;
+							filenamePreview.textContent = formatSchema(fnSchema, num, formattedID) + ".pdf";
+						}
+					}
+					schemaInput.addEventListener('input', update);
+					if (counterInput) counterInput.addEventListener('input', update);
+					if (filenameInput) filenameInput.addEventListener('input', update);
+				}
+
+				bindPreview('invoice_number_schema', 'next_invoice_number', 'invoice-schema-preview', 'invoice_filename_schema', 'invoice-filename-preview', '{N:4}', '{ID}');
+				bindPreview('quote_number_schema', 'next_quote_number', 'quote-schema-preview', 'quote_filename_schema', 'quote-filename-preview', 'AG-{N:4}', 'Angebot_{ID}');
+				bindPreview('credit_note_number_schema', 'next_credit_note_number', 'credit-note-schema-preview', 'credit_note_filename_schema', 'credit-note-filename-preview', 'GS-{N:4}', 'Gutschrift_{ID}');
+				bindPreview('customer_id_schema', 'next_customer_id', 'customer-schema-preview', null, null, 'KD-{N:4}', null);
+				
+				// EÜR & Inventar manually (no counter)
+				var euerIn = document.getElementById('euer_filename_schema');
+				var euerPre = document.getElementById('euer-filename-preview');
+				var invIn = document.getElementById('inventory_filename_schema');
+				var invPre = document.getElementById('inventory-filename-preview');
+				
+				function updateReports() {
+					if (euerIn && euerPre) euerPre.textContent = formatSchema(euerIn.value || 'EÜR-{YYYY}', 0) + ".pdf";
+					if (invIn && invPre) invPre.textContent = formatSchema(invIn.value || 'Inventarliste_{YYYY}-{MM}-{DD}', 0) + ".pdf";
+				}
+				if (euerIn) euerIn.addEventListener('input', updateReports);
+				if (invIn) invIn.addEventListener('input', updateReports);
+			})();
+		</script>
 	}
 }

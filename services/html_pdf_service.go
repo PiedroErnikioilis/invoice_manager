@@ -111,7 +111,7 @@ func GenerateEuerPDFHTML(stats *models.EuerStats, settings *models.AppSettings) 
 	if outDir == "" {
 		outDir = "./invoices/"
 	}
-	filename := filepath.Join(outDir, models.FormatDocumentNumber(settings.EuerFilenameSchema, 0)+".pdf")
+	filename := filepath.Join(outDir, models.FormatFilename(settings.EuerFilenameSchema, "")+".pdf")
 
 	footer := pageFooterHTML(settings.SenderName)
 	if err := renderHTMLToPDFWithFooter(htmlBuilder.String(), filename, footer); err != nil {
@@ -135,7 +135,7 @@ func GenerateInventoryPDFHTML(products []models.Product, settings *models.AppSet
 	if outDir == "" {
 		outDir = "./invoices/"
 	}
-	filename := filepath.Join(outDir, "inventar_liste.pdf")
+	filename := filepath.Join(outDir, models.FormatFilename(settings.InventoryFilenameSchema, "")+".pdf")
 
 	footer := pageFooterHTML(settings.SenderName)
 	if err := renderHTMLToPDFWithFooter(htmlBuilder.String(), filename, footer); err != nil {
@@ -221,7 +221,7 @@ func GenerateCreditNotePDFHTML(note *models.CreditNote, settings *models.AppSett
 		return "", err
 	}
 
-	filename := filepath.Join(outDir, fmt.Sprintf("gutschrift_%s.pdf", note.CreditNoteNumber))
+	filename := filepath.Join(outDir, models.FormatFilename(settings.CreditNoteFilenameSchema, note.CreditNoteNumber)+".pdf")
 	f, err := os.Create(filename)
 	if err != nil {
 		slog.Error("Failed to create credit note PDF file", "path", filename, "error", err)
@@ -320,7 +320,7 @@ func GenerateInvoicePDFHTML(inv *models.Invoice, settings *models.AppSettings) (
 		return "", err
 	}
 
-	filename := filepath.Join(outDir, fmt.Sprintf("rechnung_%s.pdf", inv.InvoiceNumber))
+	filename := filepath.Join(outDir, models.FormatFilename(settings.InvoiceFilenameSchema, inv.InvoiceNumber)+".pdf")
 	f, err := os.Create(filename)
 	if err != nil {
 		slog.Error("Failed to create invoice PDF file", "path", filename, "error", err)

@@ -39,6 +39,10 @@ type AppSettings struct {
 	NextCustomerID          int
 	CustomerIDSchema        string
 	EuerFilenameSchema      string
+	InvoiceFilenameSchema   string
+	QuoteFilenameSchema     string
+	CreditNoteFilenameSchema string
+	InventoryFilenameSchema string
 	BankName                string
 	IBAN                    string
 	BIC                     string
@@ -138,6 +142,30 @@ func (s *Store) GetAppSettings() (AppSettings, error) {
 	}
 	settings.EuerFilenameSchema = val
 
+	val, _ = s.GetSetting("invoice_filename_schema")
+	if val == "" {
+		val = "{ID}"
+	}
+	settings.InvoiceFilenameSchema = val
+
+	val, _ = s.GetSetting("quote_filename_schema")
+	if val == "" {
+		val = "Angebot_{ID}"
+	}
+	settings.QuoteFilenameSchema = val
+
+	val, _ = s.GetSetting("credit_note_filename_schema")
+	if val == "" {
+		val = "Gutschrift_{ID}"
+	}
+	settings.CreditNoteFilenameSchema = val
+
+	val, _ = s.GetSetting("inventory_filename_schema")
+	if val == "" {
+		val = "Inventarliste_{YYYY}-{MM}-{DD}"
+	}
+	settings.InventoryFilenameSchema = val
+
 	val, _ = s.GetSetting("default_small_business")
 	settings.DefaultSmallBusiness = val == "true"
 
@@ -227,6 +255,18 @@ func (s *Store) SaveAppSettings(settings AppSettings) error {
 	if err := s.SetSetting("euer_filename_schema", settings.EuerFilenameSchema); err != nil {
 		return err
 	}
+	if err := s.SetSetting("invoice_filename_schema", settings.InvoiceFilenameSchema); err != nil {
+		return err
+	}
+	if err := s.SetSetting("quote_filename_schema", settings.QuoteFilenameSchema); err != nil {
+		return err
+	}
+	if err := s.SetSetting("credit_note_filename_schema", settings.CreditNoteFilenameSchema); err != nil {
+		return err
+	}
+	if err := s.SetSetting("inventory_filename_schema", settings.InventoryFilenameSchema); err != nil {
+		return err
+	}
 	if err := s.SetSetting("bank_name", settings.BankName); err != nil {
 		return err
 	}
@@ -304,6 +344,12 @@ func (s *Store) IncrementNextCustomerID() error {
 	}
 	settings.NextCustomerID++
 	return s.SaveAppSettings(settings)
+}
+
+// FormatFilename formats a filename based on schema, date and document ID.
+func FormatFilename(schema string, docID string) string {
+	res := FormatDocumentNumber(schema, 0) // Handles {YYYY}, {MM}, {DD}
+	return strings.ReplaceAll(res, "{ID}", docID)
 }
 
 // FormatDocumentNumber formats a document number based on the schema and counter.

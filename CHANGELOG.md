@@ -13,8 +13,8 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten
     - Neue HTTP-Middleware für detaillierte Request-Logs inklusive Fehlermeldungen und Performance-Daten.
     - Detaillierte Protokollierung von PDF-Generierungsprozessen und Datenbanktransaktionen.
     - Steuerbar über Umgebungsvariablen: `DEBUG=1` für Debug-Level und `JSON_LOG=1` für Maschinen-lesbares Format.
-- **Konfigurierbare Nummernschemata**:
-    - Rechnungen, Angebote und Gutschriften unterstützen nun benutzerdefinierte Schemata (z.B. `RE-{YYYY}-{N:4}`).
+- **Konfigurierbare Dateinamen**: PDF-Exporte für Rechnungen, Angebote, Gutschriften und Inventarlisten können nun über eigene Schemata benannt werden (z.B. `{ID}.pdf` oder `Rechnung_{YYYY}_{ID}.pdf`).
+- **Konfigurierbare Nummernschemata**:    - Rechnungen, Angebote und Gutschriften unterstützen nun benutzerdefinierte Schemata (z.B. `RE-{YYYY}-{N:4}`).
     - **Echte Kundennummern**: Kunden haben nun eine eigene `customer_number` in der Datenbank.
     - Das Nummernschema für Kunden ist ebenfalls konfigurierbar (z.B. `KD-{N:4}`).
     - **EÜR Dateinamen**: Das Namensschema für EÜR-Exporte (PDF/CSV) ist einstellbar (z.B. `EÜR-{YYYY}`).

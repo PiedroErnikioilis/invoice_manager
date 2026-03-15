@@ -79,6 +79,22 @@ func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
 	if euerFilenameSchema == "" {
 		euerFilenameSchema = "EÜR-{YYYY}"
 	}
+	invoiceFilenameSchema := r.FormValue("invoice_filename_schema")
+	if invoiceFilenameSchema == "" {
+		invoiceFilenameSchema = "{ID}"
+	}
+	quoteFilenameSchema := r.FormValue("quote_filename_schema")
+	if quoteFilenameSchema == "" {
+		quoteFilenameSchema = "Angebot_{ID}"
+	}
+	creditNoteFilenameSchema := r.FormValue("credit_note_filename_schema")
+	if creditNoteFilenameSchema == "" {
+		creditNoteFilenameSchema = "Gutschrift_{ID}"
+	}
+	inventoryFilenameSchema := r.FormValue("inventory_filename_schema")
+	if inventoryFilenameSchema == "" {
+		inventoryFilenameSchema = "Inventarliste_{YYYY}-{MM}-{DD}"
+	}
 
 	settings := models.AppSettings{
 		SenderName:             r.FormValue("sender_name"),
@@ -92,8 +108,13 @@ func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
 		NextCustomerID:         nextCustomerID,
 		CustomerIDSchema:       customerIDSchema,
 		EuerFilenameSchema:     euerFilenameSchema,
+		InvoiceFilenameSchema:  invoiceFilenameSchema,
+		QuoteFilenameSchema:    quoteFilenameSchema,
+		CreditNoteFilenameSchema: creditNoteFilenameSchema,
+		InventoryFilenameSchema: inventoryFilenameSchema,
 		BankName:               r.FormValue("bank_name"),
 		IBAN:                   r.FormValue("iban"),
+	...
 		BIC:                    r.FormValue("bic"),
 		Website:                r.FormValue("website"),
 		Email:                  r.FormValue("email"),
