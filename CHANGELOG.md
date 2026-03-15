@@ -6,7 +6,11 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten
 
 ### Hinzugefügt
 - **Gutschriften-Detailansicht**: Detaillierte Ansicht für Gutschriften inklusive PDF-Export.
-- **Umfangreiches strukturiertes Logging**:    - Vollständige Umstellung auf `log/slog` im gesamten Projekt (Handler, Modelle, Services).
+- **Angebots-Detailansicht**: Detaillierte Ansicht für Angebote inklusive PDF-Export und Umwandlungs-Funktion.
+- **Smart PDF-Generierung**: Bereits erstellte PDFs werden bei finalem Status (z.B. Bezahlt) nicht mehr automatisch neu generiert, was die Ladezeiten erheblich verkürzt.
+- **Manueller PDF-Refresh**: Neue Schaltfläche "PDF neu erzeugen" in der Detailansicht, um bei Bedarf eine Aktualisierung zu erzwingen.
+- **Umfangreiches strukturiertes Logging**:
+    - Vollständige Umstellung auf `log/slog` im gesamten Projekt (Handler, Modelle, Services).
     - Alle Log-Ausgaben werden nun permanent in die Datei `app.log` geschrieben (zusätzlich zur Konsole).
     - **Farbige Konsolenausgabe**: Die Log-Ausgaben im Terminal sind nun zur besseren Übersicht farblich hervorgehoben (Debug=grau, Info=cyan, Error=rot).
     - **Debug-Modus standardmäßig aktiv**: Ausführliche Informationen werden ab sofort ohne zusätzliche Konfiguration erfasst.
@@ -14,7 +18,8 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten
     - Detaillierte Protokollierung von PDF-Generierungsprozessen und Datenbanktransaktionen.
     - Steuerbar über Umgebungsvariablen: `DEBUG=1` für Debug-Level und `JSON_LOG=1` für Maschinen-lesbares Format.
 - **Konfigurierbare Dateinamen**: PDF-Exporte für Rechnungen, Angebote, Gutschriften und Inventarlisten können nun über eigene Schemata benannt werden (z.B. `{ID}.pdf` oder `Rechnung_{YYYY}_{ID}.pdf`).
-- **Konfigurierbare Nummernschemata**:    - Rechnungen, Angebote und Gutschriften unterstützen nun benutzerdefinierte Schemata (z.B. `RE-{YYYY}-{N:4}`).
+- **Konfigurierbare Nummernschemata**:
+    - Rechnungen, Angebote und Gutschriften unterstützen nun benutzerdefinierte Schemata (z.B. `RE-{YYYY}-{N:4}`).
     - **Echte Kundennummern**: Kunden haben nun eine eigene `customer_number` in der Datenbank.
     - Das Nummernschema für Kunden ist ebenfalls konfigurierbar (z.B. `KD-{N:4}`).
     - **EÜR Dateinamen**: Das Namensschema für EÜR-Exporte (PDF/CSV) ist einstellbar (z.B. `EÜR-{YYYY}`).
@@ -35,10 +40,11 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten
 - **Kunden-Anzeige**: Kundennummern werden nun konsistent in allen Listen, Formularen und Dokumenten (PDF/HTML) angezeigt.
 
 ### Behoben
+- **Build-Fehler korrigiert**: Syntaxfehler in Handlern und fehlende Imports behoben.
 - **PDF-Verbesserungen**: 
     - Korrekte Seitenzahlen („Seite X von Y") für alle Export-Typen.
     - Fehler behoben, bei dem Texte am Ende langer Rechnungen abgeschnitten wurden.
-- **Stabilitat**: WAL/SHM-Dateien werden nun korrekt bei Backups berücksichtigt.
+- **Stabilität**: WAL/SHM-Dateien werden nun korrekt bei Backups berücksichtigt.
 
 ---
 

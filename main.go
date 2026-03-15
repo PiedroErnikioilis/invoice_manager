@@ -112,8 +112,10 @@ func run() error {
 	r.Get("/quotes", quoteHandler.List)
 	r.Get("/quotes/new", quoteHandler.New)
 	r.Post("/quotes", quoteHandler.Create)
+	r.Get("/quotes/{id}", quoteHandler.View)
 	r.Get("/quotes/{id}/edit", quoteHandler.Edit)
 	r.Post("/quotes/{id}", quoteHandler.Update)
+	r.Get("/quotes/{id}/pdf", quoteHandler.DownloadPDF)
 	r.Post("/quotes/{id}/convert", quoteHandler.ConvertToInvoice)
 
 	r.Get("/credit-notes", creditNoteHandler.List)

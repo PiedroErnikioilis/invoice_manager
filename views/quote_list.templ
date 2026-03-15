@@ -49,7 +49,8 @@ templ QuoteList(quotes []models.Quote) {
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
 								<div class="flex justify-end gap-3">
-									<a href={ templ.SafeURL(fmt.Sprintf("/quotes/%d/edit", q.ID)) } class="text-indigo-600 hover:text-indigo-900">Bearbeiten</a>
+									<a href={ templ.SafeURL(fmt.Sprintf("/quotes/%d", q.ID)) } class="text-indigo-600 hover:text-indigo-900">Ansehen</a>
+									<a href={ templ.SafeURL(fmt.Sprintf("/quotes/%d/edit", q.ID)) } class="text-gray-600 hover:text-gray-900">Bearbeiten</a>
 									if q.Status != "Umgewandelt" {
 										<form action={ templ.SafeURL(fmt.Sprintf("/quotes/%d/convert", q.ID)) } method="POST" onsubmit="return confirm('Angebot in Rechnung umwandeln?');">
 											<button type="submit" class="text-green-600 hover:text-green-900">Rechnung erstellen</button>

@@ -96,6 +96,30 @@ func renderHTMLToPDFWithFooter(htmlContent, outputPath, footerHTML string) error
 	return nil
 }
 
+func GetInvoicePDFPath(inv *models.Invoice, settings *models.AppSettings) string {
+	outDir := settings.PDFOutputPath
+	if outDir == "" {
+		outDir = "./invoices/"
+	}
+	return filepath.Join(outDir, models.FormatFilename(settings.InvoiceFilenameSchema, inv.InvoiceNumber)+".pdf")
+}
+
+func GetQuotePDFPath(quote *models.Quote, settings *models.AppSettings) string {
+	outDir := settings.PDFOutputPath
+	if outDir == "" {
+		outDir = "./invoices/"
+	}
+	return filepath.Join(outDir, models.FormatFilename(settings.QuoteFilenameSchema, quote.QuoteNumber)+".pdf")
+}
+
+func GetCreditNotePDFPath(note *models.CreditNote, settings *models.AppSettings) string {
+	outDir := settings.PDFOutputPath
+	if outDir == "" {
+		outDir = "./invoices/"
+	}
+	return filepath.Join(outDir, models.FormatFilename(settings.CreditNoteFilenameSchema, note.CreditNoteNumber)+".pdf")
+}
+
 // GenerateEuerPDFHTML renders the EÜR overview as a PDF.
 func GenerateEuerPDFHTML(stats *models.EuerStats, settings *models.AppSettings) (string, error) {
 	slog.Info("Generating EÜR PDF")
@@ -141,6 +165,101 @@ func GenerateInventoryPDFHTML(products []models.Product, settings *models.AppSet
 	if err := renderHTMLToPDFWithFooter(htmlBuilder.String(), filename, footer); err != nil {
 		return "", err
 	}
+	return filename, nil
+}
+
+// GenerateQuotePDFHTML renders the quote view and converts it to PDF using Rod.
+func GenerateQuotePDFHTML(quote *models.Quote, settings *models.AppSettings) (string, error) {
+	slog.Info("Generating Quote PDF", "quote_number", quote.QuoteNumber)
+	
+	// Prepare Logo (Base64)
+	if settings.LogoPath != "" {
+		cleanPath := strings.TrimPrefix(settings.LogoPath, "file://")
+		if !filepath.IsAbs(cleanPath) {
+			abs, err := filepath.Abs(cleanPath)
+			if err == nil {
+				cleanPath = abs
+			}
+		}
+
+		data, err := os.ReadFile(cleanPath)
+		if err == nil {
+			mimeType := http.DetectContentType(data)
+			base64Data := base64.StdEncoding.EncodeToString(data)
+			settings.LogoPath = fmt.Sprintf("data:%s;base64,%s", mimeType, base64Data)
+			slog.Debug("Logo embedded as base64 for quote", "path", cleanPath)
+		} else {
+			slog.Error("Failed to read logo file for quote PDF", "path", cleanPath, "error", err)
+		}
+	}
+
+	htmlComponent := views.QuotePDF(quote, settings)
+
+	var htmlBuilder strings.Builder
+	if err := htmlComponent.Render(context.Background(), &htmlBuilder); err != nil {
+		slog.Error("Failed to render quote HTML", "error", err)
+		return "", fmt.Errorf("failed to render html: %w", err)
+	}
+
+	htmlContent := htmlBuilder.String()
+
+	// Setup Rod
+	u := launcher.New().NoSandbox(true).Leakless(false).MustLaunch()
+	browser := rod.New().ControlURL(u).MustConnect()
+	defer browser.MustClose()
+
+	page := browser.MustPage()
+	if err := page.SetDocumentContent(htmlContent); err != nil {
+		slog.Error("Failed to set quote page content", "quote_number", quote.QuoteNumber, "error", err)
+		return "", fmt.Errorf("failed to set page content: %w", err)
+	}
+	page.MustWaitLoad()
+
+	// Generate PDF
+	footer := `<div style="font-size:7pt; font-family:Calibri,Arial,sans-serif; color:#aaa; width:100%; text-align:center;">
+		<span>Seite <span class="pageNumber"></span> von <span class="totalPages"></span></span>
+	</div>`
+	pdfStream, err := page.PDF(&proto.PagePrintToPDF{
+		PaperWidth:           toPtr(8.27),
+		PaperHeight:          toPtr(11.69),
+		MarginTop:            toPtr(0.0),
+		MarginBottom:         toPtr(0.35),
+		MarginLeft:           toPtr(0.0),
+		MarginRight:          toPtr(0.0),
+		PrintBackground:      true,
+		DisplayHeaderFooter:  true,
+		HeaderTemplate:       "<span></span>",
+		FooterTemplate:       footer,
+	})
+	if err != nil {
+		slog.Error("Failed to generate quote PDF stream", "quote_number", quote.QuoteNumber, "error", err)
+		return "", fmt.Errorf("failed to generate pdf: %w", err)
+	}
+
+	outDir := settings.PDFOutputPath
+	if outDir == "" {
+		outDir = "./invoices/"
+	}
+	if err := os.MkdirAll(outDir, 0755); err != nil {
+		slog.Error("Failed to create PDF output directory", "path", outDir, "error", err)
+		return "", err
+	}
+
+	filename := filepath.Join(outDir, models.FormatFilename(settings.QuoteFilenameSchema, quote.QuoteNumber)+".pdf")
+	f, err := os.Create(filename)
+	if err != nil {
+		slog.Error("Failed to create quote PDF file", "path", filename, "error", err)
+		return "", err
+	}
+	defer f.Close()
+
+	n, err := io.Copy(f, pdfStream)
+	if err != nil {
+		slog.Error("Failed to write quote PDF file", "path", filename, "error", err)
+		return "", err
+	}
+
+	slog.Info("Quote PDF generated successfully", "path", filename, "size_bytes", n)
 	return filename, nil
 }
 

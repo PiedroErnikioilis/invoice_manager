@@ -2,10 +2,13 @@ package handlers
 
 import (
 	"din-invoice/models"
+	"din-invoice/services"
 	"din-invoice/views"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -94,6 +97,22 @@ func (h *QuoteHandler) Edit(w http.ResponseWriter, r *http.Request) {
 	products, _ := h.Store.ListProducts()
 
 	views.QuoteForm(quote, customers, products).Render(r.Context(), w)
+}
+
+func (h *QuoteHandler) View(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, _ := strconv.Atoi(idStr)
+
+	slog.Debug("Viewing quote", "id", id)
+	quote, err := h.Store.GetQuote(id)
+	if err != nil {
+		slog.Error("Quote not found for view", "id", id, "error", err)
+		http.Error(w, "Quote not found", http.StatusNotFound)
+		return
+	}
+
+	settings, _ := h.Store.GetAppSettings()
+	views.QuoteView(quote, settings).Render(r.Context(), w)
 }
 
 func (h *QuoteHandler) Update(w http.ResponseWriter, r *http.Request) {
@@ -225,4 +244,55 @@ func (h *QuoteHandler) parseForm(r *http.Request) (*models.Quote, error) {
 	}
 
 	return quote, nil
+}
+
+func (h *QuoteHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	force := r.URL.Query().Get("force") == "1"
+
+	quote, err := h.Store.GetQuote(id)
+	if err != nil {
+		slog.Error("Quote not found for PDF", "id", id, "error", err)
+		http.Error(w, "Quote not found", http.StatusNotFound)
+		return
+	}
+
+	settings, err := h.Store.GetAppSettings()
+	if err != nil {
+		slog.Error("Failed to load settings for quote PDF", "error", err)
+		http.Error(w, "Could not load settings", http.StatusInternalServerError)
+		return
+	}
+
+	path := services.GetQuotePDFPath(quote, &settings)
+	
+	// Smart Check: If file exists and state is final, don't regenerate unless forced
+	isFinal := quote.Status == "Angenommen" || quote.Status == "Abgelehnt" || quote.Status == "Umgewandelt"
+	if !force && isFinal {
+		if _, err := os.Stat(path); err == nil {
+			slog.Debug("Serving existing quote PDF", "path", path, "status", quote.Status)
+			w.Header().Set("Content-Type", "application/pdf")
+			w.Header().Set("Content-Disposition", "inline; filename="+filepath.Base(path))
+			http.ServeFile(w, r, path)
+			return
+		}
+	}
+
+	slog.Info("Generating fresh quote PDF", "id", id, "force", force, "is_final", isFinal)
+	path, err = services.GenerateQuotePDFHTML(quote, &settings)
+	if err != nil {
+		slog.Error("Failed to generate quote PDF", "id", id, "error", err)
+		http.Error(w, "Failed to generate PDF: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", "inline; filename="+filepath.Base(path))
+	http.ServeFile(w, r, path)
 }

@@ -6,6 +6,7 @@ import (
 	"din-invoice/views"
 	"log/slog"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -312,20 +313,40 @@ func (h *InvoiceHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	force := r.URL.Query().Get("force") == "1"
+
 	invoice, err := h.Store.GetInvoice(id)
 	if err != nil {
+		slog.Error("Invoice not found for PDF", "id", id, "error", err)
 		http.Error(w, "Invoice not found", http.StatusNotFound)
 		return
 	}
 
 	settings, err := h.Store.GetAppSettings()
 	if err != nil {
+		slog.Error("Failed to load settings for PDF", "error", err)
 		http.Error(w, "Could not load settings", http.StatusInternalServerError)
 		return
 	}
 
-	path, err := services.GenerateInvoicePDFHTML(invoice, &settings)
+	path := services.GetInvoicePDFPath(invoice, &settings)
+	
+	// Smart Check: If file exists and state is final, don't regenerate unless forced
+	isFinal := invoice.Status == "Bezahlt" || invoice.Status == "Storniert" || invoice.Status == "Offen"
+	if !force && isFinal {
+		if _, err := os.Stat(path); err == nil {
+			slog.Debug("Serving existing invoice PDF", "path", path, "status", invoice.Status)
+			w.Header().Set("Content-Type", "application/pdf")
+			w.Header().Set("Content-Disposition", "inline; filename="+filepath.Base(path))
+			http.ServeFile(w, r, path)
+			return
+		}
+	}
+
+	slog.Info("Generating fresh invoice PDF", "id", id, "force", force, "is_final", isFinal)
+	path, err = services.GenerateInvoicePDFHTML(invoice, &settings)
 	if err != nil {
+		slog.Error("Failed to generate invoice PDF", "id", id, "error", err)
 		http.Error(w, "Failed to generate PDF: "+err.Error(), http.StatusInternalServerError)
 		return
 	}

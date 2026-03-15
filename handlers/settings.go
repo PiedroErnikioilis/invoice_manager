@@ -15,8 +15,8 @@ type SettingsHandler struct {
 	Store *models.Store
 }
 
-func NewSettingsHandler(store *models.Store) *SettingsHandler {
-	return &SettingsHandler{Store: store}
+func NewSettingsHandler(s *models.Store) *SettingsHandler {
+	return &SettingsHandler{Store: s}
 }
 
 func (h *SettingsHandler) View(w http.ResponseWriter, r *http.Request) {
@@ -27,14 +27,12 @@ func (h *SettingsHandler) View(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	views.SettingsForm(settings).Render(r.Context(), w)
+	views.Settings(settings).Render(r.Context(), w)
 }
 
 func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
-	slog.Info("Saving app settings")
-	// ParseMultipartForm to handle file uploads
-	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10MB max
-		slog.Error("Failed to parse settings multipart form", "error", err)
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		slog.Error("Failed to parse form", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -48,15 +46,14 @@ func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
 	if backupMaxCount < 1 {
 		backupMaxCount = models.DefaultBackupMaxCount
 	}
-
-	backupMinInterval, _ := strconv.Atoi(r.FormValue("backup_min_interval_hours"))
-	if backupMinInterval < 0 {
-		backupMinInterval = models.DefaultBackupMinIntervalHours
+	backupMinInterval, _ := strconv.Atoi(r.FormValue("backup_min_interval"))
+	if backupMinInterval < 1 {
+		backupMinInterval = 24
 	}
 
 	backupPath := r.FormValue("backup_path")
 	if backupPath == "" {
-		backupPath = models.DefaultBackupPath
+		backupPath = "./backups"
 	}
 
 	invoiceSchema := r.FormValue("invoice_number_schema")
@@ -97,35 +94,35 @@ func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
 	}
 
 	settings := models.AppSettings{
-		SenderName:             r.FormValue("sender_name"),
-		SenderAddress:          r.FormValue("sender_address"),
-		NextInvoiceNumber:      nextNum,
-		InvoiceNumberSchema:    invoiceSchema,
-		NextQuoteNumber:        nextQuoteNum,
-		QuoteNumberSchema:      quoteSchema,
-		NextCreditNoteNumber:   nextCreditNoteNum,
-		CreditNoteNumberSchema: creditNoteSchema,
-		NextCustomerID:         nextCustomerID,
-		CustomerIDSchema:       customerIDSchema,
-		EuerFilenameSchema:     euerFilenameSchema,
-		InvoiceFilenameSchema:  invoiceFilenameSchema,
-		QuoteFilenameSchema:    quoteFilenameSchema,
+		SenderName:               r.FormValue("sender_name"),
+		SenderAddress:            r.FormValue("sender_address"),
+		NextInvoiceNumber:       nextNum,
+		InvoiceNumberSchema:     invoiceSchema,
+		NextQuoteNumber:         nextQuoteNum,
+		QuoteNumberSchema:       quoteSchema,
+		NextCreditNoteNumber:    nextCreditNoteNum,
+		CreditNoteNumberSchema:  creditNoteSchema,
+		NextCustomerID:          nextCustomerID,
+		CustomerIDSchema:        customerIDSchema,
+		EuerFilenameSchema:      euerFilenameSchema,
+		InvoiceFilenameSchema:   invoiceFilenameSchema,
+		QuoteFilenameSchema:     quoteFilenameSchema,
 		CreditNoteFilenameSchema: creditNoteFilenameSchema,
 		InventoryFilenameSchema: inventoryFilenameSchema,
-		BankName:               r.FormValue("bank_name"),
-		IBAN:                   r.FormValue("iban"),
-	...
-		BIC:                    r.FormValue("bic"),
-		Website:                r.FormValue("website"),
-		Email:                  r.FormValue("email"),
-		PDFOutputPath:          r.FormValue("pdf_output_path"),
-		LogoPath:               r.FormValue("logo_path"),
-		DefaultSmallBusiness:   r.FormValue("default_small_business") == "on",
-		BackupPath:             backupPath,
-		BackupMaxCount:         backupMaxCount,
-		AutoBackupEnabled:      r.FormValue("auto_backup_enabled") == "on",
-		BackupMinIntervalHours: backupMinInterval,
+		BankName:                r.FormValue("bank_name"),
+		IBAN:                    r.FormValue("iban"),
+		BIC:                     r.FormValue("bic"),
+		Website:                 r.FormValue("website"),
+		Email:                   r.FormValue("email"),
+		PDFOutputPath:           r.FormValue("pdf_output_path"),
+		LogoPath:                r.FormValue("logo_path"),
+		DefaultSmallBusiness:    r.FormValue("default_small_business") == "on",
+		BackupPath:              backupPath,
+		BackupMaxCount:          backupMaxCount,
+		AutoBackupEnabled:       r.FormValue("auto_backup_enabled") == "on",
+		BackupMinIntervalHours:  backupMinInterval,
 	}
+
 	// Handle Logo Upload
 	file, handler, err := r.FormFile("logo")
 	if err == nil {
@@ -135,7 +132,7 @@ func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
 		// Create uploads dir
 		uploadDir := "uploads"
 		if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
-			os.Mkdir(uploadDir, 0755)
+			os.MkdirAll(uploadDir, 0755)
 		}
 
 		// Generate file path (keep original extension)

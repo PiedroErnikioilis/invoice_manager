@@ -6,6 +6,7 @@ import (
 	"din-invoice/views"
 	"log/slog"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -135,7 +136,9 @@ func (h *CreditNoteHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	slog.Debug("Downloading credit note PDF", "id", id)
+	force := r.URL.Query().Get("force") == "1"
+
+	slog.Debug("Downloading credit note PDF", "id", id, "force", force)
 	note, err := h.Store.GetCreditNote(id)
 	if err != nil {
 		slog.Error("Credit note not found for PDF", "id", id, "error", err)
@@ -144,7 +147,22 @@ func (h *CreditNoteHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) 
 	}
 
 	settings, _ := h.Store.GetAppSettings()
-	path, err := services.GenerateCreditNotePDFHTML(note, &settings)
+	path := services.GetCreditNotePDFPath(note, &settings)
+
+	// Smart Check: If file exists and state is final, don't regenerate unless forced
+	isFinal := note.Status == "Abgeschlossen"
+	if !force && isFinal {
+		if _, err := os.Stat(path); err == nil {
+			slog.Debug("Serving existing credit note PDF", "path", path, "status", note.Status)
+			w.Header().Set("Content-Type", "application/pdf")
+			w.Header().Set("Content-Disposition", "inline; filename="+filepath.Base(path))
+			http.ServeFile(w, r, path)
+			return
+		}
+	}
+
+	slog.Info("Generating fresh credit note PDF", "id", id, "force", force, "is_final", isFinal)
+	path, err = services.GenerateCreditNotePDFHTML(note, &settings)
 	if err != nil {
 		slog.Error("Failed to generate credit note PDF", "id", id, "error", err)
 		http.Error(w, "Failed to generate PDF: "+err.Error(), http.StatusInternalServerError)
