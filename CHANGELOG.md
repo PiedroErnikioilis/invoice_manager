@@ -8,6 +8,7 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten
 - **Umfangreiches strukturiertes Logging**:
     - Vollständige Umstellung auf `log/slog` im gesamten Projekt (Handler, Modelle, Services).
     - Alle Log-Ausgaben werden nun permanent in die Datei `app.log` geschrieben (zusätzlich zur Konsole).
+    - **Farbige Konsolenausgabe**: Die Log-Ausgaben im Terminal sind nun zur besseren Übersicht farblich hervorgehoben (Debug=grau, Info=cyan, Error=rot).
     - **Debug-Modus standardmäßig aktiv**: Ausführliche Informationen werden ab sofort ohne zusätzliche Konfiguration erfasst.
     - Neue HTTP-Middleware für detaillierte Request-Logs inklusive Fehlermeldungen und Performance-Daten.
     - Detaillierte Protokollierung von PDF-Generierungsprozessen und Datenbanktransaktionen.

@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -29,8 +28,7 @@ func main() {
 }
 
 func run() error {
-	// Setup structured logging
-	var handler slog.Handler
+	// 1. Setup structured logging
 	logLevel := slog.LevelDebug // Default to Debug
 	if os.Getenv("LOG_LEVEL") == "info" {
 		logLevel = slog.LevelInfo
@@ -38,35 +36,40 @@ func run() error {
 		logLevel = slog.LevelInfo
 	}
 
+	opts := &slog.HandlerOptions{Level: logLevel}
+
 	// Always log to file, and also stdout
 	logFile, err := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	var fileHandler slog.Handler
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to open log file: %v\n", err)
 	} else {
 		defer logFile.Close()
+		if os.Getenv("JSON_LOG") == "1" {
+			fileHandler = slog.NewJSONHandler(logFile, opts)
+		} else {
+			fileHandler = slog.NewTextHandler(logFile, opts)
+		}
 	}
 
-	var logWriter io.Writer = os.Stdout
-	if logFile != nil {
-		logWriter = io.MultiWriter(os.Stdout, logFile)
+	// Console Handler (Color)
+	consoleHandler := handlers.NewColorHandler(os.Stdout, opts)
+
+	var finalHandler slog.Handler = consoleHandler
+	if fileHandler != nil {
+		finalHandler = handlers.NewMultiHandler(consoleHandler, fileHandler)
 	}
 
-	opts := &slog.HandlerOptions{Level: logLevel}
-	if os.Getenv("JSON_LOG") == "1" {
-		handler = slog.NewJSONHandler(logWriter, opts)
-	} else {
-		handler = slog.NewTextHandler(logWriter, opts)
-	}
-	logger := slog.New(handler)
+	logger := slog.New(finalHandler)
 	slog.SetDefault(logger)
 
-	// 1. Pre-Migration-Backup (bevor Schema-Änderungen laufen)
+	// 2. Pre-Migration-Backup (bevor Schema-Änderungen laufen)
 	dbPath := "invoices.db"
 	if err := db.PreMigrationBackup(dbPath); err != nil {
 		slog.Error("Pre-Migration-Backup fehlgeschlagen", "error", err)
 	}
 
-	// 2. Init DB (erstellt Tabellen und führt Migrationen aus)
+	// 3. Init DB (erstellt Tabellen und führt Migrationen aus)
 	database, isNewDB, err := db.Init(dbPath)
 	if err != nil {
 		return fmt.Errorf("failed to init db: %w", err)
@@ -74,12 +77,14 @@ func run() error {
 	defer database.Close()
 	store := models.NewStore(database)
 
-	// Demo-Modus: Beispieldaten nur bei neuer DB erstellen
+	// 4. Demo-Modus: Beispieldaten nur bei neuer DB erstellen
 	if isNewDB && slices.Contains(os.Args[1:], "--demo") {
 		if err := store.SeedDemoData(); err != nil {
 			slog.Error("Demo-Daten Fehler", "error", err)
 		}
 	}
+
+	// 5. Setup Handlers
 	invoiceHandler := handlers.NewInvoiceHandler(store)
 	settingsHandler := handlers.NewSettingsHandler(store)
 	productHandler := handlers.NewProductHandler(store)
@@ -90,7 +95,7 @@ func run() error {
 	creditNoteHandler := handlers.NewCreditNoteHandler(store)
 	backupHandler := handlers.NewBackupHandler(store, dbPath)
 
-	// 2. Setup Router
+	// 6. Setup Router
 	r := chi.NewRouter()
 	r.Use(handlers.Logger(logger))
 	r.Use(middleware.Recoverer)
@@ -162,7 +167,7 @@ func run() error {
 	filesDir := http.Dir(filepath.Join(workDir, "uploads"))
 	FileServer(r, "/uploads", filesDir)
 
-	// 3. Start Server
+	// 7. Start Server
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000"
