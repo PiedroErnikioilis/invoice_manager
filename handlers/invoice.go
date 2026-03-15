@@ -38,12 +38,19 @@ func (h *InvoiceHandler) syncCustomerFromInvoice(inv *models.Invoice) {
 }
 
 func (h *InvoiceHandler) List(w http.ResponseWriter, r *http.Request) {
-	invoices, err := h.Store.ListInvoices()
+	filter := models.InvoiceFilter{
+		Search: r.URL.Query().Get("q"),
+		Status: r.URL.Query().Get("status"),
+		Sort:   r.URL.Query().Get("sort"),
+		Order:  r.URL.Query().Get("order"),
+	}
+
+	invoices, err := h.Store.ListInvoices(filter)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	views.InvoiceList(invoices).Render(r.Context(), w)
+	views.InvoiceList(invoices, filter).Render(r.Context(), w)
 }
 
 func (h *InvoiceHandler) New(w http.ResponseWriter, r *http.Request) {

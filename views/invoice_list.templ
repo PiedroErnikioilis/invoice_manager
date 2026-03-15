@@ -18,20 +18,82 @@ func statusColor(status string) string {
 	}
 }
 
-templ InvoiceList(invoices []models.Invoice) {
+func sortURL(col string, f models.InvoiceFilter) string {
+	order := "asc"
+	if f.Sort == col && f.Order == "asc" {
+		order = "desc"
+	}
+	url := fmt.Sprintf("/?sort=%s&order=%s", col, order)
+	if f.Search != "" {
+		url += "&q=" + f.Search
+	}
+	if f.Status != "" {
+		url += "&status=" + f.Status
+	}
+	return url
+}
+
+func sortIcon(col string, f models.InvoiceFilter) string {
+	if f.Sort != col {
+		return " \u2195"
+	}
+	if f.Order == "asc" {
+		return " \u2191"
+	}
+	return " \u2193"
+}
+
+templ InvoiceList(invoices []models.Invoice, filter models.InvoiceFilter) {
 	@Layout("Rechnungen") {
 		<div class="flex justify-between items-center mb-6">
 			<h1 class="text-2xl font-bold">Meine Rechnungen</h1>
 			<a href="/invoices/new" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Neue Rechnung</a>
 		</div>
+		<!-- Suche & Filter -->
+		<form method="GET" action="/" class="mb-4 flex gap-3 items-end">
+			<div class="flex-1">
+				<input type="text" name="q" value={ filter.Search } placeholder="Suche nach Nr., Empfänger, Kunden-ID..."
+					class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+			</div>
+			<div>
+				<select name="status" class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+					<option value="">Alle Status</option>
+					<option value="Entwurf" selected?={ filter.Status == "Entwurf" }>Entwurf</option>
+					<option value="Offen" selected?={ filter.Status == "Offen" }>Offen</option>
+					<option value="Bezahlt" selected?={ filter.Status == "Bezahlt" }>Bezahlt</option>
+					<option value="Storniert" selected?={ filter.Status == "Storniert" }>Storniert</option>
+				</select>
+			</div>
+			if filter.Sort != "" {
+				<input type="hidden" name="sort" value={ filter.Sort }/>
+			}
+			if filter.Order != "" {
+				<input type="hidden" name="order" value={ filter.Order }/>
+			}
+			<button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Suchen</button>
+			if filter.Search != "" || filter.Status != "" {
+				<a href="/" class="text-gray-500 hover:text-gray-700 py-2 px-2" title="Filter zurücksetzen">&#x2715;</a>
+			}
+		</form>
 		<div class="bg-white shadow-md rounded overflow-hidden">
 			<table class="min-w-full leading-normal">
 				<thead>
 					<tr>
-						<th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nr.</th>
-						<th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Datum</th>
-						<th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Empfänger</th>
-						<th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+						<th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+							<a href={ templ.SafeURL(sortURL("number", filter)) } class="hover:text-gray-900">Nr.{ sortIcon("number", filter) }</a>
+						</th>
+						<th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+							<a href={ templ.SafeURL(sortURL("date", filter)) } class="hover:text-gray-900">Datum{ sortIcon("date", filter) }</a>
+						</th>
+						<th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+							<a href={ templ.SafeURL(sortURL("recipient", filter)) } class="hover:text-gray-900">Empfänger{ sortIcon("recipient", filter) }</a>
+						</th>
+						<th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+							<a href={ templ.SafeURL(sortURL("items", filter)) } class="hover:text-gray-900">Pos.{ sortIcon("items", filter) }</a>
+						</th>
+						<th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+							<a href={ templ.SafeURL(sortURL("status", filter)) } class="hover:text-gray-900">Status{ sortIcon("status", filter) }</a>
+						</th>
 						<th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aktionen</th>
 					</tr>
 				</thead>
@@ -40,7 +102,15 @@ templ InvoiceList(invoices []models.Invoice) {
 						<tr>
 							<td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{ invoice.InvoiceNumber }</td>
 							<td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{ invoice.Date }</td>
-							<td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{ invoice.RecipientName }</td>
+							<td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+								<div>{ invoice.RecipientName }</div>
+								if invoice.CustomerID != nil {
+									<div class="text-xs text-gray-400">{ fmt.Sprintf("KD-%04d", *invoice.CustomerID) }</div>
+								}
+							</td>
+							<td class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
+								<span class="text-gray-600">{ fmt.Sprintf("%d", invoice.ItemCount) }</span>
+							</td>
 							<td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
 								<span class={ "px-2 inline-flex text-xs leading-5 font-semibold rounded-full " + statusColor(invoice.Status) }>
 									{ invoice.Status }
@@ -62,11 +132,12 @@ templ InvoiceList(invoices []models.Invoice) {
 					}
 					if len(invoices) == 0 {
 						<tr>
-							<td colspan="5" class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center text-gray-500">Keine Rechnungen vorhanden.</td>
+							<td colspan="6" class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center text-gray-500">Keine Rechnungen gefunden.</td>
 						</tr>
 					}
 				</tbody>
 			</table>
 		</div>
+		<div class="mt-2 text-sm text-gray-400">{ fmt.Sprintf("%d Rechnungen", len(invoices)) }</div>
 	}
 }

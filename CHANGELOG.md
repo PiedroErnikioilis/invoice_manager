@@ -2,6 +2,18 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten.
 
+## [v0.3.3] - 2026-03-15
+
+### Hinzugefügt
+- **Rechnungssuche**: Freitext-Suche über Rechnungsnummer, Empfängername und Kunden-ID.
+- **Status-Filter**: Dropdown-Filter nach Rechnungsstatus (Entwurf/Offen/Bezahlt/Storniert).
+- **Sortierbare Spalten**: Alle Spalten der Rechnungsliste (Nr., Datum, Empfänger, Positionen, Status) sind per Klick sortierbar mit Richtungsanzeige.
+- **Positionsanzahl**: Neue Spalte „Pos." zeigt die Anzahl der Rechnungspositionen.
+- **Kunden-ID in Liste**: Kundennummer wird unter dem Empfängernamen angezeigt (falls zugeordnet).
+- **Ergebniszähler**: Anzeige der Gesamtanzahl gefundener Rechnungen unter der Tabelle.
+
+---
+
 ## [v0.3.2] - 2026-03-15
 
 ### Behoben

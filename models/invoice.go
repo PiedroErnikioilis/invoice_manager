@@ -18,6 +18,7 @@ type Invoice struct {
 	IsSmallBusiness  bool
 	CustomerID       *int
 	Items            []InvoiceItem
+	ItemCount        int // nur für Listenansicht (via Subquery)
 }
 
 type InvoiceItem struct {
@@ -238,8 +239,72 @@ func (s *Store) CancelInvoice(id int) error {
 	return tx.Commit()
 }
 
-func (s *Store) ListInvoices() ([]Invoice, error) {
-	rows, err := s.DB.Query(`SELECT id, invoice_number, date, sender_name, recipient_name, tax_rate, status, is_small_business FROM invoices ORDER BY id DESC`)
+// InvoiceFilter enthält Such- und Sortierparameter für die Rechnungsliste.
+type InvoiceFilter struct {
+	Search string // Freitext-Suche (Nr, Empfänger, Kunden-ID)
+	Status string // Filter nach Status (leer = alle)
+	Sort   string // Spalte: date, number, recipient, status, items
+	Order  string // asc oder desc
+}
+
+// AllowedSort gibt die SQL-Spalte für den Sort-Parameter zurück.
+func (f InvoiceFilter) OrderByClause() string {
+	col := "i.id"
+	switch f.Sort {
+	case "number":
+		col = "i.invoice_number"
+	case "date":
+		col = "i.date"
+	case "recipient":
+		col = "i.recipient_name"
+	case "status":
+		col = "i.status"
+	case "items":
+		col = "item_count"
+	}
+	dir := "DESC"
+	if f.Order == "asc" {
+		dir = "ASC"
+	}
+	return col + " " + dir
+}
+
+func (s *Store) ListInvoices(filter ...InvoiceFilter) ([]Invoice, error) {
+	query := `
+		SELECT i.id, i.invoice_number, i.date, i.sender_name, i.recipient_name,
+		       i.tax_rate, i.status, i.is_small_business, i.customer_id,
+		       (SELECT COUNT(*) FROM invoice_items ii WHERE ii.invoice_id = i.id) AS item_count
+		FROM invoices i`
+
+	var args []interface{}
+	var conditions []string
+
+	var f InvoiceFilter
+	if len(filter) > 0 {
+		f = filter[0]
+	}
+
+	if f.Search != "" {
+		conditions = append(conditions,
+			"(i.invoice_number LIKE ? OR i.recipient_name LIKE ? OR CAST(i.customer_id AS TEXT) LIKE ?)")
+		like := "%" + f.Search + "%"
+		args = append(args, like, like, like)
+	}
+	if f.Status != "" {
+		conditions = append(conditions, "i.status = ?")
+		args = append(args, f.Status)
+	}
+
+	if len(conditions) > 0 {
+		query += " WHERE " + conditions[0]
+		for _, c := range conditions[1:] {
+			query += " AND " + c
+		}
+	}
+
+	query += " ORDER BY " + f.OrderByClause()
+
+	rows, err := s.DB.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +313,7 @@ func (s *Store) ListInvoices() ([]Invoice, error) {
 	var invoices []Invoice
 	for rows.Next() {
 		var i Invoice
-		if err := rows.Scan(&i.ID, &i.InvoiceNumber, &i.Date, &i.SenderName, &i.RecipientName, &i.TaxRate, &i.Status, &i.IsSmallBusiness); err != nil {
+		if err := rows.Scan(&i.ID, &i.InvoiceNumber, &i.Date, &i.SenderName, &i.RecipientName, &i.TaxRate, &i.Status, &i.IsSmallBusiness, &i.CustomerID, &i.ItemCount); err != nil {
 			return nil, err
 		}
 		invoices = append(invoices, i)
