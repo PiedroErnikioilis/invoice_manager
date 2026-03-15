@@ -66,7 +66,7 @@ func ProductForm(product *models.Product, movements []models.StockMovement) temp
 			var templ_7745c5c3_Var3 templ.SafeURL
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(getActionURL(product)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/product_form.templ`, Line: 22, Col: 56}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `product_form.templ`, Line: 22, Col: 56}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -88,7 +88,7 @@ func ProductForm(product *models.Product, movements []models.StockMovement) temp
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = Input("Preis (€)", "price", "number", fmt.Sprintf("%.2f", product.Price), "0.00", true, "Netto- oder Bruttopreis.").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = Input("Preis (€)", "price", "text", fmt.Sprintf("%.2f", product.Price), "0,00", true, "Netto- oder Bruttopreis.").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -133,7 +133,7 @@ func ProductForm(product *models.Product, movements []models.StockMovement) temp
 				var templ_7745c5c3_Var4 string
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", product.Stock))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/product_form.templ`, Line: 48, Col: 74}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `product_form.templ`, Line: 48, Col: 74}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
@@ -146,7 +146,7 @@ func ProductForm(product *models.Product, movements []models.StockMovement) temp
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(product.Unit)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/product_form.templ`, Line: 48, Col: 91}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `product_form.templ`, Line: 48, Col: 91}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -200,20 +200,20 @@ func ProductForm(product *models.Product, movements []models.StockMovement) temp
 				var templ_7745c5c3_Var7 templ.SafeURL
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/products/%d/stock/add", product.ID)))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/product_form.templ`, Line: 74, Col: 87}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `product_form.templ`, Line: 74, Col: 87}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" method=\"POST\" class=\"w-1/2\"><h3 class=\"font-bold text-green-700 mb-2\">Zugang (+)</h3><input type=\"number\" name=\"quantity\" class=\"border rounded w-full p-2 mb-2\" placeholder=\"Menge\" required min=\"1\"> <input type=\"text\" name=\"note\" class=\"border rounded w-full p-2 mb-2\" placeholder=\"Notiz (opt)\"><div class=\"mb-2 bg-gray-50 p-2 rounded border\"><label class=\"flex items-center mb-1 cursor-pointer\"><input type=\"checkbox\" name=\"book_expense\" class=\"mr-2\" onchange=\"toggleCostInput(this.checked)\"> <span class=\"text-sm\">Als Ausgabe buchen</span></label> <input type=\"number\" name=\"cost_total\" id=\"cost_total\" step=\"0.01\" class=\"border rounded w-full p-1 text-sm hidden\" placeholder=\"Gesamtkosten (€)\"></div><button type=\"submit\" class=\"bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded w-full\">Buchen</button></form><!-- Remove Stock --><form action=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" method=\"POST\" class=\"w-1/2\"><h3 class=\"font-bold text-green-700 mb-2\">Zugang (+)</h3><input type=\"number\" name=\"quantity\" class=\"border rounded w-full p-2 mb-2\" placeholder=\"Menge\" required min=\"1\"> <input type=\"text\" name=\"note\" class=\"border rounded w-full p-2 mb-2\" placeholder=\"Notiz (opt)\"><div class=\"mb-2 bg-gray-50 p-2 rounded border\"><label class=\"flex items-center mb-1 cursor-pointer\"><input type=\"checkbox\" name=\"book_expense\" class=\"mr-2\" onchange=\"toggleCostInput(this.checked)\"> <span class=\"text-sm\">Als Ausgabe buchen</span></label> <input type=\"text\" inputmode=\"decimal\" name=\"cost_total\" id=\"cost_total\" class=\"border rounded w-full p-1 text-sm hidden\" placeholder=\"Gesamtkosten (€)\"></div><button type=\"submit\" class=\"bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded w-full\">Buchen</button></form><!-- Remove Stock --><form action=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var8 templ.SafeURL
 				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/products/%d/stock/remove", product.ID)))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/product_form.templ`, Line: 88, Col: 90}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `product_form.templ`, Line: 88, Col: 90}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 				if templ_7745c5c3_Err != nil {
@@ -231,7 +231,7 @@ func ProductForm(product *models.Product, movements []models.StockMovement) temp
 					var templ_7745c5c3_Var9 string
 					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(m.CreatedAt.Format("02.01.06 15:04"))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/product_form.templ`, Line: 111, Col: 67}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `product_form.templ`, Line: 111, Col: 67}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 					if templ_7745c5c3_Err != nil {
@@ -244,7 +244,7 @@ func ProductForm(product *models.Product, movements []models.StockMovement) temp
 					var templ_7745c5c3_Var10 string
 					templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(m.MovementType)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/product_form.templ`, Line: 112, Col: 55}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `product_form.templ`, Line: 112, Col: 55}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 					if templ_7745c5c3_Err != nil {
@@ -266,7 +266,7 @@ func ProductForm(product *models.Product, movements []models.StockMovement) temp
 					var templ_7745c5c3_Var12 string
 					templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(templ.CSSClasses(templ_7745c5c3_Var11).String())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/product_form.templ`, Line: 1, Col: 0}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `product_form.templ`, Line: 1, Col: 0}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 					if templ_7745c5c3_Err != nil {
@@ -284,7 +284,7 @@ func ProductForm(product *models.Product, movements []models.StockMovement) temp
 						var templ_7745c5c3_Var13 string
 						templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", m.Quantity))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/product_form.templ`, Line: 115, Col: 46}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `product_form.templ`, Line: 115, Col: 46}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 						if templ_7745c5c3_Err != nil {
@@ -294,7 +294,7 @@ func ProductForm(product *models.Product, movements []models.StockMovement) temp
 						var templ_7745c5c3_Var14 string
 						templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", m.Quantity))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/product_form.templ`, Line: 117, Col: 45}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `product_form.templ`, Line: 117, Col: 45}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 						if templ_7745c5c3_Err != nil {
@@ -308,7 +308,7 @@ func ProductForm(product *models.Product, movements []models.StockMovement) temp
 					var templ_7745c5c3_Var15 string
 					templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(m.Note)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/product_form.templ`, Line: 120, Col: 70}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `product_form.templ`, Line: 120, Col: 70}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 					if templ_7745c5c3_Err != nil {

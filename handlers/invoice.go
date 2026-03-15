@@ -105,7 +105,7 @@ func (h *InvoiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	taxRate, _ := strconv.ParseFloat(r.FormValue("tax_rate"), 64)
+	taxRate := parseDecimal(r.FormValue("tax_rate"))
 	invoice.TaxRate = taxRate
 
 	descriptions := r.Form["description[]"]
@@ -118,7 +118,7 @@ func (h *InvoiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		q, _ := strconv.Atoi(quantities[i])
-		p, _ := strconv.ParseFloat(prices[i], 64)
+		p := parseDecimal(prices[i])
 
 		var pid *int
 		if i < len(productIDs) && productIDs[i] != "" {
@@ -206,7 +206,7 @@ func (h *InvoiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	taxRate, _ := strconv.ParseFloat(r.FormValue("tax_rate"), 64)
+	taxRate := parseDecimal(r.FormValue("tax_rate"))
 	invoice.TaxRate = taxRate
 
 	descriptions := r.Form["description[]"]
@@ -219,7 +219,7 @@ func (h *InvoiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		q, _ := strconv.Atoi(quantities[i])
-		p, _ := strconv.ParseFloat(prices[i], 64)
+		p := parseDecimal(prices[i])
 
 		var pid *int
 		if i < len(productIDs) && productIDs[i] != "" {

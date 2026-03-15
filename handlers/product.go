@@ -62,7 +62,7 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	price, _ := strconv.ParseFloat(r.FormValue("price"), 64)
+	price := parseDecimal(r.FormValue("price"))
 	initialStock, _ := strconv.Atoi(r.FormValue("stock"))
 	minStock, _ := strconv.Atoi(r.FormValue("min_stock"))
 
@@ -123,7 +123,7 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	// Stock is not updated here anymore, only basic info
 
-	price, _ := strconv.ParseFloat(r.FormValue("price"), 64)
+	price := parseDecimal(r.FormValue("price"))
 	minStock, _ := strconv.Atoi(r.FormValue("min_stock"))
 
 	existing, err := h.Store.GetProduct(id)
@@ -212,7 +212,7 @@ func (h *ProductHandler) handleStockMovement(w http.ResponseWriter, r *http.Requ
 	if multiplier > 0 && r.FormValue("book_expense") == "on" {
 		product, _ := h.Store.GetProduct(id)
 
-		cost, _ := strconv.ParseFloat(r.FormValue("cost_total"), 64)
+		cost := parseDecimal(r.FormValue("cost_total"))
 		if cost > 0 {
 			expense := models.Expense{
 				Description: "Warenzugang: " + product.Name,

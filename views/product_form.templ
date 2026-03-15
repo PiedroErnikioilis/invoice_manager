@@ -24,7 +24,7 @@ templ ProductForm(product *models.Product, movements []models.StockMovement) {
 						@Textarea("Beschreibung", "description", product.Description, 3)
 						<div class="flex flex-wrap -mx-3 mb-6">
 							<div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-								@Input("Preis (€)", "price", "number", fmt.Sprintf("%.2f", product.Price), "0.00", true, "Netto- oder Bruttopreis.")
+								@Input("Preis (€)", "price", "text", fmt.Sprintf("%.2f", product.Price), "0,00", true, "Netto- oder Bruttopreis.")
 							</div>
 							<div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
 								@Input("Einheit", "unit", "text", product.Unit, "Stk", false, "z.B. Stk, h, m.")
@@ -80,7 +80,7 @@ templ ProductForm(product *models.Product, movements []models.StockMovement) {
 											<input type="checkbox" name="book_expense" class="mr-2" onchange="toggleCostInput(this.checked)"/>
 											<span class="text-sm">Als Ausgabe buchen</span>
 										</label>
-										<input type="number" name="cost_total" id="cost_total" step="0.01" class="border rounded w-full p-1 text-sm hidden" placeholder="Gesamtkosten (€)"/>
+										<input type="text" inputmode="decimal" name="cost_total" id="cost_total" class="border rounded w-full p-1 text-sm hidden" placeholder="Gesamtkosten (€)"/>
 									</div>
 									<button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded w-full">Buchen</button>
 								</form>

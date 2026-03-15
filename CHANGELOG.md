@@ -2,6 +2,16 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten.
 
+## [v0.3.1] - 2026-03-15
+
+### Behoben
+- **Komma als Dezimaltrennzeichen**: Beträge, Preise und Steuersätze können nun mit Komma eingegeben werden (z.B. `1.234,56` oder `123,45`).
+    - Betrifft alle Formulare: Ausgaben, Rechnungen, Angebote, Gutschriften, Produkte, wiederkehrende Ausgaben.
+    - Deutsches Format (`1.234,56`), englisches Format (`1,234.56`) und einfache Komma-Notation (`123,45`) werden automatisch erkannt.
+    - HTML-Inputs von `type="number"` auf `type="text" inputmode="decimal"` umgestellt, damit Browser Komma-Eingabe nicht blockieren.
+
+---
+
 ## [v0.3.0] - 2026-03-15
 
 ### Hinzugefügt

@@ -12,8 +12,8 @@ templ RecurringExpenseForm(categories []models.ExpenseCategory) {
 			<form action="/euer/recurring" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
 				@Input("Beschreibung", "description", "text", "", "z.B. Miete Büro", true, "Bezeichnung der Ausgabe.")
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-					@Input("Betrag (€)", "amount", "number", "", "0.00", true, "Bruttobetrag.")
-					@Input("Steuer (%)", "tax_rate", "number", "19.0", "19.0", true, "Umsatzsteuersatz.")
+					@Input("Betrag (€)", "amount", "text", "", "0,00", true, "Bruttobetrag.")
+					@Input("Steuer (%)", "tax_rate", "text", "19.0", "19,0", true, "Umsatzsteuersatz.")
 					<div class="mb-4">
 						<label class="block text-gray-700 text-sm font-bold mb-2">Intervall</label>
 						<select name="interval" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">

@@ -62,8 +62,8 @@ func (h *EuerHandler) NewRecurring(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *EuerHandler) CreateRecurring(w http.ResponseWriter, r *http.Request) {
-	amount, _ := strconv.ParseFloat(r.FormValue("amount"), 64)
-	taxRate, _ := strconv.ParseFloat(r.FormValue("tax_rate"), 64)
+	amount := parseDecimal(r.FormValue("amount"))
+	taxRate := parseDecimal(r.FormValue("tax_rate"))
 	if taxRate == 0 && r.FormValue("tax_rate") == "" {
 		taxRate = 19.0
 	}
@@ -165,8 +165,8 @@ func (h *EuerHandler) UpdateExpense(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	amount, _ := strconv.ParseFloat(r.FormValue("amount"), 64)
-	taxRate, _ := strconv.ParseFloat(r.FormValue("tax_rate"), 64)
+	amount := parseDecimal(r.FormValue("amount"))
+	taxRate := parseDecimal(r.FormValue("tax_rate"))
 	if taxRate == 0 && r.FormValue("tax_rate") == "" {
 		taxRate = 19.0
 	}
@@ -217,8 +217,8 @@ func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	amount, _ := strconv.ParseFloat(r.FormValue("amount"), 64)
-	taxRate, _ := strconv.ParseFloat(r.FormValue("tax_rate"), 64)
+	amount := parseDecimal(r.FormValue("amount"))
+	taxRate := parseDecimal(r.FormValue("tax_rate"))
 	if taxRate == 0 && r.FormValue("tax_rate") == "" {
 		taxRate = 19.0
 	}

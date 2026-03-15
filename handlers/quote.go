@@ -147,7 +147,7 @@ func (h *QuoteHandler) parseForm(r *http.Request) (*models.Quote, error) {
 		return nil, err
 	}
 
-	taxRate, _ := strconv.ParseFloat(r.FormValue("tax_rate"), 64)
+	taxRate := parseDecimal(r.FormValue("tax_rate"))
 	customerIDStr := r.FormValue("customer_id")
 	var customerID *int
 	if customerIDStr != "" {
@@ -179,7 +179,7 @@ func (h *QuoteHandler) parseForm(r *http.Request) (*models.Quote, error) {
 			continue
 		}
 		qty, _ := strconv.Atoi(quantities[i])
-		price, _ := strconv.ParseFloat(prices[i], 64)
+		price := parseDecimal(prices[i])
 		var pID *int
 		if i < len(productIDs) && productIDs[i] != "" {
 			id, _ := strconv.Atoi(productIDs[i])

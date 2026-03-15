@@ -85,8 +85,8 @@ templ ExpenseFormFields(products []models.Product, categories []models.ExpenseCa
 	<h2 class="text-xl font-bold mb-4 border-b pb-2">Rechnungsdaten</h2>
 	@Input("Beschreibung", "description", "text", expenseField(expense, "description"), "z.B. Einkauf Material", true, "Kurze Beschreibung des Einkaufs.")
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-		@Input("Betrag (€)", "amount", "number", expenseField(expense, "amount"), "0.00", true, "Bruttobetrag der Rechnung.")
-		@Input("Steuer (%)", "tax_rate", "number", expenseField(expense, "tax_rate"), "19.0", true, "Umsatzsteuersatz (z.B. 19 oder 7).")
+		@Input("Betrag (€)", "amount", "text", expenseField(expense, "amount"), "0,00", true, "Bruttobetrag der Rechnung.")
+		@Input("Steuer (%)", "tax_rate", "text", expenseField(expense, "tax_rate"), "19,0", true, "Umsatzsteuersatz (z.B. 19 oder 7).")
 		@Input("Datum", "date", "date", expenseField(expense, "date"), "", true, "Datum des Belegs.")
 	</div>
 	<div class="mb-4">
