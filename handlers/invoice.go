@@ -4,7 +4,6 @@ import (
 	"din-invoice/models"
 	"din-invoice/services"
 	"din-invoice/views"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"path/filepath"

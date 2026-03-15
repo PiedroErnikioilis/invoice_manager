@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -20,9 +19,9 @@ const (
 )
 
 type backupSettings struct {
-	backupDir    string
-	autoBackup   bool
-	minInterval  int // Stunden
+	backupDir   string
+	autoBackup  bool
+	minInterval int // Stunden
 }
 
 // readBackupSettings liest Backup-Einstellungen direkt aus der DB-Datei.
@@ -140,7 +139,7 @@ func createYearEndBackup(dbPath, backupDir string) {
 	copyFileSimple(dbPath+"-shm", expectedPath+"-shm")
 
 	slog.Info("Jahresabschluss-Backup erstellt", "path", expectedPath)
-	}
+}
 
 func copyFileSimple(srcPath, dstPath string) error {
 	src, err := os.Open(srcPath)
