@@ -2,6 +2,13 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten.
 
+## [v0.1.1] - 2026-03-15
+
+### Behoben
+- **Kundennummer auf Rechnung**: Kundennummer wurde in der HTML-Ansicht immer angezeigt (basierend auf Rechnungs-ID), auch wenn kein Kunde zugeordnet war. Jetzt wird sie nur noch bei zugeordnetem Kunden angezeigt und verwendet die echte Kunden-ID (konsistent mit der PDF-Ansicht).
+
+---
+
 ## [v0.1.0] - 2026-03-14
 
 ### Hinzugefügt

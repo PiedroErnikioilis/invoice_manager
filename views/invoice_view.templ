@@ -63,10 +63,12 @@ templ InvoiceView(inv *models.Invoice, settings models.AppSettings) {
 						<td class="font-bold pr-4 py-1 text-gray-600">Datum</td>
 						<td class="py-1">{ inv.Date }</td>
 					</tr>
-					<tr>
-						<td class="font-bold pr-4 py-1 text-gray-600">Kundennummer</td>
-						<td class="py-1">KD-{ fmt.Sprintf("%d", inv.ID + 1000) }</td>
-					</tr>
+					if inv.CustomerID != nil {
+						<tr>
+							<td class="font-bold pr-4 py-1 text-gray-600">Kundennummer</td>
+							<td class="py-1">{ fmt.Sprintf("KD-%04d", *inv.CustomerID) }</td>
+						</tr>
+					}
 				</table>
 			</div>
 			<!-- Content Area -->
