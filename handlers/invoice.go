@@ -5,6 +5,7 @@ import (
 	"din-invoice/services"
 	"din-invoice/views"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -33,7 +34,7 @@ func (h *InvoiceHandler) syncCustomerFromInvoice(inv *models.Invoice) {
 		Name:    inv.RecipientName,
 		Address: inv.RecipientAddress,
 	}); err != nil {
-		fmt.Printf("Failed to sync customer %d from invoice %s: %v\n", *inv.CustomerID, inv.InvoiceNumber, err)
+		slog.Error("Failed to sync customer from invoice", "customer_id", *inv.CustomerID, "invoice_number", inv.InvoiceNumber, "error", err)
 	}
 }
 
@@ -47,6 +48,7 @@ func (h *InvoiceHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	invoices, err := h.Store.ListInvoices(filter)
 	if err != nil {
+		slog.Error("Failed to list invoices", "filter", filter, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -152,10 +154,12 @@ func (h *InvoiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	id, err := h.Store.CreateInvoice(invoice)
 	if err != nil {
+		slog.Error("Failed to create invoice", "invoice_number", invoice.InvoiceNumber, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Invoice created", "id", id, "invoice_number", invoice.InvoiceNumber)
 	// Sync customer name/address from invoice recipient data
 	h.syncCustomerFromInvoice(invoice)
 
@@ -246,10 +250,12 @@ func (h *InvoiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	err = h.Store.UpdateInvoice(invoice)
 	if err != nil {
+		slog.Error("Failed to update invoice", "id", invoice.ID, "invoice_number", invoice.InvoiceNumber, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Invoice updated", "id", invoice.ID, "invoice_number", invoice.InvoiceNumber)
 	// Sync customer name/address from invoice recipient data
 	h.syncCustomerFromInvoice(invoice)
 
@@ -266,12 +272,14 @@ func (h *InvoiceHandler) View(w http.ResponseWriter, r *http.Request) {
 
 	invoice, err := h.Store.GetInvoice(id)
 	if err != nil {
+		slog.Error("Invoice not found", "id", id, "error", err)
 		http.Error(w, "Invoice not found", http.StatusNotFound)
 		return
 	}
 
 	settings, err := h.Store.GetAppSettings()
 	if err != nil {
+		slog.Error("Failed to load settings for view", "error", err)
 		// Log error but continue
 	}
 
@@ -288,10 +296,12 @@ func (h *InvoiceHandler) Cancel(w http.ResponseWriter, r *http.Request) {
 
 	err = h.Store.CancelInvoice(id)
 	if err != nil {
+		slog.Error("Failed to cancel invoice", "id", id, "error", err)
 		http.Error(w, "Fehler beim Stornieren", http.StatusInternalServerError)
 		return
 	}
 
+	slog.Info("Invoice cancelled", "id", id)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 

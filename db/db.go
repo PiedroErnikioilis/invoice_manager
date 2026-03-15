@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -99,8 +100,9 @@ func PreMigrationBackup(dbPath string) error {
 	if cfg.minInterval > 0 {
 		age := lastBackupAge(cfg.backupDir)
 		if age < time.Duration(cfg.minInterval)*time.Hour {
-			log.Printf("Pre-Migration-Backup übersprungen (letztes Backup vor %s, Mindestabstand %dh)",
-				age.Round(time.Minute), cfg.minInterval)
+			slog.Info("Pre-Migration-Backup übersprungen (letztes Backup zu aktuell)",
+				"age", age.Round(time.Minute),
+				"min_interval_hours", cfg.minInterval)
 			return nil
 		}
 	}
@@ -114,7 +116,7 @@ func PreMigrationBackup(dbPath string) error {
 	copyFileSimple(dbPath+"-wal", filepath.Join(cfg.backupDir, baseName+".db-wal"))
 	copyFileSimple(dbPath+"-shm", filepath.Join(cfg.backupDir, baseName+".db-shm"))
 
-	log.Printf("Pre-Migration-Backup erstellt: %s/%s.db", cfg.backupDir, baseName)
+	slog.Info("Pre-Migration-Backup erstellt", "path", filepath.Join(cfg.backupDir, baseName+".db"))
 	return nil
 }
 
@@ -131,13 +133,14 @@ func createYearEndBackup(dbPath, backupDir string) {
 	}
 
 	if err := copyFileSimple(dbPath, expectedPath); err != nil {
-		log.Printf("Jahresabschluss-Backup fehlgeschlagen: %v", err)
+		slog.Error("Jahresabschluss-Backup fehlgeschlagen", "error", err)
 		return
 	}
 	copyFileSimple(dbPath+"-wal", expectedPath+"-wal")
 	copyFileSimple(dbPath+"-shm", expectedPath+"-shm")
-	log.Printf("Jahresabschluss-Backup erstellt: %s", expectedPath)
-}
+
+	slog.Info("Jahresabschluss-Backup erstellt", "path", expectedPath)
+	}
 
 func copyFileSimple(srcPath, dstPath string) error {
 	src, err := os.Open(srcPath)
@@ -322,7 +325,7 @@ func initDB(dataSourceName string, isNew bool) (*sql.DB, bool, error) {
 
 	_, err = db.Exec(createTables)
 	if err != nil {
-		log.Printf("Error creating tables: %q", err)
+		slog.Error("Error creating tables", "error", err)
 		return nil, false, err
 	}
 

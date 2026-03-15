@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -28,10 +29,26 @@ func main() {
 }
 
 func run() error {
+	// Setup structured logging
+	var handler slog.Handler
+	logLevel := slog.LevelInfo
+	if os.Getenv("DEBUG") == "1" {
+		logLevel = slog.LevelDebug
+	}
+
+	opts := &slog.HandlerOptions{Level: logLevel}
+	if os.Getenv("JSON_LOG") == "1" {
+		handler = slog.NewJSONHandler(os.Stdout, opts)
+	} else {
+		handler = slog.NewTextHandler(os.Stdout, opts)
+	}
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
+
 	// 1. Pre-Migration-Backup (bevor Schema-Änderungen laufen)
 	dbPath := "invoices.db"
 	if err := db.PreMigrationBackup(dbPath); err != nil {
-		fmt.Fprintf(os.Stderr, "Pre-Migration-Backup fehlgeschlagen: %v\n", err)
+		slog.Error("Pre-Migration-Backup fehlgeschlagen", "error", err)
 	}
 
 	// 2. Init DB (erstellt Tabellen und führt Migrationen aus)
@@ -45,7 +62,7 @@ func run() error {
 	// Demo-Modus: Beispieldaten nur bei neuer DB erstellen
 	if isNewDB && slices.Contains(os.Args[1:], "--demo") {
 		if err := store.SeedDemoData(); err != nil {
-			log.Printf("Demo-Daten Fehler: %v", err)
+			slog.Error("Demo-Daten Fehler", "error", err)
 		}
 	}
 	invoiceHandler := handlers.NewInvoiceHandler(store)
@@ -60,7 +77,7 @@ func run() error {
 
 	// 2. Setup Router
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
+	r.Use(handlers.Logger(logger))
 	r.Use(middleware.Recoverer)
 
 	r.Get("/", invoiceHandler.List)
@@ -136,7 +153,7 @@ func run() error {
 		port = "3000"
 	}
 
-	fmt.Printf("Server starting on http://localhost:%s\n", port)
+	slog.Info("Server starting", "url", "http://localhost:"+port)
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		return fmt.Errorf("server error: %w", err)
 	}
