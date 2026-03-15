@@ -35,7 +35,12 @@ templ QuoteList(quotes []models.Quote) {
 						<tr class="hover:bg-gray-50">
 							<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ q.QuoteNumber }</td>
 							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ q.Date }</td>
-							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{ q.RecipientName }</td>
+							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+								<div>{ q.RecipientName }</div>
+								if q.CustomerID != nil {
+									<div class="text-xs text-gray-400">{ q.CustomerNumber }</div>
+								}
+							</td>
 							<td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 font-mono">{ models.FormatCurrency(q.TotalGross()) }</td>
 							<td class="px-6 py-4 whitespace-nowrap text-center">
 								<span class={ "px-2 inline-flex text-xs leading-5 font-semibold rounded-full", getQuoteStatusClass(q.Status) }>

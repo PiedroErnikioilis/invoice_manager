@@ -33,7 +33,10 @@ func (h *QuoteHandler) New(w http.ResponseWriter, r *http.Request) {
 	products, _ := h.Store.ListProducts()
 	settings, _ := h.Store.GetAppSettings()
 
+	quoteNum := models.FormatDocumentNumber(settings.QuoteNumberSchema, settings.NextQuoteNumber)
+
 	quote := &models.Quote{
+		QuoteNumber:   quoteNum,
 		Date:          time.Now().Format("2006-01-02"),
 		SenderName:    settings.SenderName,
 		SenderAddress: settings.SenderAddress,
@@ -48,6 +51,13 @@ func (h *QuoteHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	// Increment quote number if it matches the auto-generated one
+	settings, _ := h.Store.GetAppSettings()
+	expectedNum := models.FormatDocumentNumber(settings.QuoteNumberSchema, settings.NextQuoteNumber)
+	if quote.QuoteNumber == expectedNum {
+		h.Store.IncrementNextQuoteNumber()
 	}
 
 	_, err = h.Store.CreateQuote(quote)

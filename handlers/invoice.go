@@ -56,8 +56,8 @@ func (h *InvoiceHandler) List(w http.ResponseWriter, r *http.Request) {
 func (h *InvoiceHandler) New(w http.ResponseWriter, r *http.Request) {
 	settings, _ := h.Store.GetAppSettings()
 
-	// Format invoice number with 4 digits padding
-	invNum := fmt.Sprintf("%04d", settings.NextInvoiceNumber)
+	// Format invoice number using the configured schema
+	invNum := models.FormatDocumentNumber(settings.InvoiceNumberSchema, settings.NextInvoiceNumber)
 
 	invoice := &models.Invoice{
 		SenderName:      settings.SenderName,
@@ -145,8 +145,8 @@ func (h *InvoiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	// Increment invoice number if it matches the auto-generated one
 	settings, _ := h.Store.GetAppSettings()
-	expectedNum := fmt.Sprintf("%04d", settings.NextInvoiceNumber)
-	if invoice.InvoiceNumber == expectedNum || invoice.InvoiceNumber == strconv.Itoa(settings.NextInvoiceNumber) {
+	expectedNum := models.FormatDocumentNumber(settings.InvoiceNumberSchema, settings.NextInvoiceNumber)
+	if invoice.InvoiceNumber == expectedNum {
 		h.Store.IncrementNextInvoiceNumber()
 	}
 

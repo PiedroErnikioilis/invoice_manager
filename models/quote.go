@@ -17,6 +17,7 @@ type Quote struct {
 	Status           string // 'Entwurf', 'Verschickt', 'Angenommen', 'Abgelehnt', 'Umgewandelt'
 	IsSmallBusiness  bool
 	CustomerID       *int
+	CustomerNumber   string
 	Items            []QuoteItem
 }
 
@@ -89,7 +90,12 @@ func (s *Store) CreateQuote(q *Quote) (int, error) {
 }
 
 func (s *Store) ListQuotes() ([]Quote, error) {
-	rows, err := s.DB.Query(`SELECT id, quote_number, date, recipient_name, status, tax_rate, is_small_business FROM quotes ORDER BY id DESC`)
+	rows, err := s.DB.Query(`
+		SELECT q.id, q.quote_number, q.date, q.recipient_name, q.status, q.tax_rate, q.is_small_business, q.customer_id, COALESCE(c.customer_number, '')
+		FROM quotes q
+		LEFT JOIN customers c ON q.customer_id = c.id
+		ORDER BY q.id DESC
+	`)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +104,7 @@ func (s *Store) ListQuotes() ([]Quote, error) {
 	var quotes []Quote
 	for rows.Next() {
 		var q Quote
-		if err := rows.Scan(&q.ID, &q.QuoteNumber, &q.Date, &q.RecipientName, &q.Status, &q.TaxRate, &q.IsSmallBusiness); err != nil {
+		if err := rows.Scan(&q.ID, &q.QuoteNumber, &q.Date, &q.RecipientName, &q.Status, &q.TaxRate, &q.IsSmallBusiness, &q.CustomerID, &q.CustomerNumber); err != nil {
 			return nil, err
 		}
 		quotes = append(quotes, q)
@@ -109,9 +115,11 @@ func (s *Store) ListQuotes() ([]Quote, error) {
 func (s *Store) GetQuote(id int) (*Quote, error) {
 	var q Quote
 	err := s.DB.QueryRow(`
-		SELECT id, quote_number, date, sender_name, sender_address, recipient_name, recipient_address, tax_rate, created_at, status, is_small_business, customer_id
-		FROM quotes WHERE id = ?
-	`, id).Scan(&q.ID, &q.QuoteNumber, &q.Date, &q.SenderName, &q.SenderAddress, &q.RecipientName, &q.RecipientAddress, &q.TaxRate, &q.CreatedAt, &q.Status, &q.IsSmallBusiness, &q.CustomerID)
+		SELECT q.id, q.quote_number, q.date, q.sender_name, q.sender_address, q.recipient_name, q.recipient_address, q.tax_rate, q.created_at, q.status, q.is_small_business, q.customer_id, COALESCE(c.customer_number, '')
+		FROM quotes q
+		LEFT JOIN customers c ON q.customer_id = c.id
+		WHERE q.id = ?
+	`, id).Scan(&q.ID, &q.QuoteNumber, &q.Date, &q.SenderName, &q.SenderAddress, &q.RecipientName, &q.RecipientAddress, &q.TaxRate, &q.CreatedAt, &q.Status, &q.IsSmallBusiness, &q.CustomerID, &q.CustomerNumber)
 	if err != nil {
 		return nil, err
 	}

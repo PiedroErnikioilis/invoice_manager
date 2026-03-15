@@ -76,6 +76,10 @@ func CustomerForm(customer *models.Customer) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
+			templ_7745c5c3_Err = Input("Kundennummer", "customer_number", "text", customer.CustomerNumber, "KD-0001", true, "Eindeutige Nummer des Kunden.").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 			templ_7745c5c3_Err = Input("Name / Firma", "name", "text", customer.Name, "Firmenname oder Vor- Nachname", true, "Der Name des Kunden.").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -100,7 +104,7 @@ func CustomerForm(customer *models.Customer) templ.Component {
 				var templ_7745c5c3_Var4 templ.SafeURL
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/invoices/new?customer_id=%d", customer.ID)))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/customer_form.templ`, Line: 29, Col: 88}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/customer_form.templ`, Line: 30, Col: 88}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {

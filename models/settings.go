@@ -1,7 +1,10 @@
 package models
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
+	"time"
 )
 
 // GetSetting retrieves a setting value by key. Returns empty string if not found.
@@ -21,21 +24,29 @@ func (s *Store) SetSetting(key, value string) error {
 }
 
 type AppSettings struct {
-	SenderName           string
-	SenderAddress        string
-	NextInvoiceNumber    int
-	BankName             string
-	IBAN                 string
-	BIC                  string
-	Website              string
-	Email                string
-	PDFOutputPath        string
-	LogoPath             string
-	DefaultSmallBusiness bool
-	BackupPath             string
-	BackupMaxCount         int
-	AutoBackupEnabled      bool
-	BackupMinIntervalHours int
+	SenderName              string
+	SenderAddress           string
+	NextInvoiceNumber       int
+	InvoiceNumberSchema     string
+	NextQuoteNumber         int
+	QuoteNumberSchema       string
+	NextCreditNoteNumber    int
+	CreditNoteNumberSchema  string
+	NextCustomerID          int
+	CustomerIDSchema        string
+	EuerFilenameSchema      string
+	BankName                string
+	IBAN                    string
+	BIC                     string
+	Website                 string
+	Email                   string
+	PDFOutputPath           string
+	LogoPath                string
+	DefaultSmallBusiness    bool
+	BackupPath              string
+	BackupMaxCount          int
+	AutoBackupEnabled       bool
+	BackupMinIntervalHours  int
 }
 
 func (s AppSettings) BackupMinIntervalHoursStr() string {
@@ -68,6 +79,60 @@ func (s *Store) GetAppSettings() (AppSettings, error) {
 	} else {
 		settings.NextInvoiceNumber = 1 // Default start
 	}
+
+	val, _ = s.GetSetting("invoice_number_schema")
+	if val == "" {
+		val = "{N:4}"
+	}
+	settings.InvoiceNumberSchema = val
+
+	val, _ = s.GetSetting("next_quote_number")
+	if val != "" {
+		num, _ := strconv.Atoi(val)
+		settings.NextQuoteNumber = num
+	} else {
+		settings.NextQuoteNumber = 1
+	}
+
+	val, _ = s.GetSetting("quote_number_schema")
+	if val == "" {
+		val = "AG-{N:4}"
+	}
+	settings.QuoteNumberSchema = val
+
+	val, _ = s.GetSetting("next_credit_note_number")
+	if val != "" {
+		num, _ := strconv.Atoi(val)
+		settings.NextCreditNoteNumber = num
+	} else {
+		settings.NextCreditNoteNumber = 1
+	}
+
+	val, _ = s.GetSetting("credit_note_number_schema")
+	if val == "" {
+		val = "GS-{N:4}"
+	}
+	settings.CreditNoteNumberSchema = val
+
+	val, _ = s.GetSetting("next_customer_id")
+	if val != "" {
+		num, _ := strconv.Atoi(val)
+		settings.NextCustomerID = num
+	} else {
+		settings.NextCustomerID = 1
+	}
+
+	val, _ = s.GetSetting("customer_id_schema")
+	if val == "" {
+		val = "KD-{N:4}"
+	}
+	settings.CustomerIDSchema = val
+
+	val, _ = s.GetSetting("euer_filename_schema")
+	if val == "" {
+		val = "EÜR-{YYYY}"
+	}
+	settings.EuerFilenameSchema = val
 
 	val, _ = s.GetSetting("default_small_business")
 	settings.DefaultSmallBusiness = val == "true"
@@ -134,6 +199,30 @@ func (s *Store) SaveAppSettings(settings AppSettings) error {
 	if err := s.SetSetting("next_invoice_number", strconv.Itoa(settings.NextInvoiceNumber)); err != nil {
 		return err
 	}
+	if err := s.SetSetting("invoice_number_schema", settings.InvoiceNumberSchema); err != nil {
+		return err
+	}
+	if err := s.SetSetting("next_quote_number", strconv.Itoa(settings.NextQuoteNumber)); err != nil {
+		return err
+	}
+	if err := s.SetSetting("quote_number_schema", settings.QuoteNumberSchema); err != nil {
+		return err
+	}
+	if err := s.SetSetting("next_credit_note_number", strconv.Itoa(settings.NextCreditNoteNumber)); err != nil {
+		return err
+	}
+	if err := s.SetSetting("credit_note_number_schema", settings.CreditNoteNumberSchema); err != nil {
+		return err
+	}
+	if err := s.SetSetting("next_customer_id", strconv.Itoa(settings.NextCustomerID)); err != nil {
+		return err
+	}
+	if err := s.SetSetting("customer_id_schema", settings.CustomerIDSchema); err != nil {
+		return err
+	}
+	if err := s.SetSetting("euer_filename_schema", settings.EuerFilenameSchema); err != nil {
+		return err
+	}
 	if err := s.SetSetting("bank_name", settings.BankName); err != nil {
 		return err
 	}
@@ -181,4 +270,77 @@ func (s *Store) IncrementNextInvoiceNumber() error {
 	}
 	settings.NextInvoiceNumber++
 	return s.SaveAppSettings(settings)
+}
+
+// IncrementNextQuoteNumber increments the quote counter in the DB
+func (s *Store) IncrementNextQuoteNumber() error {
+	settings, err := s.GetAppSettings()
+	if err != nil {
+		return err
+	}
+	settings.NextQuoteNumber++
+	return s.SaveAppSettings(settings)
+}
+
+// IncrementNextCreditNoteNumber increments the credit note counter in the DB
+func (s *Store) IncrementNextCreditNoteNumber() error {
+	settings, err := s.GetAppSettings()
+	if err != nil {
+		return err
+	}
+	settings.NextCreditNoteNumber++
+	return s.SaveAppSettings(settings)
+}
+
+// IncrementNextCustomerID increments the customer counter in the DB
+func (s *Store) IncrementNextCustomerID() error {
+	settings, err := s.GetAppSettings()
+	if err != nil {
+		return err
+	}
+	settings.NextCustomerID++
+	return s.SaveAppSettings(settings)
+}
+
+// FormatDocumentNumber formats a document number based on the schema and counter.
+// Supported placeholders:
+//
+//	{YYYY} - Year 4-digit, {YY} - Year 2-digit
+//	{MM} - Month, {DD} - Day
+//	{N} - Counter without padding
+//	{N:2}..{N:6} - Counter with zero-padding
+func FormatDocumentNumber(schema string, number int) string {
+	now := time.Now()
+	r := strings.NewReplacer(
+		"{YYYY}", now.Format("2006"),
+		"{YY}", now.Format("06"),
+		"{MM}", fmt.Sprintf("%02d", now.Month()),
+		"{DD}", fmt.Sprintf("%02d", now.Day()),
+	)
+	result := r.Replace(schema)
+
+	// Handle {N} and {N:X} placeholders
+	if strings.Contains(result, "{N") {
+		idx := strings.Index(result, "{N")
+		end := strings.Index(result[idx:], "}")
+		if end != -1 {
+			placeholder := result[idx : idx+end+1]
+			var formatted string
+			if placeholder == "{N}" {
+				formatted = strconv.Itoa(number)
+			} else {
+				// Parse {N:X} where X is padding width
+				var width int
+				fmt.Sscanf(placeholder, "{N:%d}", &width)
+				if width > 0 {
+					formatted = fmt.Sprintf("%0*d", width, number)
+				} else {
+					formatted = strconv.Itoa(number)
+				}
+			}
+			result = strings.Replace(result, placeholder, formatted, 1)
+		}
+	}
+
+	return result
 }

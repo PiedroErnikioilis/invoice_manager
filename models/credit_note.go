@@ -17,6 +17,7 @@ type CreditNote struct {
 	Status           string // 'Entwurf', 'Offen', 'Abgeschlossen'
 	IsSmallBusiness  bool
 	CustomerID       *int
+	CustomerNumber   string
 	InvoiceID        *int // Reference to original invoice
 	Items            []CreditNoteItem
 }
@@ -101,7 +102,12 @@ func (s *Store) CreateCreditNote(c *CreditNote) (int, error) {
 }
 
 func (s *Store) ListCreditNotes() ([]CreditNote, error) {
-	rows, err := s.DB.Query(`SELECT id, credit_note_number, date, recipient_name, status, tax_rate, is_small_business FROM credit_notes ORDER BY id DESC`)
+	rows, err := s.DB.Query(`
+		SELECT cn.id, cn.credit_note_number, cn.date, cn.recipient_name, cn.status, cn.tax_rate, cn.is_small_business, cn.customer_id, COALESCE(c.customer_number, '')
+		FROM credit_notes cn
+		LEFT JOIN customers c ON cn.customer_id = c.id
+		ORDER BY cn.id DESC
+	`)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +116,7 @@ func (s *Store) ListCreditNotes() ([]CreditNote, error) {
 	var notes []CreditNote
 	for rows.Next() {
 		var c CreditNote
-		if err := rows.Scan(&c.ID, &c.CreditNoteNumber, &c.Date, &c.RecipientName, &c.Status, &c.TaxRate, &c.IsSmallBusiness); err != nil {
+		if err := rows.Scan(&c.ID, &c.CreditNoteNumber, &c.Date, &c.RecipientName, &c.Status, &c.TaxRate, &c.IsSmallBusiness, &c.CustomerID, &c.CustomerNumber); err != nil {
 			return nil, err
 		}
 		notes = append(notes, c)
@@ -121,9 +127,11 @@ func (s *Store) ListCreditNotes() ([]CreditNote, error) {
 func (s *Store) GetCreditNote(id int) (*CreditNote, error) {
 	var c CreditNote
 	err := s.DB.QueryRow(`
-		SELECT id, credit_note_number, date, sender_name, sender_address, recipient_name, recipient_address, tax_rate, created_at, status, is_small_business, customer_id, invoice_id
-		FROM credit_notes WHERE id = ?
-	`, id).Scan(&c.ID, &c.CreditNoteNumber, &c.Date, &c.SenderName, &c.SenderAddress, &c.RecipientName, &c.RecipientAddress, &c.TaxRate, &c.CreatedAt, &c.Status, &c.IsSmallBusiness, &c.CustomerID, &c.InvoiceID)
+		SELECT cn.id, cn.credit_note_number, cn.date, cn.sender_name, cn.sender_address, cn.recipient_name, cn.recipient_address, cn.tax_rate, cn.created_at, cn.status, cn.is_small_business, cn.customer_id, COALESCE(cust.customer_number, ''), cn.invoice_id
+		FROM credit_notes cn
+		LEFT JOIN customers cust ON cn.customer_id = cust.id
+		WHERE cn.id = ?
+	`, id).Scan(&c.ID, &c.CreditNoteNumber, &c.Date, &c.SenderName, &c.SenderAddress, &c.RecipientName, &c.RecipientAddress, &c.TaxRate, &c.CreatedAt, &c.Status, &c.IsSmallBusiness, &c.CustomerID, &c.CustomerNumber, &c.InvoiceID)
 	if err != nil {
 		return nil, err
 	}

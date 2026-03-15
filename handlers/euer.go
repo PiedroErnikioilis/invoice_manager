@@ -304,7 +304,8 @@ func (h *EuerHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/pdf")
-	w.Header().Set("Content-Disposition", "inline; filename=euer_uebersicht.pdf")
+	filename := models.FormatDocumentNumber(settings.EuerFilenameSchema, 0) + ".pdf"
+	w.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=%s", filename))
 	http.ServeFile(w, r, path)
 }
 
@@ -322,8 +323,11 @@ func (h *EuerHandler) DownloadCSV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	settings, _ := h.Store.GetAppSettings()
+	filename := models.FormatDocumentNumber(settings.EuerFilenameSchema, 0) + ".csv"
+
 	w.Header().Set("Content-Type", "text/csv")
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=euer_export_%d.csv", year))
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 
 	// German Excel uses semicolon as separator
 	fmt.Fprintf(w, "Datum;Typ;Beleg-Nr;Beschreibung;Kategorie;Netto;USt%%;USt-Betrag;Brutto\n")

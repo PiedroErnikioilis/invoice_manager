@@ -175,7 +175,7 @@ templ InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) {
 				if invoice.CustomerID != nil {
 					<tr>
 						<td class="info-label">Kunden-Nr:</td>
-						<td>{ fmt.Sprintf("KD-%04d", *invoice.CustomerID) }</td>
+						<td>{ invoice.CustomerNumber }</td>
 					</tr>
 				}
 			</table>

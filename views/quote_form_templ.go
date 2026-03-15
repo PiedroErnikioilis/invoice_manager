@@ -206,17 +206,30 @@ func QuoteForm(quote *models.Quote, customers []models.Customer, products []mode
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</option>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, " (")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var6 string
+				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(c.CustomerNumber)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 62, Col: 148}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, ")</option>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</select> <input type=\"hidden\" name=\"customer_id\" id=\"customer_id\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</select> <input type=\"hidden\" name=\"customer_id\" id=\"customer_id\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(func() string {
+			var templ_7745c5c3_Var7 string
+			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(func() string {
 				if quote.CustomerID != nil {
 					return fmt.Sprintf("%d", *quote.CustomerID)
 				} else {
@@ -226,11 +239,11 @@ func QuoteForm(quote *models.Quote, customers []models.Customer, products []mode
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 65, Col: 185}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\"></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "\"></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -242,77 +255,77 @@ func QuoteForm(quote *models.Quote, customers []models.Customer, products []mode
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "</div></div><div class=\"mt-6\"><h3 class=\"font-bold mb-2\">Positionen</h3><table class=\"w-full text-left\" id=\"items-table\"><thead><tr><th class=\"w-1/2 p-2\">Beschreibung</th><th class=\"w-24 p-2\">Menge</th><th class=\"w-32 p-2\">Preis (€)</th><th></th></tr></thead> <tbody>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "</div></div><div class=\"mt-6\"><h3 class=\"font-bold mb-2\">Positionen</h3><table class=\"w-full text-left\" id=\"items-table\"><thead><tr><th class=\"w-1/2 p-2\">Beschreibung</th><th class=\"w-24 p-2\">Menge</th><th class=\"w-32 p-2\">Preis (€)</th><th></th></tr></thead> <tbody>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if len(quote.Items) > 0 {
 				for _, item := range quote.Items {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<tr><td class=\"p-1\"><div class=\"flex flex-col\"><select class=\"text-xs text-gray-500 mb-1 border rounded p-1\" onchange=\"selectProduct(this)\"><option value=\"\">Produkt wählen...</option> ")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<tr><td class=\"p-1\"><div class=\"flex flex-col\"><select class=\"text-xs text-gray-500 mb-1 border rounded p-1\" onchange=\"selectProduct(this)\"><option value=\"\">Produkt wählen...</option> ")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					for _, p := range products {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<option value=\"")
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
-						var templ_7745c5c3_Var7 string
-						templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", p.ID))
-						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 91, Col: 53}
-						}
-						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "\"")
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
-						if item.ProductID != nil && *item.ProductID == p.ID {
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, " selected")
-							if templ_7745c5c3_Err != nil {
-								return templ_7745c5c3_Err
-							}
-						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, ">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "<option value=\"")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var8 string
-						templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
+						templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", p.ID))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 91, Col: 127}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 91, Col: 53}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "</option>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\"")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+						if item.ProductID != nil && *item.ProductID == p.ID {
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, " selected")
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
+						}
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, ">")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+						var templ_7745c5c3_Var9 string
+						templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
+						if templ_7745c5c3_Err != nil {
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 91, Col: 127}
+						}
+						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "</option>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "</select> <input name=\"item_description[]\" class=\"border rounded w-full p-2\" required value=\"")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					var templ_7745c5c3_Var9 string
-					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(item.Description)
-					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 94, Col: 112}
-					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\"> <input type=\"hidden\" name=\"item_product_id[]\" value=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "</select> <input name=\"item_description[]\" class=\"border rounded w-full p-2\" required value=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var10 string
-					templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(func() string {
+					templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(item.Description)
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 94, Col: 112}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "\"> <input type=\"hidden\" name=\"item_product_id[]\" value=\"")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var11 string
+					templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(func() string {
 						if item.ProductID != nil {
 							return fmt.Sprintf("%d", *item.ProductID)
 						} else {
@@ -322,84 +335,84 @@ func QuoteForm(quote *models.Quote, customers []models.Customer, products []mode
 					if templ_7745c5c3_Err != nil {
 						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 95, Col: 175}
 					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "\"></div></td><td class=\"p-1 align-top\"><input name=\"item_quantity[]\" type=\"number\" class=\"border rounded w-full p-2\" required value=\"")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					var templ_7745c5c3_Var11 string
-					templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(item.Quantity))
-					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 98, Col: 158}
-					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "\"></td><td class=\"p-1 align-top\"><input name=\"item_price[]\" type=\"text\" inputmode=\"decimal\" class=\"border rounded w-full p-2\" required value=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "\"></div></td><td class=\"p-1 align-top\"><input name=\"item_quantity[]\" type=\"number\" class=\"border rounded w-full p-2\" required value=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var12 string
-					templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", item.PricePerUnit))
+					templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(item.Quantity))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 99, Col: 184}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 98, Col: 158}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "\"></td><td class=\"p-1 align-top\"><button type=\"button\" class=\"text-red-500 font-bold px-2 py-2\" onclick=\"this.closest('tr').remove()\">×</button></td></tr>")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-				}
-			} else {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "<tr><td class=\"p-1\"><div class=\"flex flex-col\"><select class=\"text-xs text-gray-500 mb-1 border rounded p-1\" onchange=\"selectProduct(this)\"><option value=\"\">Produkt wählen...</option> ")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				for _, p := range products {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "<option value=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "\"></td><td class=\"p-1 align-top\"><input name=\"item_price[]\" type=\"text\" inputmode=\"decimal\" class=\"border rounded w-full p-2\" required value=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var13 string
-					templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", p.ID))
+					templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", item.PricePerUnit))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 110, Col: 52}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 99, Col: 184}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "\"></td><td class=\"p-1 align-top\"><button type=\"button\" class=\"text-red-500 font-bold px-2 py-2\" onclick=\"this.closest('tr').remove()\">×</button></td></tr>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
+			} else {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "<tr><td class=\"p-1\"><div class=\"flex flex-col\"><select class=\"text-xs text-gray-500 mb-1 border rounded p-1\" onchange=\"selectProduct(this)\"><option value=\"\">Produkt wählen...</option> ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				for _, p := range products {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "<option value=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var14 string
-					templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
+					templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", p.ID))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 110, Col: 63}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 110, Col: 52}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "</option>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "\">")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var15 string
+					templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 110, Col: 63}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "</option>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "</select> <input name=\"item_description[]\" class=\"border rounded w-full p-2\" required placeholder=\"Artikel oder Leistung\"> <input type=\"hidden\" name=\"item_product_id[]\" value=\"\"></div></td><td class=\"p-1 align-top\"><input name=\"item_quantity[]\" type=\"number\" class=\"border rounded w-full p-2\" required value=\"1\"></td><td class=\"p-1 align-top\"><input name=\"item_price[]\" type=\"text\" inputmode=\"decimal\" class=\"border rounded w-full p-2\" required placeholder=\"0,00\"></td><td class=\"p-1 align-top\"><button type=\"button\" class=\"text-red-500 font-bold px-2 py-2\" onclick=\"this.closest('tr').remove()\">×</button></td></tr>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "</select> <input name=\"item_description[]\" class=\"border rounded w-full p-2\" required placeholder=\"Artikel oder Leistung\"> <input type=\"hidden\" name=\"item_product_id[]\" value=\"\"></div></td><td class=\"p-1 align-top\"><input name=\"item_quantity[]\" type=\"number\" class=\"border rounded w-full p-2\" required value=\"1\"></td><td class=\"p-1 align-top\"><input name=\"item_price[]\" type=\"text\" inputmode=\"decimal\" class=\"border rounded w-full p-2\" required placeholder=\"0,00\"></td><td class=\"p-1 align-top\"><button type=\"button\" class=\"text-red-500 font-bold px-2 py-2\" onclick=\"this.closest('tr').remove()\">×</button></td></tr>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "</tbody></table><button type=\"button\" class=\"mt-2 text-sm text-blue-600 hover:text-blue-800 font-bold\" onclick=\"addItemRow()\">+ Position hinzufügen</button></div><div class=\"mt-6 grid grid-cols-1 md:grid-cols-3 gap-4\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "</tbody></table><button type=\"button\" class=\"mt-2 text-sm text-blue-600 hover:text-blue-800 font-bold\" onclick=\"addItemRow()\">+ Position hinzufügen</button></div><div class=\"mt-6 grid grid-cols-1 md:grid-cols-3 gap-4\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -407,56 +420,56 @@ func QuoteForm(quote *models.Quote, customers []models.Customer, products []mode
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "</div><div class=\"flex items-center justify-between mt-8\"><div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "</div><div class=\"flex items-center justify-between mt-8\"><div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if quote.ID != 0 && quote.Status != "Umgewandelt" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "<form action=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "<form action=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var15 templ.SafeURL
-				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/quotes/%d/convert", quote.ID)))
+				var templ_7745c5c3_Var16 templ.SafeURL
+				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/quotes/%d/convert", quote.ID)))
 				if templ_7745c5c3_Err != nil {
 					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 132, Col: 101}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "\" method=\"POST\" class=\"inline\"><button type=\"submit\" class=\"bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow\">In Rechnung umwandeln</button></form>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "\" method=\"POST\" class=\"inline\"><button type=\"submit\" class=\"bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow\">In Rechnung umwandeln</button></form>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "</div><button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\" type=\"submit\">Speichern</button></div></form></div><div id=\"products-data\" data-products=\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var16 string
-			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(jsonString(products))
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 145, Col: 62}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "\" style=\"display:none;\"></div><div id=\"customers-data\" data-customers=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "</div><button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\" type=\"submit\">Speichern</button></div></form></div><div id=\"products-data\" data-products=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var17 string
-			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(jsonString(customers))
+			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(jsonString(products))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 146, Col: 65}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 145, Col: 62}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "\" style=\"display:none;\"></div><script>\n            let products = [];\n            let customers = [];\n            try {\n                products = JSON.parse(document.getElementById('products-data').dataset.products);\n                customers = JSON.parse(document.getElementById('customers-data').dataset.customers);\n            } catch(e) {\n                console.error(\"Failed to parse data\", e);\n            }\n\n            function selectCustomer(select) {\n                const id = parseInt(select.value);\n                const customer = customers.find(c => c.ID === id);\n                \n                if (customer) {\n                    document.querySelector('input[name=\"recipient_name\"]').value = customer.Name;\n                    document.querySelector('textarea[name=\"recipient_address\"]').value = customer.Address;\n                    document.getElementById('customer_id').value = customer.ID;\n                } else {\n                    document.getElementById('customer_id').value = \"\";\n                }\n            }\n\n            function selectProduct(select) {\n                const id = parseInt(select.value);\n                const row = select.closest('tr');\n                const descInput = row.querySelector('input[name=\"item_description[]\"]');\n                const priceInput = row.querySelector('input[name=\"item_price[]\"]');\n                const idInput = row.querySelector('input[name=\"item_product_id[]\"]');\n\n                if (id) {\n                    const product = products.find(p => p.ID === id);\n                    if (product) {\n                        descInput.value = product.Name + (product.Description ? \" - \" + product.Description : \"\");\n                        priceInput.value = product.Price.toFixed(2);\n                        idInput.value = product.ID;\n                    }\n                } else {\n                    idInput.value = \"\";\n                }\n            }\n\n            function addItemRow() {\n                const tbody = document.querySelector('#items-table tbody');\n                const tr = document.createElement('tr');\n                \n                let options = '<option value=\"\">Produkt wählen...</option>';\n                products.forEach(p => {\n                    options += `<option value=\"${p.ID}\">${p.Name}</option>`;\n                });\n\n                tr.innerHTML = `\n                    <td class=\"p-1\">\n                        <div class=\"flex flex-col\">\n                            <select class=\"text-xs text-gray-500 mb-1 border rounded p-1\" onchange=\"selectProduct(this)\">\n                                ${options}\n                            </select>\n                            <input name=\"item_description[]\" class=\"border rounded w-full p-2\" required placeholder=\"Artikel oder Leistung\" />\n                            <input type=\"hidden\" name=\"item_product_id[]\" value=\"\" />\n                        </div>\n                    </td>\n                    <td class=\"p-1 align-top\"><input name=\"item_quantity[]\" type=\"number\" class=\"border rounded w-full p-2\" required value=\"1\" /></td>\n                    <td class=\"p-1 align-top\"><input name=\"item_price[]\" type=\"text\" inputmode=\"decimal\" class=\"border rounded w-full p-2\" required placeholder=\"0,00\" /></td>\n                    <td class=\"p-1 align-top\"><button type=\"button\" class=\"text-red-500 font-bold px-2 py-2\" onclick=\"this.closest('tr').remove()\">×</button></td>\n                `;\n                tbody.appendChild(tr);\n            }\n        </script>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "\" style=\"display:none;\"></div><div id=\"customers-data\" data-customers=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var18 string
+			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(jsonString(customers))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 146, Col: 65}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "\" style=\"display:none;\"></div><script>\n            let products = [];\n            let customers = [];\n            try {\n                products = JSON.parse(document.getElementById('products-data').dataset.products);\n                customers = JSON.parse(document.getElementById('customers-data').dataset.customers);\n            } catch(e) {\n                console.error(\"Failed to parse data\", e);\n            }\n\n            function selectCustomer(select) {\n                const id = parseInt(select.value);\n                const customer = customers.find(c => c.ID === id);\n                \n                if (customer) {\n                    document.querySelector('input[name=\"recipient_name\"]').value = customer.Name;\n                    document.querySelector('textarea[name=\"recipient_address\"]').value = customer.Address;\n                    document.getElementById('customer_id').value = customer.ID;\n                } else {\n                    document.getElementById('customer_id').value = \"\";\n                }\n            }\n\n            function selectProduct(select) {\n                const id = parseInt(select.value);\n                const row = select.closest('tr');\n                const descInput = row.querySelector('input[name=\"item_description[]\"]');\n                const priceInput = row.querySelector('input[name=\"item_price[]\"]');\n                const idInput = row.querySelector('input[name=\"item_product_id[]\"]');\n\n                if (id) {\n                    const product = products.find(p => p.ID === id);\n                    if (product) {\n                        descInput.value = product.Name + (product.Description ? \" - \" + product.Description : \"\");\n                        priceInput.value = product.Price.toFixed(2);\n                        idInput.value = product.ID;\n                    }\n                } else {\n                    idInput.value = \"\";\n                }\n            }\n\n            function addItemRow() {\n                const tbody = document.querySelector('#items-table tbody');\n                const tr = document.createElement('tr');\n                \n                let options = '<option value=\"\">Produkt wählen...</option>';\n                products.forEach(p => {\n                    options += `<option value=\"${p.ID}\">${p.Name}</option>`;\n                });\n\n                tr.innerHTML = `\n                    <td class=\"p-1\">\n                        <div class=\"flex flex-col\">\n                            <select class=\"text-xs text-gray-500 mb-1 border rounded p-1\" onchange=\"selectProduct(this)\">\n                                ${options}\n                            </select>\n                            <input name=\"item_description[]\" class=\"border rounded w-full p-2\" required placeholder=\"Artikel oder Leistung\" />\n                            <input type=\"hidden\" name=\"item_product_id[]\" value=\"\" />\n                        </div>\n                    </td>\n                    <td class=\"p-1 align-top\"><input name=\"item_quantity[]\" type=\"number\" class=\"border rounded w-full p-2\" required value=\"1\" /></td>\n                    <td class=\"p-1 align-top\"><input name=\"item_price[]\" type=\"text\" inputmode=\"decimal\" class=\"border rounded w-full p-2\" required placeholder=\"0,00\" /></td>\n                    <td class=\"p-1 align-top\"><button type=\"button\" class=\"text-red-500 font-bold px-2 py-2\" onclick=\"this.closest('tr').remove()\">×</button></td>\n                `;\n                tbody.appendChild(tr);\n            }\n        </script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

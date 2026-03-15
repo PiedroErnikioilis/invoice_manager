@@ -209,9 +209,9 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var12 string
-				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("KD-%04d", *invoice.CustomerID))
+				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(invoice.CustomerNumber)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 178, Col: 55}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 178, Col: 34}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {

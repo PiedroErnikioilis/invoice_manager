@@ -39,8 +39,11 @@ func (h *CreditNoteHandler) NewFromInvoice(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	settings, _ := h.Store.GetAppSettings()
+	creditNoteNum := models.FormatDocumentNumber(settings.CreditNoteNumberSchema, settings.NextCreditNoteNumber)
+
 	note := &models.CreditNote{
-		CreditNoteNumber: "GS-" + invoice.InvoiceNumber,
+		CreditNoteNumber: creditNoteNum,
 		Date:             time.Now().Format("2006-01-02"),
 		SenderName:       invoice.SenderName,
 		SenderAddress:    invoice.SenderAddress,
@@ -72,6 +75,13 @@ func (h *CreditNoteHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	// Increment credit note number if it matches the auto-generated one
+	settings, _ := h.Store.GetAppSettings()
+	expectedNum := models.FormatDocumentNumber(settings.CreditNoteNumberSchema, settings.NextCreditNoteNumber)
+	if note.CreditNoteNumber == expectedNum {
+		h.Store.IncrementNextCreditNoteNumber()
 	}
 
 	_, err = h.Store.CreateCreditNote(note)

@@ -105,7 +105,7 @@ templ InvoiceList(invoices []models.Invoice, filter models.InvoiceFilter) {
 							<td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
 								<div>{ invoice.RecipientName }</div>
 								if invoice.CustomerID != nil {
-									<div class="text-xs text-gray-400">{ fmt.Sprintf("KD-%04d", *invoice.CustomerID) }</div>
+									<div class="text-xs text-gray-400">{ invoice.CustomerNumber }</div>
 								}
 							</td>
 							<td class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">

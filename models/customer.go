@@ -3,18 +3,19 @@ package models
 import "time"
 
 type Customer struct {
-	ID        int
-	Name      string
-	Address   string
-	Email     string
-	CreatedAt time.Time
+	ID             int
+	CustomerNumber string
+	Name           string
+	Address        string
+	Email          string
+	CreatedAt      time.Time
 }
 
 func (s *Store) CreateCustomer(c Customer) (int, error) {
 	res, err := s.DB.Exec(`
-		INSERT INTO customers (name, address, email)
-		VALUES (?, ?, ?)
-	`, c.Name, c.Address, c.Email)
+		INSERT INTO customers (customer_number, name, address, email)
+		VALUES (?, ?, ?, ?)
+	`, c.CustomerNumber, c.Name, c.Address, c.Email)
 	if err != nil {
 		return 0, err
 	}
@@ -25,9 +26,9 @@ func (s *Store) CreateCustomer(c Customer) (int, error) {
 func (s *Store) UpdateCustomer(c Customer) error {
 	_, err := s.DB.Exec(`
 		UPDATE customers
-		SET name = ?, address = ?, email = ?
+		SET customer_number = ?, name = ?, address = ?, email = ?
 		WHERE id = ?
-	`, c.Name, c.Address, c.Email, c.ID)
+	`, c.CustomerNumber, c.Name, c.Address, c.Email, c.ID)
 	return err
 }
 
@@ -37,7 +38,7 @@ func (s *Store) DeleteCustomer(id int) error {
 }
 
 func (s *Store) ListCustomers() ([]Customer, error) {
-	rows, err := s.DB.Query(`SELECT id, name, address, email, created_at FROM customers ORDER BY name ASC`)
+	rows, err := s.DB.Query(`SELECT id, customer_number, name, address, email, created_at FROM customers ORDER BY name ASC`)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +47,7 @@ func (s *Store) ListCustomers() ([]Customer, error) {
 	var customers []Customer
 	for rows.Next() {
 		var c Customer
-		if err := rows.Scan(&c.ID, &c.Name, &c.Address, &c.Email, &c.CreatedAt); err != nil {
+		if err := rows.Scan(&c.ID, &c.CustomerNumber, &c.Name, &c.Address, &c.Email, &c.CreatedAt); err != nil {
 			return nil, err
 		}
 		customers = append(customers, c)
@@ -57,9 +58,9 @@ func (s *Store) ListCustomers() ([]Customer, error) {
 func (s *Store) GetCustomer(id int) (*Customer, error) {
 	var c Customer
 	err := s.DB.QueryRow(`
-		SELECT id, name, address, email, created_at
+		SELECT id, customer_number, name, address, email, created_at
 		FROM customers WHERE id = ?
-	`, id).Scan(&c.ID, &c.Name, &c.Address, &c.Email, &c.CreatedAt)
+	`, id).Scan(&c.ID, &c.CustomerNumber, &c.Name, &c.Address, &c.Email, &c.CreatedAt)
 	if err != nil {
 		return nil, err
 	}

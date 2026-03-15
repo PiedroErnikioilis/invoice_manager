@@ -17,6 +17,7 @@ templ CustomerForm(customer *models.Customer) {
 				<a href="/customers" class="text-gray-600 hover:text-gray-800">Zurück</a>
 			</div>
 			<form action={ templ.SafeURL(getCustomerActionURL(customer)) } method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+				@Input("Kundennummer", "customer_number", "text", customer.CustomerNumber, "KD-0001", true, "Eindeutige Nummer des Kunden.")
 				@Input("Name / Firma", "name", "text", customer.Name, "Firmenname oder Vor- Nachname", true, "Der Name des Kunden.")
 				@Input("Email", "email", "email", customer.Email, "Email Adresse", false, "Email für Rechnungsversand.")
 				@Textarea("Anschrift", "address", customer.Address, 4)

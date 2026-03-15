@@ -17,6 +17,7 @@ type Invoice struct {
 	Status           string // 'Entwurf', 'Offen', 'Bezahlt'
 	IsSmallBusiness  bool
 	CustomerID       *int
+	CustomerNumber   string
 	Items            []InvoiceItem
 	ItemCount        int // nur für Listenansicht (via Subquery)
 }
@@ -272,9 +273,10 @@ func (f InvoiceFilter) OrderByClause() string {
 func (s *Store) ListInvoices(filter ...InvoiceFilter) ([]Invoice, error) {
 	query := `
 		SELECT i.id, i.invoice_number, i.date, i.sender_name, i.recipient_name,
-		       i.tax_rate, i.status, i.is_small_business, i.customer_id,
+		       i.tax_rate, i.status, i.is_small_business, i.customer_id, COALESCE(c.customer_number, ''),
 		       (SELECT COUNT(*) FROM invoice_items ii WHERE ii.invoice_id = i.id) AS item_count
-		FROM invoices i`
+		FROM invoices i
+		LEFT JOIN customers c ON i.customer_id = c.id`
 
 	var args []interface{}
 	var conditions []string
@@ -286,7 +288,7 @@ func (s *Store) ListInvoices(filter ...InvoiceFilter) ([]Invoice, error) {
 
 	if f.Search != "" {
 		conditions = append(conditions,
-			"(i.invoice_number LIKE ? OR i.recipient_name LIKE ? OR CAST(i.customer_id AS TEXT) LIKE ?)")
+			"(i.invoice_number LIKE ? OR i.recipient_name LIKE ? OR c.customer_number LIKE ?)")
 		like := "%" + f.Search + "%"
 		args = append(args, like, like, like)
 	}
@@ -313,7 +315,7 @@ func (s *Store) ListInvoices(filter ...InvoiceFilter) ([]Invoice, error) {
 	var invoices []Invoice
 	for rows.Next() {
 		var i Invoice
-		if err := rows.Scan(&i.ID, &i.InvoiceNumber, &i.Date, &i.SenderName, &i.RecipientName, &i.TaxRate, &i.Status, &i.IsSmallBusiness, &i.CustomerID, &i.ItemCount); err != nil {
+		if err := rows.Scan(&i.ID, &i.InvoiceNumber, &i.Date, &i.SenderName, &i.RecipientName, &i.TaxRate, &i.Status, &i.IsSmallBusiness, &i.CustomerID, &i.CustomerNumber, &i.ItemCount); err != nil {
 			return nil, err
 		}
 		invoices = append(invoices, i)
@@ -324,9 +326,11 @@ func (s *Store) ListInvoices(filter ...InvoiceFilter) ([]Invoice, error) {
 func (s *Store) GetInvoice(id int) (*Invoice, error) {
 	var i Invoice
 	err := s.DB.QueryRow(`
-		SELECT id, invoice_number, date, sender_name, sender_address, recipient_name, recipient_address, tax_rate, created_at, status, is_small_business, customer_id
-		FROM invoices WHERE id = ?
-	`, id).Scan(&i.ID, &i.InvoiceNumber, &i.Date, &i.SenderName, &i.SenderAddress, &i.RecipientName, &i.RecipientAddress, &i.TaxRate, &i.CreatedAt, &i.Status, &i.IsSmallBusiness, &i.CustomerID)
+		SELECT i.id, i.invoice_number, i.date, i.sender_name, i.sender_address, i.recipient_name, i.recipient_address, i.tax_rate, i.created_at, i.status, i.is_small_business, i.customer_id, COALESCE(c.customer_number, '')
+		FROM invoices i
+		LEFT JOIN customers c ON i.customer_id = c.id
+		WHERE i.id = ?
+	`, id).Scan(&i.ID, &i.InvoiceNumber, &i.Date, &i.SenderName, &i.SenderAddress, &i.RecipientName, &i.RecipientAddress, &i.TaxRate, &i.CreatedAt, &i.Status, &i.IsSmallBusiness, &i.CustomerID, &i.CustomerNumber)
 	if err != nil {
 		return nil, err
 	}

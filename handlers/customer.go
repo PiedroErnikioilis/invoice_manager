@@ -27,7 +27,12 @@ func (h *CustomerHandler) List(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CustomerHandler) New(w http.ResponseWriter, r *http.Request) {
-	views.CustomerForm(&models.Customer{}).Render(r.Context(), w)
+	settings, _ := h.Store.GetAppSettings()
+	custNum := models.FormatDocumentNumber(settings.CustomerIDSchema, settings.NextCustomerID)
+
+	views.CustomerForm(&models.Customer{
+		CustomerNumber: custNum,
+	}).Render(r.Context(), w)
 }
 
 func (h *CustomerHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -37,9 +42,17 @@ func (h *CustomerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	customer := models.Customer{
-		Name:    r.FormValue("name"),
-		Address: r.FormValue("address"),
-		Email:   r.FormValue("email"),
+		CustomerNumber: r.FormValue("customer_number"),
+		Name:           r.FormValue("name"),
+		Address:        r.FormValue("address"),
+		Email:          r.FormValue("email"),
+	}
+
+	// Increment customer number if it matches the auto-generated one
+	settings, _ := h.Store.GetAppSettings()
+	expectedNum := models.FormatDocumentNumber(settings.CustomerIDSchema, settings.NextCustomerID)
+	if customer.CustomerNumber == expectedNum {
+		h.Store.IncrementNextCustomerID()
 	}
 
 	_, err := h.Store.CreateCustomer(customer)
@@ -82,10 +95,11 @@ func (h *CustomerHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	customer := models.Customer{
-		ID:      id,
-		Name:    r.FormValue("name"),
-		Address: r.FormValue("address"),
-		Email:   r.FormValue("email"),
+		ID:             id,
+		CustomerNumber: r.FormValue("customer_number"),
+		Name:           r.FormValue("name"),
+		Address:        r.FormValue("address"),
+		Email:          r.FormValue("email"),
 	}
 
 	err = h.Store.UpdateCustomer(customer)

@@ -35,6 +35,9 @@ func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
 	}
 
 	nextNum, _ := strconv.Atoi(r.FormValue("next_invoice_number"))
+	nextQuoteNum, _ := strconv.Atoi(r.FormValue("next_quote_number"))
+	nextCreditNoteNum, _ := strconv.Atoi(r.FormValue("next_credit_note_number"))
+	nextCustomerID, _ := strconv.Atoi(r.FormValue("next_customer_id"))
 
 	backupMaxCount, _ := strconv.Atoi(r.FormValue("backup_max_count"))
 	if backupMaxCount < 1 {
@@ -51,23 +54,52 @@ func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
 		backupPath = models.DefaultBackupPath
 	}
 
+	invoiceSchema := r.FormValue("invoice_number_schema")
+	if invoiceSchema == "" {
+		invoiceSchema = "{N:4}"
+	}
+	quoteSchema := r.FormValue("quote_number_schema")
+	if quoteSchema == "" {
+		quoteSchema = "AG-{N:4}"
+	}
+	creditNoteSchema := r.FormValue("credit_note_number_schema")
+	if creditNoteSchema == "" {
+		creditNoteSchema = "GS-{N:4}"
+	}
+	customerIDSchema := r.FormValue("customer_id_schema")
+	if customerIDSchema == "" {
+		customerIDSchema = "KD-{N:4}"
+	}
+	euerFilenameSchema := r.FormValue("euer_filename_schema")
+	if euerFilenameSchema == "" {
+		euerFilenameSchema = "EÜR-{YYYY}"
+	}
+
 	settings := models.AppSettings{
-		SenderName:           r.FormValue("sender_name"),
-		SenderAddress:        r.FormValue("sender_address"),
-		NextInvoiceNumber:    nextNum,
-		BankName:             r.FormValue("bank_name"),
-		IBAN:                 r.FormValue("iban"),
-		BIC:                  r.FormValue("bic"),
-		Website:              r.FormValue("website"),
-		Email:                r.FormValue("email"),
-		PDFOutputPath:        r.FormValue("pdf_output_path"),
-		DefaultSmallBusiness: r.FormValue("default_small_business") == "on",
-		BackupPath:           backupPath,
-		BackupMaxCount:       backupMaxCount,
+		SenderName:             r.FormValue("sender_name"),
+		SenderAddress:          r.FormValue("sender_address"),
+		NextInvoiceNumber:      nextNum,
+		InvoiceNumberSchema:    invoiceSchema,
+		NextQuoteNumber:        nextQuoteNum,
+		QuoteNumberSchema:      quoteSchema,
+		NextCreditNoteNumber:   nextCreditNoteNum,
+		CreditNoteNumberSchema: creditNoteSchema,
+		NextCustomerID:         nextCustomerID,
+		CustomerIDSchema:       customerIDSchema,
+		EuerFilenameSchema:     euerFilenameSchema,
+		BankName:               r.FormValue("bank_name"),
+		IBAN:                   r.FormValue("iban"),
+		BIC:                    r.FormValue("bic"),
+		Website:                r.FormValue("website"),
+		Email:                  r.FormValue("email"),
+		PDFOutputPath:          r.FormValue("pdf_output_path"),
+		LogoPath:               r.FormValue("logo_path"),
+		DefaultSmallBusiness:   r.FormValue("default_small_business") == "on",
+		BackupPath:             backupPath,
+		BackupMaxCount:         backupMaxCount,
 		AutoBackupEnabled:      r.FormValue("auto_backup_enabled") == "on",
 		BackupMinIntervalHours: backupMinInterval,
 	}
-
 	// Handle Logo Upload
 	file, handler, err := r.FormFile("logo")
 	if err == nil {

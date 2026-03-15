@@ -149,13 +149,16 @@ func (s *Store) seedCustomers() ([]int, error) {
 	}
 
 	var ids []int
-	for _, c := range customers {
+	for i, c := range customers {
+		c.CustomerNumber = fmt.Sprintf("KD-%04d", i+1)
 		id, err := s.CreateCustomer(c)
 		if err != nil {
 			return nil, err
 		}
 		ids = append(ids, id)
 	}
+	// Update next customer id
+	_ = s.SetSetting("next_customer_id", "21")
 	return ids, nil
 }
 

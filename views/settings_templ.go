@@ -8,8 +8,10 @@ package views
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "din-invoice/models"
-import "fmt"
+import (
+	"din-invoice/models"
+	"fmt"
+)
 
 func SettingsForm(settings models.AppSettings) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -68,7 +70,7 @@ func SettingsForm(settings models.AppSettings) templ.Component {
 				var templ_7745c5c3_Var3 string
 				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(settings.LogoPath)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 19, Col: 76}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 21, Col: 76}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 				if templ_7745c5c3_Err != nil {
@@ -113,15 +115,308 @@ func SettingsForm(settings models.AppSettings) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "> <span class=\"text-sm font-bold text-gray-700\">Standardmäßig Kleinunternehmerregelung (§ 19 UStG)</span></label></div></div><div class=\"mb-6\"><h2 class=\"text-lg font-bold mb-4 border-b pb-2\">Nummernkreise</h2><p class=\"text-sm text-gray-600 mb-4\">Die nächste Rechnungsnummer wird automatisch hochgezählt, wenn sie beim Erstellen einer neuen Rechnung verwendet wird.</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "> <span class=\"text-sm font-bold text-gray-700\">Standardmäßig Kleinunternehmerregelung (§ 19 UStG)</span></label></div></div><div class=\"mb-6\"><h2 class=\"text-lg font-bold mb-4 border-b pb-2\">Nummernkreise</h2><p class=\"text-sm text-gray-600 mb-4\">Nummern werden automatisch hochgezählt, wenn sie beim Erstellen eines neuen Dokuments verwendet werden.</p><!-- Legende (gemeinsam für alle) --><div class=\"mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm\"><p class=\"font-bold text-gray-700 mb-2\">Verfügbare Platzhalter:</p><table class=\"w-full text-left\"><tbody><tr class=\"border-b border-blue-100\"><td class=\"py-1 pr-4 font-mono text-blue-800\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = Input("Nächste Rechnungsnummer (Zähler)", "next_invoice_number", "number", fmt.Sprintf("%d", settings.NextInvoiceNumber), "1", true, "Startwert für die automatische Nummerierung.").Render(ctx, templ_7745c5c3_Buffer)
+			var templ_7745c5c3_Var4 string
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs("{YYYY}")
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 57, Col: 65}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div><div class=\"mb-6\"><h2 class=\"text-lg font-bold mb-4 border-b pb-2\">PDF Export</h2>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</td><td class=\"py-1 text-gray-600\">Jahr (4-stellig, z.B. 2026)</td></tr><tr class=\"border-b border-blue-100\"><td class=\"py-1 pr-4 font-mono text-blue-800\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var5 string
+			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs("{YY}")
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 61, Col: 63}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</td><td class=\"py-1 text-gray-600\">Jahr (2-stellig, z.B. 26)</td></tr><tr class=\"border-b border-blue-100\"><td class=\"py-1 pr-4 font-mono text-blue-800\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var6 string
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs("{MM}")
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 65, Col: 63}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</td><td class=\"py-1 text-gray-600\">Monat (z.B. 03)</td></tr><tr class=\"border-b border-blue-100\"><td class=\"py-1 pr-4 font-mono text-blue-800\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var7 string
+			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs("{DD}")
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 69, Col: 63}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</td><td class=\"py-1 text-gray-600\">Tag (z.B. 15)</td></tr><tr class=\"border-b border-blue-100\"><td class=\"py-1 pr-4 font-mono text-blue-800\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var8 string
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs("{N}")
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 73, Col: 62}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</td><td class=\"py-1 text-gray-600\">Zähler ohne Auffüllung (z.B. 7)</td></tr><tr><td class=\"py-1 pr-4 font-mono text-blue-800\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var9 string
+			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs("{N:4}")
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 77, Col: 64}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</td><td class=\"py-1 text-gray-600\">Zähler mit Nullen aufgefüllt (z.B. 0007). Breite: 2–6</td></tr></tbody></table><p class=\"text-gray-500 text-xs mt-2\">Beispiele: <span class=\"font-mono\">RE-")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var10 string
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs("{YYYY}")
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 83, Col: 55}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "-")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var11 string
+			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs("{N:4}")
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 83, Col: 67}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</span> → RE-2026-0042 | <span class=\"font-mono\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var12 string
+			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs("{YY}")
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 83, Col: 128}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var13 string
+			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs("{MM}")
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 83, Col: 138}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "-")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var14 string
+			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs("{N:3}")
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 83, Col: 150}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</span> → 2603-042</p></div><!-- Rechnungen --><div class=\"mb-4 p-4 bg-white border rounded\"><h3 class=\"text-md font-bold text-gray-700 mb-3\">Rechnungen</h3><div class=\"grid grid-cols-1 md:grid-cols-2 gap-4\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = Input("Nächste Nr. (Zähler)", "next_invoice_number", "number", fmt.Sprintf("%d", settings.NextInvoiceNumber), "1", true, "").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "<div class=\"mb-4\"><label class=\"block text-gray-700 text-sm font-bold mb-2\" for=\"invoice_number_schema\">Nummernschema</label> <input class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\" id=\"invoice_number_schema\" name=\"invoice_number_schema\" type=\"text\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var15 string
+			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(settings.InvoiceNumberSchema)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 98, Col: 45}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\" placeholder=\"RE-{YYYY}-{N:4}\"></div></div><div class=\"p-2 bg-gray-50 border rounded\"><span class=\"text-xs text-gray-500\">Vorschau:</span> <span id=\"invoice-schema-preview\" class=\"font-mono text-blue-700 ml-1\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var16 string
+			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatDocumentNumber(settings.InvoiceNumberSchema, settings.NextInvoiceNumber))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 106, Col: 95}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</span></div></div><!-- Angebote --><div class=\"mb-4 p-4 bg-white border rounded\"><h3 class=\"text-md font-bold text-gray-700 mb-3\">Angebote</h3><div class=\"grid grid-cols-1 md:grid-cols-2 gap-4\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = Input("Nächste Nr. (Zähler)", "next_quote_number", "number", fmt.Sprintf("%d", settings.NextQuoteNumber), "1", true, "").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<div class=\"mb-4\"><label class=\"block text-gray-700 text-sm font-bold mb-2\" for=\"quote_number_schema\">Nummernschema</label> <input class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\" id=\"quote_number_schema\" name=\"quote_number_schema\" type=\"text\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var17 string
+			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(settings.QuoteNumberSchema)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 122, Col: 43}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\" placeholder=\"AG-{YYYY}-{N:4}\"></div></div><div class=\"p-2 bg-gray-50 border rounded\"><span class=\"text-xs text-gray-500\">Vorschau:</span> <span id=\"quote-schema-preview\" class=\"font-mono text-blue-700 ml-1\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var18 string
+			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatDocumentNumber(settings.QuoteNumberSchema, settings.NextQuoteNumber))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 130, Col: 91}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</span></div></div><!-- Gutschriften --><div class=\"mb-4 p-4 bg-white border rounded\"><h3 class=\"text-md font-bold text-gray-700 mb-3\">Gutschriften</h3><div class=\"grid grid-cols-1 md:grid-cols-2 gap-4\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = Input("Nächste Nr. (Zähler)", "next_credit_note_number", "number", fmt.Sprintf("%d", settings.NextCreditNoteNumber), "1", true, "").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "<div class=\"mb-4\"><label class=\"block text-gray-700 text-sm font-bold mb-2\" for=\"credit_note_number_schema\">Nummernschema</label> <input class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\" id=\"credit_note_number_schema\" name=\"credit_note_number_schema\" type=\"text\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var19 string
+			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(settings.CreditNoteNumberSchema)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 146, Col: 48}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" placeholder=\"GS-{YYYY}-{N:4}\"></div></div><div class=\"p-2 bg-gray-50 border rounded\"><span class=\"text-xs text-gray-500\">Vorschau:</span> <span id=\"credit-note-schema-preview\" class=\"font-mono text-blue-700 ml-1\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var20 string
+			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatDocumentNumber(settings.CreditNoteNumberSchema, settings.NextCreditNoteNumber))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 154, Col: 101}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "</span></div></div><!-- Kunden --><div class=\"mb-4 p-4 bg-white border rounded\"><h3 class=\"text-md font-bold text-gray-700 mb-3\">Kunden</h3><div class=\"grid grid-cols-1 md:grid-cols-2 gap-4\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = Input("Nächste Nr. (Zähler)", "next_customer_id", "number", fmt.Sprintf("%d", settings.NextCustomerID), "1", true, "").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<div class=\"mb-4\"><label class=\"block text-gray-700 text-sm font-bold mb-2\" for=\"customer_id_schema\">Nummernschema</label> <input class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\" id=\"customer_id_schema\" name=\"customer_id_schema\" type=\"text\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var21 string
+			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(settings.CustomerIDSchema)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 171, Col: 42}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "\" placeholder=\"KD-{N:4}\"></div></div><div class=\"p-2 bg-gray-50 border rounded\"><span class=\"text-xs text-gray-500\">Vorschau:</span> <span id=\"customer-schema-preview\" class=\"font-mono text-blue-700 ml-1\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var22 string
+			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatDocumentNumber(settings.CustomerIDSchema, settings.NextCustomerID))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 179, Col: 89}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "</span></div></div><!-- EÜR Dateiname --><div class=\"mb-4 p-4 bg-white border rounded\"><h3 class=\"text-md font-bold text-gray-700 mb-3\">EÜR Dateiname (Export)</h3><div class=\"grid grid-cols-1 md:grid-cols-2 gap-4\"><div class=\"mb-4\"><label class=\"block text-gray-700 text-sm font-bold mb-2\" for=\"euer_filename_schema\">Schema</label> <input class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\" id=\"euer_filename_schema\" name=\"euer_filename_schema\" type=\"text\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var23 string
+			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(settings.EuerFilenameSchema)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 195, Col: 44}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\" placeholder=\"EÜR-{YYYY}\"></div></div><div class=\"p-2 bg-gray-50 border rounded\"><span class=\"text-xs text-gray-500\">Vorschau:</span> <span id=\"euer-filename-preview\" class=\"font-mono text-blue-700 ml-1\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var24 string
+			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatDocumentNumber(settings.EuerFilenameSchema, 0))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/settings.templ`, Line: 203, Col: 69}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "</span></div></div><!-- Live-Update Script für alle Nummernkreise --><script>\n\t\t\t\t\t\t\t\t(function() {\n\t\t\t\t\t\t\t\tfunction formatSchema(schema, num) {\n\t\t\t\t\t\t\t\tvar now = new Date();\n\t\t\t\t\t\t\t\tvar result = schema\n\t\t\t\t\t\t\t\t\t.replace(/\\{YYYY\\}/g, now.getFullYear().toString())\n\t\t\t\t\t\t\t\t\t.replace(/\\{YY\\}/g, now.getFullYear().toString().slice(-2))\n\t\t\t\t\t\t\t\t\t.replace(/\\{MM\\}/g, String(now.getMonth() + 1).padStart(2, '0'))\n\t\t\t\t\t\t\t\t\t.replace(/\\{DD\\}/g, String(now.getDate()).padStart(2, '0'));\n\t\t\t\t\t\t\t\tresult = result.replace(/\\{N(?::(\\d+))?\\}/g, function(match, width) {\n\t\t\t\t\t\t\t\t\tif (width) { return String(num).padStart(parseInt(width), '0'); }\n\t\t\t\t\t\t\t\t\treturn String(num);\n\t\t\t\t\t\t\t\t});\n\t\t\t\t\t\t\t\treturn result;\n\t\t\t\t\t\t\t\t}\n\n\t\t\t\t\t\t\t\tfunction bindPreview(schemaId, counterId, previewId, defaultSchema) {\n\t\t\t\t\t\t\t\tvar schemaInput = document.getElementById(schemaId);\n\t\t\t\t\t\t\t\tvar counterInput = document.getElementById(counterId);\n\t\t\t\t\t\t\t\tvar preview = document.getElementById(previewId);\n\t\t\t\t\t\t\t\tif (!schemaInput || !preview) return;\n\n\t\t\t\t\t\t\t\tfunction update() {\n\t\t\t\t\t\t\t\t\tvar schema = schemaInput.value || defaultSchema;\n\t\t\t\t\t\t\t\t\tvar num = counterInput ? (parseInt(counterInput.value) || 1) : 0;\n\t\t\t\t\t\t\t\t\tpreview.textContent = formatSchema(schema, num);\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t\tschemaInput.addEventListener('input', update);\n\t\t\t\t\t\t\t\tif (counterInput) counterInput.addEventListener('input', update);\n\t\t\t\t\t\t\t\t}\n\n\t\t\t\t\t\t\t\tbindPreview('invoice_number_schema', 'next_invoice_number', 'invoice-schema-preview', '{N:4}');\n\t\t\t\t\t\t\t\tbindPreview('quote_number_schema', 'next_quote_number', 'quote-schema-preview', 'AG-{N:4}');\n\t\t\t\t\t\t\t\tbindPreview('credit_note_number_schema', 'next_credit_note_number', 'credit-note-schema-preview', 'GS-{N:4}');\n\t\t\t\t\t\t\t\tbindPreview('customer_id_schema', 'next_customer_id', 'customer-schema-preview', 'KD-{N:4}');\n\t\t\t\t\t\t\t\tbindPreview('euer_filename_schema', null, 'euer-filename-preview', 'EÜR-{YYYY}');\n\t\t\t\t\t\t\t\t})();\n\t\t\t\t\t\t\t\t</script></div><div class=\"mb-6\"><h2 class=\"text-lg font-bold mb-4 border-b pb-2\">PDF Export</h2>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -129,7 +424,7 @@ func SettingsForm(settings models.AppSettings) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div><div class=\"mb-6\"><h2 class=\"text-lg font-bold mb-4 border-b pb-2\">Datensicherung</h2>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "</div><div class=\"mb-6\"><h2 class=\"text-lg font-bold mb-4 border-b pb-2\">Datensicherung</h2>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -145,17 +440,17 @@ func SettingsForm(settings models.AppSettings) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div class=\"mb-4\"><label class=\"flex items-center cursor-pointer\"><input type=\"checkbox\" name=\"auto_backup_enabled\" class=\"mr-2 w-5 h-5\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "<div class=\"mb-4\"><label class=\"flex items-center cursor-pointer\"><input type=\"checkbox\" name=\"auto_backup_enabled\" class=\"mr-2 w-5 h-5\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if settings.AutoBackupEnabled {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, " checked")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, " checked")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "> <span class=\"text-sm font-bold text-gray-700\">Automatisches Backup beim Start (Pre-Migration)</span></label><p class=\"text-gray-500 text-xs italic mt-1\">Sichert die Datenbank automatisch bevor Schema-Änderungen oder Migrationen ausgeführt werden.</p></div><a href=\"/backups\" class=\"text-blue-600 hover:underline text-sm\">Backups verwalten →</a></div><div class=\"flex items-center justify-end\"><button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\" type=\"submit\">Speichern</button></div></form></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "> <span class=\"text-sm font-bold text-gray-700\">Automatisches Backup beim Start (Pre-Migration)</span></label><p class=\"text-gray-500 text-xs italic mt-1\">Sichert die Datenbank automatisch bevor Schema-Änderungen oder Migrationen ausgeführt werden.</p></div><a href=\"/backups\" class=\"text-blue-600 hover:underline text-sm\">Backups verwalten →</a></div><div class=\"flex items-center justify-end\"><button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\" type=\"submit\">Speichern</button></div></form></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

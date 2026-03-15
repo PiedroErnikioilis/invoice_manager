@@ -185,6 +185,7 @@ func initDB(dataSourceName string, isNew bool) (*sql.DB, bool, error) {
 	createTables := `
 	CREATE TABLE IF NOT EXISTS customers (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		customer_number TEXT NOT NULL,
 		name TEXT NOT NULL,
 		address TEXT NOT NULL,
 		email TEXT,
@@ -335,11 +336,15 @@ func initDB(dataSourceName string, isNew bool) (*sql.DB, bool, error) {
 		"ALTER TABLE expenses ADD COLUMN category_id INTEGER REFERENCES expense_categories(id) ON DELETE SET NULL",
 		"ALTER TABLE expenses ADD COLUMN tax_rate REAL DEFAULT 19.0",
 		"ALTER TABLE products ADD COLUMN min_stock INTEGER DEFAULT 0",
+		"ALTER TABLE customers ADD COLUMN customer_number TEXT",
 	}
 
 	for _, m := range migrations {
 		_, _ = db.Exec(m)
 	}
+
+	// Fix missing customer numbers for existing customers
+	_, _ = db.Exec("UPDATE customers SET customer_number = 'KD-' || printf('%04d', id) WHERE customer_number IS NULL OR customer_number = ''")
 
 	// Migrate existing category text values into expense_categories table
 	migrateCategories(db)

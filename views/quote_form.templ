@@ -59,7 +59,7 @@ templ QuoteForm(quote *models.Quote, customers []models.Customer, products []mod
 							<select id="customer-select" class="text-xs border rounded p-1" onchange="selectCustomer(this)">
 								<option value="">Kunde wählen...</option>
 								for _, c := range customers {
-									<option value={ fmt.Sprintf("%d", c.ID) } selected?={ quote.CustomerID != nil && *quote.CustomerID == c.ID }>{ c.Name }</option>
+									<option value={ fmt.Sprintf("%d", c.ID) } selected?={ quote.CustomerID != nil && *quote.CustomerID == c.ID }>{ c.Name } ({ c.CustomerNumber })</option>
 								}
 							</select>
 							<input type="hidden" name="customer_id" id="customer_id" value={ func() string { if quote.CustomerID != nil { return fmt.Sprintf("%d", *quote.CustomerID) } else { return "" } }() }/>
