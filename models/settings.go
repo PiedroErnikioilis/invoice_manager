@@ -32,6 +32,24 @@ type AppSettings struct {
 	PDFOutputPath        string
 	LogoPath             string
 	DefaultSmallBusiness bool
+	BackupPath             string
+	BackupMaxCount         int
+	AutoBackupEnabled      bool
+	BackupMinIntervalHours int
+}
+
+func (s AppSettings) BackupMinIntervalHoursStr() string {
+	if s.BackupMinIntervalHours == 0 {
+		return strconv.Itoa(DefaultBackupMinIntervalHours)
+	}
+	return strconv.Itoa(s.BackupMinIntervalHours)
+}
+
+func (s AppSettings) BackupMaxCountStr() string {
+	if s.BackupMaxCount == 0 {
+		return strconv.Itoa(DefaultBackupMaxCount)
+	}
+	return strconv.Itoa(s.BackupMaxCount)
 }
 
 func (s *Store) GetAppSettings() (AppSettings, error) {
@@ -78,6 +96,31 @@ func (s *Store) GetAppSettings() (AppSettings, error) {
 	val, _ = s.GetSetting("logo_path")
 	settings.LogoPath = val
 
+	val, _ = s.GetSetting("backup_path")
+	if val == "" {
+		val = DefaultBackupPath
+	}
+	settings.BackupPath = val
+
+	val, _ = s.GetSetting("backup_max_count")
+	if val != "" {
+		num, _ := strconv.Atoi(val)
+		settings.BackupMaxCount = num
+	} else {
+		settings.BackupMaxCount = DefaultBackupMaxCount
+	}
+
+	val, _ = s.GetSetting("auto_backup_enabled")
+	settings.AutoBackupEnabled = val != "false" // Default: eingeschaltet
+
+	val, _ = s.GetSetting("backup_min_interval_hours")
+	if val != "" {
+		num, _ := strconv.Atoi(val)
+		settings.BackupMinIntervalHours = num
+	} else {
+		settings.BackupMinIntervalHours = DefaultBackupMinIntervalHours
+	}
+
 	return settings, nil
 }
 
@@ -113,6 +156,18 @@ func (s *Store) SaveAppSettings(settings AppSettings) error {
 		return err
 	}
 	if err := s.SetSetting("default_small_business", strconv.FormatBool(settings.DefaultSmallBusiness)); err != nil {
+		return err
+	}
+	if err := s.SetSetting("backup_path", settings.BackupPath); err != nil {
+		return err
+	}
+	if err := s.SetSetting("backup_max_count", strconv.Itoa(settings.BackupMaxCount)); err != nil {
+		return err
+	}
+	if err := s.SetSetting("auto_backup_enabled", strconv.FormatBool(settings.AutoBackupEnabled)); err != nil {
+		return err
+	}
+	if err := s.SetSetting("backup_min_interval_hours", strconv.Itoa(settings.BackupMinIntervalHours)); err != nil {
 		return err
 	}
 	return nil

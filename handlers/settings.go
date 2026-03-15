@@ -36,6 +36,21 @@ func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
 
 	nextNum, _ := strconv.Atoi(r.FormValue("next_invoice_number"))
 
+	backupMaxCount, _ := strconv.Atoi(r.FormValue("backup_max_count"))
+	if backupMaxCount < 1 {
+		backupMaxCount = models.DefaultBackupMaxCount
+	}
+
+	backupMinInterval, _ := strconv.Atoi(r.FormValue("backup_min_interval_hours"))
+	if backupMinInterval < 0 {
+		backupMinInterval = models.DefaultBackupMinIntervalHours
+	}
+
+	backupPath := r.FormValue("backup_path")
+	if backupPath == "" {
+		backupPath = models.DefaultBackupPath
+	}
+
 	settings := models.AppSettings{
 		SenderName:           r.FormValue("sender_name"),
 		SenderAddress:        r.FormValue("sender_address"),
@@ -47,6 +62,10 @@ func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
 		Email:                r.FormValue("email"),
 		PDFOutputPath:        r.FormValue("pdf_output_path"),
 		DefaultSmallBusiness: r.FormValue("default_small_business") == "on",
+		BackupPath:           backupPath,
+		BackupMaxCount:       backupMaxCount,
+		AutoBackupEnabled:      r.FormValue("auto_backup_enabled") == "on",
+		BackupMinIntervalHours: backupMinInterval,
 	}
 
 	// Handle Logo Upload

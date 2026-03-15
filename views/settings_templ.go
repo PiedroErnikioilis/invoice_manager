@@ -129,7 +129,33 @@ func SettingsForm(settings models.AppSettings) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div><div class=\"flex items-center justify-end\"><button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\" type=\"submit\">Speichern</button></div></form></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div><div class=\"mb-6\"><h2 class=\"text-lg font-bold mb-4 border-b pb-2\">Datensicherung</h2>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = Input("Backup-Verzeichnis", "backup_path", "text", settings.BackupPath, "./backups", false, "Ordner für Datenbank-Backups.").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = Input("Maximale Anzahl Backups", "backup_max_count", "number", settings.BackupMaxCountStr(), "10", false, "Älteste Backups werden automatisch gelöscht.").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = Input("Mindestabstand (Stunden)", "backup_min_interval_hours", "number", settings.BackupMinIntervalHoursStr(), "24", false, "Verhindert zu häufige Backups bei Neustarts. 0 = kein Mindestabstand.").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div class=\"mb-4\"><label class=\"flex items-center cursor-pointer\"><input type=\"checkbox\" name=\"auto_backup_enabled\" class=\"mr-2 w-5 h-5\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if settings.AutoBackupEnabled {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, " checked")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "> <span class=\"text-sm font-bold text-gray-700\">Automatisches Backup beim Start (Pre-Migration)</span></label><p class=\"text-gray-500 text-xs italic mt-1\">Sichert die Datenbank automatisch bevor Schema-Änderungen oder Migrationen ausgeführt werden.</p></div><a href=\"/backups\" class=\"text-blue-600 hover:underline text-sm\">Backups verwalten →</a></div><div class=\"flex items-center justify-end\"><button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\" type=\"submit\">Speichern</button></div></form></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

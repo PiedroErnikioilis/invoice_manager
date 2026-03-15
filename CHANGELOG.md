@@ -2,6 +2,21 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten.
 
+## [v0.2.0] - 2026-03-15
+
+### Hinzugefügt
+- **Datenbank-Backup-System**:
+    - Manuelles Erstellen, Herunterladen, Wiederherstellen und Löschen von Backups über `/backups`.
+    - **Pre-Migration-Backup**: Automatisches Backup vor Schema-Änderungen beim Serverstart.
+    - **Jahresabschluss-Backup**: Automatisches `jahresabschluss_YYYY.db` beim ersten Start im neuen Jahr.
+    - **Mindestabstand**: Konfigurierbarer Mindestzeitraum (Standard: 24h) verhindert zu häufige Backups bei Neustarts.
+    - **Automatische Rotation**: Älteste Backups werden bei Überschreitung der Maximalanzahl gelöscht.
+    - Sicherheitsbackup vor jeder Wiederherstellung (`vor_wiederherstellung_*.db`).
+    - WAL/SHM-Dateien werden bei Pre-Migration- und Jahresabschluss-Backups mitkopiert.
+- **Backup-Einstellungen** in `/settings`: Backup-Verzeichnis, max. Anzahl, Mindestabstand, Auto-Backup ein/aus.
+
+---
+
 ## [v0.1.1] - 2026-03-15
 
 ### Behoben

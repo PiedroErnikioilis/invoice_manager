@@ -1,0 +1,69 @@
+package views
+
+import "din-invoice/models"
+
+templ BackupList(backups []models.BackupInfo, settings models.AppSettings) {
+	@Layout("Datensicherung") {
+		<div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-4xl mx-auto">
+			<div class="flex justify-between items-center mb-6">
+				<h1 class="text-2xl font-bold">Datensicherung</h1>
+				<div class="flex gap-2">
+					<a href="/settings" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded text-sm">
+						Einstellungen
+					</a>
+					<form action="/backups/create" method="POST">
+						<button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm">
+							Backup jetzt erstellen
+						</button>
+					</form>
+				</div>
+			</div>
+			<div class="mb-4 text-sm text-gray-600">
+				<p>Speicherort: <span class="font-mono">{ settings.BackupPath }</span> · Max. Anzahl: { settings.BackupMaxCountStr() }</p>
+			</div>
+			if len(backups) == 0 {
+				<div class="text-center py-12 text-gray-500">
+					<p class="text-lg mb-2">Keine Backups vorhanden</p>
+					<p class="text-sm">Erstelle dein erstes Backup mit dem Button oben.</p>
+				</div>
+			} else {
+				<table class="w-full">
+					<thead>
+						<tr class="border-b-2 border-gray-200 text-left text-sm text-gray-600">
+							<th class="py-2">Dateiname</th>
+							<th class="py-2">Erstellt</th>
+							<th class="py-2 text-right">Größe</th>
+							<th class="py-2 text-right">Aktionen</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, b := range backups {
+							<tr class="border-b border-gray-100 hover:bg-gray-50">
+								<td class="py-3 font-mono text-sm">{ b.Filename }</td>
+								<td class="py-3 text-sm">{ b.CreatedAt.Format("02.01.2006 15:04") }</td>
+								<td class="py-3 text-sm text-right">{ models.FormatBytes(b.Size) }</td>
+								<td class="py-3 text-right">
+									<div class="flex gap-1 justify-end">
+										<a href={ templ.SafeURL("/backups/" + b.Filename + "/download") } class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold py-1 px-3 rounded">
+											Laden
+										</a>
+										<form action={ templ.SafeURL("/backups/" + b.Filename + "/restore") } method="POST" onsubmit="return confirm('Datenbank wirklich aus diesem Backup wiederherstellen? Ein Sicherheitsbackup wird vorher erstellt. Die Anwendung muss danach neu gestartet werden.')">
+											<button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold py-1 px-3 rounded">
+												Wiederherstellen
+											</button>
+										</form>
+										<form action={ templ.SafeURL("/backups/" + b.Filename + "/delete") } method="POST" onsubmit="return confirm('Backup wirklich löschen?')">
+											<button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-1 px-3 rounded">
+												Löschen
+											</button>
+										</form>
+									</div>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			}
+		</div>
+	}
+}

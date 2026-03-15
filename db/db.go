@@ -2,10 +2,162 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
+	"io"
 	"log"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
+
+const (
+	defaultBackupPath             = "./backups"
+	defaultBackupMinIntervalHours = 24
+)
+
+type backupSettings struct {
+	backupDir    string
+	autoBackup   bool
+	minInterval  int // Stunden
+}
+
+// readBackupSettings liest Backup-Einstellungen direkt aus der DB-Datei.
+func readBackupSettings(dbPath string) backupSettings {
+	s := backupSettings{
+		backupDir:   defaultBackupPath,
+		autoBackup:  true,
+		minInterval: defaultBackupMinIntervalHours,
+	}
+	tmpDB, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		return s
+	}
+	tmpDB.SetMaxOpenConns(1)
+	defer tmpDB.Close()
+
+	var val string
+	if tmpDB.QueryRow("SELECT value FROM settings WHERE key = 'backup_path'").Scan(&val) == nil && val != "" {
+		s.backupDir = val
+	}
+	if tmpDB.QueryRow("SELECT value FROM settings WHERE key = 'auto_backup_enabled'").Scan(&val) == nil {
+		s.autoBackup = val != "false"
+	}
+	if tmpDB.QueryRow("SELECT value FROM settings WHERE key = 'backup_min_interval_hours'").Scan(&val) == nil && val != "" {
+		fmt.Sscanf(val, "%d", &s.minInterval)
+	}
+	return s
+}
+
+// lastBackupAge gibt das Alter des neuesten Backups im Verzeichnis zurück.
+func lastBackupAge(backupDir string) time.Duration {
+	entries, err := os.ReadDir(backupDir)
+	if err != nil {
+		return time.Duration(1<<63 - 1) // Max duration → kein Backup vorhanden
+	}
+	var newest time.Time
+	for _, e := range entries {
+		if e.IsDir() || !strings.HasSuffix(e.Name(), ".db") {
+			continue
+		}
+		info, err := e.Info()
+		if err != nil {
+			continue
+		}
+		if info.ModTime().After(newest) {
+			newest = info.ModTime()
+		}
+	}
+	if newest.IsZero() {
+		return time.Duration(1<<63 - 1)
+	}
+	return time.Since(newest)
+}
+
+// PreMigrationBackup erstellt ein Backup der bestehenden DB bevor Migrationen laufen.
+// Wird nur ausgeführt wenn die DB-Datei bereits existiert (Update-Fall).
+func PreMigrationBackup(dbPath string) error {
+	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+		return nil // Neue Installation, kein Backup nötig
+	}
+
+	cfg := readBackupSettings(dbPath)
+	if !cfg.autoBackup {
+		return nil
+	}
+
+	if err := os.MkdirAll(cfg.backupDir, 0755); err != nil {
+		return fmt.Errorf("backup-Verzeichnis erstellen: %w", err)
+	}
+
+	// Jahresabschluss-Backup prüfen
+	createYearEndBackup(dbPath, cfg.backupDir)
+
+	// Mindestzeitraum prüfen
+	if cfg.minInterval > 0 {
+		age := lastBackupAge(cfg.backupDir)
+		if age < time.Duration(cfg.minInterval)*time.Hour {
+			log.Printf("Pre-Migration-Backup übersprungen (letztes Backup vor %s, Mindestabstand %dh)",
+				age.Round(time.Minute), cfg.minInterval)
+			return nil
+		}
+	}
+
+	timestamp := time.Now().Format("2006-01-02_15-04-05")
+	baseName := fmt.Sprintf("pre_migration_%s", timestamp)
+
+	if err := copyFileSimple(dbPath, filepath.Join(cfg.backupDir, baseName+".db")); err != nil {
+		return fmt.Errorf("DB kopieren: %w", err)
+	}
+	copyFileSimple(dbPath+"-wal", filepath.Join(cfg.backupDir, baseName+".db-wal"))
+	copyFileSimple(dbPath+"-shm", filepath.Join(cfg.backupDir, baseName+".db-shm"))
+
+	log.Printf("Pre-Migration-Backup erstellt: %s/%s.db", cfg.backupDir, baseName)
+	return nil
+}
+
+// createYearEndBackup prüft ob ein Jahresabschluss-Backup für das Vorjahr existiert.
+// Falls nicht, wird eines erstellt.
+func createYearEndBackup(dbPath, backupDir string) {
+	now := time.Now()
+	prevYear := now.Year() - 1
+	expectedName := fmt.Sprintf("jahresabschluss_%d.db", prevYear)
+	expectedPath := filepath.Join(backupDir, expectedName)
+
+	if _, err := os.Stat(expectedPath); err == nil {
+		return // Bereits vorhanden
+	}
+
+	if err := copyFileSimple(dbPath, expectedPath); err != nil {
+		log.Printf("Jahresabschluss-Backup fehlgeschlagen: %v", err)
+		return
+	}
+	copyFileSimple(dbPath+"-wal", expectedPath+"-wal")
+	copyFileSimple(dbPath+"-shm", expectedPath+"-shm")
+	log.Printf("Jahresabschluss-Backup erstellt: %s", expectedPath)
+}
+
+func copyFileSimple(srcPath, dstPath string) error {
+	src, err := os.Open(srcPath)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	dst, err := os.Create(dstPath)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+
+	if _, err := io.Copy(dst, src); err != nil {
+		os.Remove(dstPath)
+		return err
+	}
+	return nil
+}
 
 func Init(dataSourceName string) (*sql.DB, error) {
 	db, err := sql.Open("sqlite", dataSourceName)

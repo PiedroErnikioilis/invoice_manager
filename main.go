@@ -26,13 +26,18 @@ func main() {
 }
 
 func run() error {
-	// 1. Init DB
-	database, err := db.Init("invoices.db")
+	// 1. Pre-Migration-Backup (bevor Schema-Änderungen laufen)
+	dbPath := "invoices.db"
+	if err := db.PreMigrationBackup(dbPath); err != nil {
+		fmt.Fprintf(os.Stderr, "Pre-Migration-Backup fehlgeschlagen: %v\n", err)
+	}
+
+	// 2. Init DB (erstellt Tabellen und führt Migrationen aus)
+	database, err := db.Init(dbPath)
 	if err != nil {
 		return fmt.Errorf("failed to init db: %w", err)
 	}
 	defer database.Close()
-
 	store := models.NewStore(database)
 	invoiceHandler := handlers.NewInvoiceHandler(store)
 	settingsHandler := handlers.NewSettingsHandler(store)
@@ -42,6 +47,7 @@ func run() error {
 	euerHandler := handlers.NewEuerHandler(store)
 	quoteHandler := handlers.NewQuoteHandler(store)
 	creditNoteHandler := handlers.NewCreditNoteHandler(store)
+	backupHandler := handlers.NewBackupHandler(store, dbPath)
 
 	// 2. Setup Router
 	r := chi.NewRouter()
@@ -103,6 +109,12 @@ func run() error {
 
 	r.Get("/settings", settingsHandler.View)
 	r.Post("/settings", settingsHandler.Save)
+
+	r.Get("/backups", backupHandler.List)
+	r.Post("/backups/create", backupHandler.Create)
+	r.Get("/backups/{filename}/download", backupHandler.Download)
+	r.Post("/backups/{filename}/delete", backupHandler.Delete)
+	r.Post("/backups/{filename}/restore", backupHandler.Restore)
 
 	// Static Files
 	workDir, _ := os.Getwd()
