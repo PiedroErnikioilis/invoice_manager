@@ -2,6 +2,18 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten.
 
+## [v0.3.2] - 2026-03-15
+
+### Behoben
+- **PDF Seitenzahlen**: Alle PDFs (Rechnungen, EÜR, Inventar) zeigen jetzt korrekte Seitenzahlen „Seite X von Y" an.
+    - EÜR-PDF zeigte bisher immer nur „Seite 1", auch bei mehrseitigen Dokumenten.
+    - Rechnungs-PDF hatte keine Seitenzahl.
+    - Nutzt Chrome's eingebaute `pageNumber`/`totalPages` für zuverlässige Zählung.
+- **PDF Textabschnitt**: Zahlungshinweis auf Rechnungen wurde bei vielen Positionen abgeschnitten (`overflow: hidden` entfernt).
+- **Zahlungshinweis**: Vollständiger Text „Bitte überweisen Sie den Gesamtbetrag innerhalb von 14 Tagen auf das unten genannte Konto unter Angabe der Rechnungsnummer."
+
+---
+
 ## [v0.3.1] - 2026-03-15
 
 ### Behoben

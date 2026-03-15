@@ -30,9 +30,8 @@ templ PDFLayout(title string) {
             }
             .page {
                 width: 210mm;
-                height: 297mm;
+                min-height: 297mm;
                 position: relative;
-                overflow: hidden;
             }
             
             /* DIN 5008 Form B Zones */
@@ -94,7 +93,7 @@ templ PDFLayout(title string) {
                 top: 105mm;
                 left: 20mm;
                 right: 20mm;
-                bottom: 50mm; /* Leave space for footer */
+                bottom: 55mm; /* Leave space for footer */
             }
             
             /* Footer (Bottom area) */
@@ -235,7 +234,7 @@ templ InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) {
 				if invoice.IsSmallBusiness {
 					<p class="mb-2 italic">Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.</p>
 				}
-				<p>Bitte überweisen Sie den Betrag innerhalb von 14 Tagen ohne Abzug.</p>
+				<p>Bitte überweisen Sie den Gesamtbetrag innerhalb von 14 Tagen auf das unten genannte Konto unter Angabe der Rechnungsnummer.</p>
 			</div>
 		</div>
 		<!-- Footer Zone -->

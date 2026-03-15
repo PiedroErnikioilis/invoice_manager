@@ -18,9 +18,23 @@ import (
 )
 
 func toPtr(f float64) *float64 { return &f }
+// pageFooterHTML returns a Chrome footer template with page numbers.
+// leftText is shown on the left side, page numbers on the right.
+func pageFooterHTML(leftText string) string {
+	return fmt.Sprintf(`<div style="font-size:8pt; font-family:Calibri,Arial,sans-serif; color:#999; width:100%%; padding:0 20mm; display:flex; justify-content:space-between;">
+		<span>%s</span>
+		<span>Seite <span class="pageNumber"></span> von <span class="totalPages"></span></span>
+	</div>`, leftText)
+}
 
 // renderHTMLToPDF takes an HTML string and produces a PDF file at the given path.
 func renderHTMLToPDF(htmlContent, outputPath string) error {
+	return renderHTMLToPDFWithFooter(htmlContent, outputPath, "")
+}
+
+// renderHTMLToPDFWithFooter renders HTML to PDF with an optional footer template.
+// The footerHTML supports Chrome's special classes: pageNumber, totalPages.
+func renderHTMLToPDFWithFooter(htmlContent, outputPath, footerHTML string) error {
 	u := launcher.New().NoSandbox(true).Leakless(false).MustLaunch()
 	browser := rod.New().ControlURL(u).MustConnect()
 	defer browser.MustClose()
@@ -31,7 +45,7 @@ func renderHTMLToPDF(htmlContent, outputPath string) error {
 	}
 	page.MustWaitLoad()
 
-	pdfStream, err := page.PDF(&proto.PagePrintToPDF{
+	opts := &proto.PagePrintToPDF{
 		PaperWidth:      toPtr(8.27),
 		PaperHeight:     toPtr(11.69),
 		MarginTop:       toPtr(0.0),
@@ -39,7 +53,16 @@ func renderHTMLToPDF(htmlContent, outputPath string) error {
 		MarginLeft:      toPtr(0.0),
 		MarginRight:     toPtr(0.0),
 		PrintBackground: true,
-	})
+	}
+
+	if footerHTML != "" {
+		opts.DisplayHeaderFooter = true
+		opts.HeaderTemplate = "<span></span>"
+		opts.FooterTemplate = footerHTML
+		opts.MarginBottom = toPtr(0.5) // ~12mm space for footer
+	}
+
+	pdfStream, err := page.PDF(opts)
 	if err != nil {
 		return fmt.Errorf("failed to generate pdf: %w", err)
 	}
@@ -73,7 +96,8 @@ func GenerateEuerPDFHTML(stats *models.EuerStats, settings *models.AppSettings) 
 	}
 	filename := filepath.Join(outDir, "euer_uebersicht.pdf")
 
-	if err := renderHTMLToPDF(htmlBuilder.String(), filename); err != nil {
+	footer := pageFooterHTML(settings.SenderName)
+	if err := renderHTMLToPDFWithFooter(htmlBuilder.String(), filename, footer); err != nil {
 		return "", err
 	}
 	return filename, nil
@@ -94,7 +118,8 @@ func GenerateInventoryPDFHTML(products []models.Product, settings *models.AppSet
 	}
 	filename := filepath.Join(outDir, "inventar_liste.pdf")
 
-	if err := renderHTMLToPDF(htmlBuilder.String(), filename); err != nil {
+	footer := pageFooterHTML(settings.SenderName)
+	if err := renderHTMLToPDFWithFooter(htmlBuilder.String(), filename, footer); err != nil {
 		return "", err
 	}
 	return filename, nil
@@ -160,15 +185,20 @@ func GenerateInvoicePDFHTML(inv *models.Invoice, settings *models.AppSettings) (
 
 	// 4. Generate PDF
 	// A4 measurements
-	// rod.StreamReader implements io.Reader
+	invoiceFooter := `<div style="font-size:7pt; font-family:Calibri,Arial,sans-serif; color:#aaa; width:100%; text-align:center;">
+		<span>Seite <span class="pageNumber"></span> von <span class="totalPages"></span></span>
+	</div>`
 	pdfStream, err := page.PDF(&proto.PagePrintToPDF{
-		PaperWidth:      toPtr(8.27),  // A4 Width in inches
-		PaperHeight:     toPtr(11.69), // A4 Height
-		MarginTop:       toPtr(0.0),
-		MarginBottom:    toPtr(0.0),
-		MarginLeft:      toPtr(0.0),
-		MarginRight:     toPtr(0.0), // We handle margins in CSS
-		PrintBackground: true,       // Important for CSS backgrounds
+		PaperWidth:           toPtr(8.27),  // A4 Width in inches
+		PaperHeight:          toPtr(11.69), // A4 Height
+		MarginTop:            toPtr(0.0),
+		MarginBottom:         toPtr(0.35),  // ~9mm for page number
+		MarginLeft:           toPtr(0.0),
+		MarginRight:          toPtr(0.0),
+		PrintBackground:      true,
+		DisplayHeaderFooter:  true,
+		HeaderTemplate:       "<span></span>",
+		FooterTemplate:       invoiceFooter,
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to generate pdf: %w", err)

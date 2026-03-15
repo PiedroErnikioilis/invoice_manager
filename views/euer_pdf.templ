@@ -150,13 +150,7 @@ templ EuerPDF(stats *models.EuerStats, settings models.AppSettings) {
 						<span class={ "font-bold font-mono whitespace-nowrap", getProfitColor(-stats.VatPayable) }>{ models.FormatCurrency(stats.VatPayable) }</span>
 					</div>
 				</div>
-				<!-- Footer -->
-				<div class="absolute bottom-[15mm] left-[20mm] right-[20mm] text-[8pt] text-gray-400 border-t border-gray-200 pt-2">
-					<div class="flex justify-between">
-						<span>{ settings.SenderName }</span>
-						<span>Erstellt am { time.Now().Format("02.01.2006") } — Seite 1</span>
-					</div>
-				</div>
+				<!-- Seitenzahl wird über Chrome's footerTemplate gerendert -->
 			</div>
 		</body>
 	</html>

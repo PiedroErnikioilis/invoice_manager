@@ -193,20 +193,7 @@ func InventarPDF(products []models.Product, settings models.AppSettings) templ.C
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</td></tr></tfoot></table><div class=\"mt-12 grid grid-cols-2 gap-8\"><div class=\"border-t border-black pt-2 text-xs text-center\">Datum, Ort</div><div class=\"border-t border-black pt-2 text-xs text-center\">Unterschrift Geschäftsführung / Lagerleitung</div></div><!-- Footer --><div class=\"absolute bottom-[15mm] left-[20mm] right-[20mm] text-[8pt] text-gray-400 border-t border-gray-200 pt-2\"><div class=\"flex justify-between\"><span>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var13 string
-		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(settings.SenderName)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 99, Col: 33}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</span> <span>Seite 1</span></div></div></div></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</td></tr></tfoot></table><div class=\"mt-12 grid grid-cols-2 gap-8\"><div class=\"border-t border-black pt-2 text-xs text-center\">Datum, Ort</div><div class=\"border-t border-black pt-2 text-xs text-center\">Unterschrift Geschäftsführung / Lagerleitung</div></div><!-- Seitenzahl wird über Chrome's footerTemplate gerendert --></div></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
