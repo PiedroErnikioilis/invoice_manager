@@ -53,7 +53,7 @@ func (c *CreditNote) TotalGross() float64 {
 }
 
 func (s *Store) CreateCreditNote(c *CreditNote) (int, error) {
-	slog.Info("Creating credit note", "credit_note_number", c.CreditNoteNumber, "customer_id", c.CustomerID)
+	slog.Debug("Executing CreateCreditNote", "credit_note_number", c.CreditNoteNumber, "customer_id", c.CustomerID)
 	stx, err := s.Begin()
 	if err != nil {
 		slog.Error("Failed to begin transaction for credit note creation", "error", err)
@@ -65,6 +65,7 @@ func (s *Store) CreateCreditNote(c *CreditNote) (int, error) {
 		c.Status = "Offen"
 	}
 
+	slog.Debug("Inserting credit note into database", "credit_note_number", c.CreditNoteNumber)
 	res, err := tx.Exec(`
 		INSERT INTO credit_notes (credit_note_number, date, sender_name, sender_address, recipient_name, recipient_address, tax_rate, status, is_small_business, customer_id, invoice_id)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -81,8 +82,10 @@ func (s *Store) CreateCreditNote(c *CreditNote) (int, error) {
 		tx.Rollback()
 		return 0, err
 	}
+	slog.Debug("Credit note record inserted successfully", "id", id)
 
 	for _, item := range c.Items {
+		slog.Debug("Inserting credit note item", "credit_note_id", id, "description", item.Description)
 		_, err := tx.Exec(`
 			INSERT INTO credit_note_items (credit_note_id, description, quantity, price_per_unit, product_id)
 			VALUES (?, ?, ?, ?, ?)
@@ -111,18 +114,20 @@ func (s *Store) CreateCreditNote(c *CreditNote) (int, error) {
 		return 0, err
 	}
 
-	slog.Info("Credit note created successfully", "id", id, "credit_note_number", c.CreditNoteNumber)
+	slog.Info("CreateCreditNote completed successfully", "id", id, "credit_note_number", c.CreditNoteNumber)
 	return int(id), nil
 }
 
 func (s *Store) ListCreditNotes() ([]CreditNote, error) {
-	slog.Debug("Listing credit notes from database")
-	rows, err := s.DB.Query(`
+	slog.Debug("Executing ListCreditNotes")
+	query := `
 		SELECT cn.id, cn.credit_note_number, cn.date, cn.recipient_name, cn.status, cn.tax_rate, cn.is_small_business, cn.customer_id, COALESCE(c.customer_number, '')
 		FROM credit_notes cn
 		LEFT JOIN customers c ON cn.customer_id = c.id
 		ORDER BY cn.id DESC
-	`)
+	`
+	slog.Debug("Querying credit notes from database", "query", query)
+	rows, err := s.DB.Query(query)
 	if err != nil {
 		slog.Error("Failed to query credit notes", "error", err)
 		return nil, err
@@ -138,24 +143,29 @@ func (s *Store) ListCreditNotes() ([]CreditNote, error) {
 		}
 		notes = append(notes, c)
 	}
+	slog.Info("ListCreditNotes completed successfully", "count", len(notes))
 	return notes, nil
 }
 
 func (s *Store) GetCreditNote(id int) (*CreditNote, error) {
-	slog.Debug("Getting credit note details", "id", id)
+	slog.Debug("Executing GetCreditNote", "id", id)
 	var c CreditNote
-	err := s.DB.QueryRow(`
+	query := `
 		SELECT cn.id, cn.credit_note_number, cn.date, cn.sender_name, cn.sender_address, cn.recipient_name, cn.recipient_address, cn.tax_rate, cn.created_at, cn.status, cn.is_small_business, cn.customer_id, COALESCE(cust.customer_number, ''), cn.invoice_id
 		FROM credit_notes cn
 		LEFT JOIN customers cust ON cn.customer_id = cust.id
 		WHERE cn.id = ?
-	`, id).Scan(&c.ID, &c.CreditNoteNumber, &c.Date, &c.SenderName, &c.SenderAddress, &c.RecipientName, &c.RecipientAddress, &c.TaxRate, &c.CreatedAt, &c.Status, &c.IsSmallBusiness, &c.CustomerID, &c.CustomerNumber, &c.InvoiceID)
+	`
+	slog.Debug("Querying credit note details", "id", id, "query", query)
+	err := s.DB.QueryRow(query, id).Scan(&c.ID, &c.CreditNoteNumber, &c.Date, &c.SenderName, &c.SenderAddress, &c.RecipientName, &c.RecipientAddress, &c.TaxRate, &c.CreatedAt, &c.Status, &c.IsSmallBusiness, &c.CustomerID, &c.CustomerNumber, &c.InvoiceID)
 	if err != nil {
 		slog.Error("Failed to get credit note", "id", id, "error", err)
 		return nil, err
 	}
 
-	rows, err := s.DB.Query(`SELECT id, description, quantity, price_per_unit, product_id FROM credit_note_items WHERE credit_note_id = ?`, id)
+	itemQuery := `SELECT id, description, quantity, price_per_unit, product_id FROM credit_note_items WHERE credit_note_id = ?`
+	slog.Debug("Querying credit note items", "credit_note_id", id, "query", itemQuery)
+	rows, err := s.DB.Query(itemQuery, id)
 	if err != nil {
 		slog.Error("Failed to query credit note items", "credit_note_id", id, "error", err)
 		return nil, err
@@ -172,16 +182,17 @@ func (s *Store) GetCreditNote(id int) (*CreditNote, error) {
 		c.Items = append(c.Items, item)
 	}
 
+	slog.Info("GetCreditNote completed successfully", "id", id, "items_count", len(c.Items))
 	return &c, nil
 }
 
 func (s *Store) DeleteCreditNote(id int) error {
-	slog.Info("Deleting credit note", "id", id)
+	slog.Debug("Executing DeleteCreditNote", "id", id)
 	_, err := s.DB.Exec(`DELETE FROM credit_notes WHERE id = ?`, id)
 	if err != nil {
 		slog.Error("Failed to delete credit note", "id", id, "error", err)
 		return err
 	}
-	slog.Info("Credit note deleted successfully", "id", id)
+	slog.Info("DeleteCreditNote completed successfully", "id", id)
 	return nil
 }

@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"math/rand"
 	"time"
 )
@@ -10,72 +10,75 @@ import (
 // SeedDemoData füllt eine leere Datenbank mit realistischen Beispieldaten.
 // Gibt einen Fehler zurück, falls bereits Daten vorhanden sind (Sicherheitscheck).
 func (s *Store) SeedDemoData() error {
+	slog.Info("Starting demo data seeding")
 	// Sicherheitscheck: Nur in leere DB einfügen
 	var count int
 	if err := s.DB.QueryRow("SELECT COUNT(*) FROM customers").Scan(&count); err != nil {
+		slog.Error("Security check failed for customers during seeding", "error", err)
 		return fmt.Errorf("Sicherheitscheck fehlgeschlagen: %w", err)
 	}
 	if count > 0 {
+		slog.Warn("Seeding aborted: database already contains customers", "count", count)
 		return fmt.Errorf("Datenbank enthält bereits %d Kunden – Demo-Daten werden nicht eingefügt", count)
 	}
 	if err := s.DB.QueryRow("SELECT COUNT(*) FROM invoices").Scan(&count); err != nil {
+		slog.Error("Security check failed for invoices during seeding", "error", err)
 		return fmt.Errorf("Sicherheitscheck fehlgeschlagen: %w", err)
 	}
 	if count > 0 {
+		slog.Warn("Seeding aborted: database already contains invoices", "count", count)
 		return fmt.Errorf("Datenbank enthält bereits %d Rechnungen – Demo-Daten werden nicht eingefügt", count)
 	}
 
-	log.Println("Erstelle Demo-Daten...")
-
-	// --- Settings ---
+	slog.Debug("Creating demo settings")
 	if err := s.seedSettings(); err != nil {
 		return fmt.Errorf("Settings: %w", err)
 	}
 
-	// --- Expense Categories ---
+	slog.Debug("Creating demo expense categories")
 	categoryIDs, err := s.seedExpenseCategories()
 	if err != nil {
 		return fmt.Errorf("Ausgabenkategorien: %w", err)
 	}
 
-	// --- Customers ---
+	slog.Debug("Creating demo customers")
 	customerIDs, err := s.seedCustomers()
 	if err != nil {
 		return fmt.Errorf("Kunden: %w", err)
 	}
 
-	// --- Products ---
+	slog.Debug("Creating demo products")
 	productIDs, err := s.seedProducts()
 	if err != nil {
 		return fmt.Errorf("Produkte: %w", err)
 	}
 
-	// --- Invoices ---
+	slog.Debug("Creating demo invoices")
 	if err := s.seedInvoices(customerIDs, productIDs); err != nil {
 		return fmt.Errorf("Rechnungen: %w", err)
 	}
 
-	// --- Quotes ---
+	slog.Debug("Creating demo quotes")
 	if err := s.seedQuotes(customerIDs, productIDs); err != nil {
 		return fmt.Errorf("Angebote: %w", err)
 	}
 
-	// --- Credit Notes ---
+	slog.Debug("Creating demo credit notes")
 	if err := s.seedCreditNotes(customerIDs, productIDs); err != nil {
 		return fmt.Errorf("Gutschriften: %w", err)
 	}
 
-	// --- Expenses ---
+	slog.Debug("Creating demo expenses")
 	if err := s.seedExpenses(categoryIDs); err != nil {
 		return fmt.Errorf("Ausgaben: %w", err)
 	}
 
-	// --- Recurring Expenses ---
+	slog.Debug("Creating demo recurring expenses")
 	if err := s.seedRecurringExpenses(categoryIDs); err != nil {
 		return fmt.Errorf("Wiederkehrende Ausgaben: %w", err)
 	}
 
-	log.Println("Demo-Daten erfolgreich erstellt.")
+	slog.Info("Demo data seeding completed successfully")
 	return nil
 }
 
@@ -151,7 +154,7 @@ func (s *Store) seedCustomers() ([]int, error) {
 	var ids []int
 	for i, c := range customers {
 		c.CustomerNumber = fmt.Sprintf("KD-%04d", i+1)
-		id, err := s.CreateCustomer(c)
+		id, err := s.CreateCustomer(&c)
 		if err != nil {
 			return nil, err
 		}

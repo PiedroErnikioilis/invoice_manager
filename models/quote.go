@@ -51,7 +51,7 @@ func (q *Quote) TotalGross() float64 {
 }
 
 func (s *Store) CreateQuote(q *Quote) (int, error) {
-	slog.Info("Creating quote", "quote_number", q.QuoteNumber, "customer_id", q.CustomerID)
+	slog.Debug("Executing CreateQuote", "quote_number", q.QuoteNumber, "customer_id", q.CustomerID)
 	stx, err := s.Begin()
 	if err != nil {
 		slog.Error("Failed to begin transaction for quote creation", "error", err)
@@ -63,6 +63,7 @@ func (s *Store) CreateQuote(q *Quote) (int, error) {
 		q.Status = "Entwurf"
 	}
 
+	slog.Debug("Inserting quote into database", "quote_number", q.QuoteNumber)
 	res, err := tx.Exec(`
 		INSERT INTO quotes (quote_number, date, sender_name, sender_address, recipient_name, recipient_address, tax_rate, status, is_small_business, customer_id)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -79,8 +80,10 @@ func (s *Store) CreateQuote(q *Quote) (int, error) {
 		tx.Rollback()
 		return 0, err
 	}
+	slog.Debug("Quote record inserted successfully", "id", id)
 
 	for _, item := range q.Items {
+		slog.Debug("Inserting quote item", "quote_id", id, "description", item.Description)
 		_, err := tx.Exec(`
 			INSERT INTO quote_items (quote_id, description, quantity, price_per_unit, product_id)
 			VALUES (?, ?, ?, ?, ?)
@@ -97,18 +100,20 @@ func (s *Store) CreateQuote(q *Quote) (int, error) {
 		return 0, err
 	}
 
-	slog.Info("Quote created successfully", "id", id, "quote_number", q.QuoteNumber)
+	slog.Info("CreateQuote completed successfully", "id", id, "quote_number", q.QuoteNumber)
 	return int(id), nil
 }
 
 func (s *Store) ListQuotes() ([]Quote, error) {
-	slog.Debug("Listing quotes from database")
-	rows, err := s.DB.Query(`
+	slog.Debug("Executing ListQuotes")
+	query := `
 		SELECT q.id, q.quote_number, q.date, q.recipient_name, q.status, q.tax_rate, q.is_small_business, q.customer_id, COALESCE(c.customer_number, '')
 		FROM quotes q
 		LEFT JOIN customers c ON q.customer_id = c.id
 		ORDER BY q.id DESC
-	`)
+	`
+	slog.Debug("Querying quotes from database", "query", query)
+	rows, err := s.DB.Query(query)
 	if err != nil {
 		slog.Error("Failed to query quotes", "error", err)
 		return nil, err
@@ -124,24 +129,29 @@ func (s *Store) ListQuotes() ([]Quote, error) {
 		}
 		quotes = append(quotes, q)
 	}
+	slog.Info("ListQuotes completed successfully", "count", len(quotes))
 	return quotes, nil
 }
 
 func (s *Store) GetQuote(id int) (*Quote, error) {
-	slog.Debug("Getting quote details", "id", id)
+	slog.Debug("Executing GetQuote", "id", id)
 	var q Quote
-	err := s.DB.QueryRow(`
+	query := `
 		SELECT q.id, q.quote_number, q.date, q.sender_name, q.sender_address, q.recipient_name, q.recipient_address, q.tax_rate, q.created_at, q.status, q.is_small_business, q.customer_id, COALESCE(c.customer_number, '')
 		FROM quotes q
 		LEFT JOIN customers c ON q.customer_id = c.id
 		WHERE q.id = ?
-	`, id).Scan(&q.ID, &q.QuoteNumber, &q.Date, &q.SenderName, &q.SenderAddress, &q.RecipientName, &q.RecipientAddress, &q.TaxRate, &q.CreatedAt, &q.Status, &q.IsSmallBusiness, &q.CustomerID, &q.CustomerNumber)
+	`
+	slog.Debug("Querying quote details", "id", id, "query", query)
+	err := s.DB.QueryRow(query, id).Scan(&q.ID, &q.QuoteNumber, &q.Date, &q.SenderName, &q.SenderAddress, &q.RecipientName, &q.RecipientAddress, &q.TaxRate, &q.CreatedAt, &q.Status, &q.IsSmallBusiness, &q.CustomerID, &q.CustomerNumber)
 	if err != nil {
 		slog.Error("Failed to get quote", "id", id, "error", err)
 		return nil, err
 	}
 
-	rows, err := s.DB.Query(`SELECT id, description, quantity, price_per_unit, product_id FROM quote_items WHERE quote_id = ?`, id)
+	itemQuery := `SELECT id, description, quantity, price_per_unit, product_id FROM quote_items WHERE quote_id = ?`
+	slog.Debug("Querying quote items", "quote_id", id, "query", itemQuery)
+	rows, err := s.DB.Query(itemQuery, id)
 	if err != nil {
 		slog.Error("Failed to query quote items", "quote_id", id, "error", err)
 		return nil, err
@@ -158,11 +168,12 @@ func (s *Store) GetQuote(id int) (*Quote, error) {
 		q.Items = append(q.Items, item)
 	}
 
+	slog.Info("GetQuote completed successfully", "id", id, "items_count", len(q.Items))
 	return &q, nil
 }
 
 func (s *Store) UpdateQuote(q *Quote) error {
-	slog.Info("Updating quote", "id", q.ID, "quote_number", q.QuoteNumber)
+	slog.Debug("Executing UpdateQuote", "id", q.ID, "quote_number", q.QuoteNumber)
 	stx, err := s.Begin()
 	if err != nil {
 		slog.Error("Failed to begin transaction for quote update", "id", q.ID, "error", err)
@@ -170,6 +181,7 @@ func (s *Store) UpdateQuote(q *Quote) error {
 	}
 	tx := stx.Tx
 
+	slog.Debug("Updating quote record in database", "id", q.ID)
 	_, err = tx.Exec(`
 		UPDATE quotes 
 		SET quote_number = ?, date = ?, sender_name = ?, sender_address = ?, recipient_name = ?, recipient_address = ?, tax_rate = ?, status = ?, is_small_business = ?, customer_id = ?
@@ -181,6 +193,7 @@ func (s *Store) UpdateQuote(q *Quote) error {
 		return err
 	}
 
+	slog.Debug("Deleting old quote items", "id", q.ID)
 	_, err = tx.Exec(`DELETE FROM quote_items WHERE quote_id = ?`, q.ID)
 	if err != nil {
 		slog.Error("Failed to delete old quote items", "id", q.ID, "error", err)
@@ -189,6 +202,7 @@ func (s *Store) UpdateQuote(q *Quote) error {
 	}
 
 	for _, item := range q.Items {
+		slog.Debug("Inserting updated quote item", "quote_id", q.ID, "description", item.Description)
 		_, err := tx.Exec(`
 			INSERT INTO quote_items (quote_id, description, quantity, price_per_unit, product_id)
 			VALUES (?, ?, ?, ?, ?)
@@ -204,17 +218,17 @@ func (s *Store) UpdateQuote(q *Quote) error {
 		slog.Error("Failed to commit quote update transaction", "id", q.ID, "error", err)
 		return err
 	}
-	slog.Info("Quote updated successfully", "id", q.ID)
+	slog.Info("UpdateQuote completed successfully", "id", q.ID)
 	return nil
 }
 
 func (s *Store) DeleteQuote(id int) error {
-	slog.Info("Deleting quote", "id", id)
+	slog.Debug("Executing DeleteQuote", "id", id)
 	_, err := s.DB.Exec(`DELETE FROM quotes WHERE id = ?`, id)
 	if err != nil {
 		slog.Error("Failed to delete quote", "id", id, "error", err)
 		return err
 	}
-	slog.Info("Quote deleted successfully", "id", id)
+	slog.Info("DeleteQuote completed successfully", "id", id)
 	return nil
 }

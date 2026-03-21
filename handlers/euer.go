@@ -26,6 +26,7 @@ func NewEuerHandler(store *models.Store) *EuerHandler {
 }
 
 func (h *EuerHandler) View(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Processing View EÜR request", "method", r.Method)
 	// 0. Process recurring expenses before viewing
 	h.Store.ProcessRecurringExpenses()
 
@@ -37,13 +38,14 @@ func (h *EuerHandler) View(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	slog.Debug("Viewing EÜR dashboard", "year", year)
+	slog.Debug("Fetching EÜR stats from store", "year", year)
 	stats, err := h.Store.GetEuerStats(year)
 	if err != nil {
 		slog.Error("Failed to get EÜR stats", "year", year, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	slog.Debug("Successfully fetched EÜR stats", "year", year)
 
 	years, _ := h.Store.GetAvailableYears()
 
@@ -51,23 +53,26 @@ func (h *EuerHandler) View(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *EuerHandler) ListRecurring(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Listing recurring expenses")
+	slog.Debug("Processing ListRecurring request", "method", r.Method)
 	list, err := h.Store.ListRecurringExpenses()
 	if err != nil {
 		slog.Error("Failed to list recurring expenses", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	slog.Debug("Successfully listed recurring expenses", "count", len(list))
 	views.RecurringExpenseList(list).Render(r.Context(), w)
 }
 
 func (h *EuerHandler) NewRecurring(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Rendering new recurring expense form")
+	slog.Debug("Processing NewRecurring request", "method", r.Method)
 	categories, _ := h.Store.ListExpenseCategories()
+	slog.Debug("Successfully listed expense categories for new recurring expense", "count", len(categories))
 	views.RecurringExpenseForm(categories).Render(r.Context(), w)
 }
 
 func (h *EuerHandler) CreateRecurring(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Processing CreateRecurring request", "method", r.Method)
 	amount := parseDecimal(r.FormValue("amount"))
 	taxRate := parseDecimal(r.FormValue("tax_rate"))
 	if taxRate == 0 && r.FormValue("tax_rate") == "" {
@@ -82,14 +87,19 @@ func (h *EuerHandler) CreateRecurring(w http.ResponseWriter, r *http.Request) {
 		StartDate:   r.FormValue("start_date"),
 		IsActive:    true,
 	}
+	slog.Debug("Successfully parsed recurring expense form", "description", re.Description, "amount", re.Amount)
 
 	slog.Info("Creating recurring expense", "description", re.Description, "amount", re.Amount)
 
 	categoryName := strings.TrimSpace(r.FormValue("category"))
 	if categoryName != "" {
+		slog.Debug("Resolving expense category", "category", categoryName)
 		catID, err := h.Store.CreateExpenseCategory(categoryName)
 		if err == nil {
 			re.CategoryID = &catID
+			slog.Debug("Resolved expense category", "category", categoryName, "id", catID)
+		} else {
+			slog.Error("Failed to resolve expense category", "category", categoryName, "error", err)
 		}
 	}
 
@@ -112,9 +122,11 @@ func (h *EuerHandler) DeleteRecurring(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		slog.Error("Failed to parse recurring expense ID for deletion", "id", idStr, "error", err)
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Processing DeleteRecurring request", "id", id, "method", r.Method)
 
 	slog.Info("Deleting recurring expense", "id", id)
 	err = h.Store.DeleteRecurringExpense(id)
@@ -129,15 +141,18 @@ func (h *EuerHandler) DeleteRecurring(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *EuerHandler) NewExpense(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Rendering new expense form")
+	slog.Debug("Processing NewExpense request", "method", r.Method)
 	products, err := h.Store.ListProducts()
 	if err != nil {
+		slog.Error("Failed to list products for new expense form", "error", err)
 		products = []models.Product{}
 	}
 	categories, err := h.Store.ListExpenseCategories()
 	if err != nil {
+		slog.Error("Failed to list categories for new expense form", "error", err)
 		categories = []models.ExpenseCategory{}
 	}
+	slog.Debug("Successfully listed products and categories for new expense", "products_count", len(products), "categories_count", len(categories))
 	views.ExpenseForm(products, categories, nil).Render(r.Context(), w)
 }
 
@@ -145,11 +160,13 @@ func (h *EuerHandler) EditExpense(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		slog.Error("Failed to parse expense ID for edit", "id", idStr, "error", err)
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Processing EditExpense request", "id", id, "method", r.Method)
 
-	slog.Debug("Editing expense", "id", id)
+	slog.Debug("Fetching expense for edit", "id", id)
 	expense, err := h.Store.GetExpense(id)
 	if err != nil {
 		slog.Error("Expense not found for edit", "id", id, "error", err)
@@ -159,12 +176,15 @@ func (h *EuerHandler) EditExpense(w http.ResponseWriter, r *http.Request) {
 
 	products, err := h.Store.ListProducts()
 	if err != nil {
+		slog.Error("Failed to list products for edit expense form", "error", err)
 		products = []models.Product{}
 	}
 	categories, err := h.Store.ListExpenseCategories()
 	if err != nil {
+		slog.Error("Failed to list categories for edit expense form", "error", err)
 		categories = []models.ExpenseCategory{}
 	}
+	slog.Debug("Successfully fetched expense and lists for edit", "id", id)
 	views.ExpenseForm(products, categories, &expense).Render(r.Context(), w)
 }
 
@@ -172,15 +192,18 @@ func (h *EuerHandler) UpdateExpense(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		slog.Error("Failed to parse expense ID for update", "id", idStr, "error", err)
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Processing UpdateExpense request", "id", id, "method", r.Method)
 
 	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10MB
 		slog.Error("Failed to parse multipart form for expense update", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Successfully parsed multipart form for expense update", "id", id)
 
 	amount := parseDecimal(r.FormValue("amount"))
 	taxRate := parseDecimal(r.FormValue("tax_rate"))
@@ -201,9 +224,13 @@ func (h *EuerHandler) UpdateExpense(w http.ResponseWriter, r *http.Request) {
 	// Resolve or create category
 	categoryName := strings.TrimSpace(r.FormValue("category"))
 	if categoryName != "" {
+		slog.Debug("Resolving expense category", "id", id, "category", categoryName)
 		catID, err := h.Store.CreateExpenseCategory(categoryName)
 		if err == nil {
 			expense.CategoryID = &catID
+			slog.Debug("Resolved expense category", "id", id, "category", categoryName, "cat_id", catID)
+		} else {
+			slog.Error("Failed to resolve expense category", "id", id, "category", categoryName, "error", err)
 		}
 	}
 
@@ -219,6 +246,7 @@ func (h *EuerHandler) UpdateExpense(w http.ResponseWriter, r *http.Request) {
 			// Encode to Base64
 			expense.ReceiptData = base64.StdEncoding.EncodeToString(fileBytes)
 			expense.ReceiptPath = handler.Filename
+			slog.Debug("Successfully read and encoded new receipt", "id", id, "filename", handler.Filename)
 		} else {
 			slog.Error("Failed to read receipt file", "id", id, "error", err)
 		}
@@ -236,11 +264,13 @@ func (h *EuerHandler) UpdateExpense(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Processing CreateExpense request", "method", r.Method)
 	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10MB
 		slog.Error("Failed to parse multipart form for expense creation", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Successfully parsed multipart form for expense creation")
 
 	amount := parseDecimal(r.FormValue("amount"))
 	taxRate := parseDecimal(r.FormValue("tax_rate"))
@@ -260,9 +290,13 @@ func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 	// Resolve or create category
 	categoryName := strings.TrimSpace(r.FormValue("category"))
 	if categoryName != "" {
+		slog.Debug("Resolving expense category", "category", categoryName)
 		catID, err := h.Store.CreateExpenseCategory(categoryName)
 		if err == nil {
 			expense.CategoryID = &catID
+			slog.Debug("Resolved expense category", "category", categoryName, "cat_id", catID)
+		} else {
+			slog.Error("Failed to resolve expense category", "category", categoryName, "error", err)
 		}
 	}
 
@@ -282,6 +316,7 @@ func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 			// Encode to Base64
 			expense.ReceiptData = base64.StdEncoding.EncodeToString(fileBytes)
 			expense.ReceiptPath = handler.Filename // Store original filename for extension/mime
+			slog.Debug("Successfully read and encoded receipt", "filename", handler.Filename)
 		} else {
 			slog.Error("Failed to read receipt file", "error", err)
 		}
@@ -312,6 +347,7 @@ func (h *EuerHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *EuerHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Processing DownloadPDF EÜR request", "method", r.Method)
 	year := time.Now().Year()
 	if y := r.URL.Query().Get("year"); y != "" {
 		if parsed, err := strconv.Atoi(y); err == nil && parsed > 0 {
@@ -349,6 +385,7 @@ func (h *EuerHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *EuerHandler) DownloadCSV(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Processing DownloadCSV EÜR request", "method", r.Method)
 	year := time.Now().Year()
 	if y := r.URL.Query().Get("year"); y != "" {
 		if parsed, err := strconv.Atoi(y); err == nil && parsed > 0 {
@@ -370,6 +407,7 @@ func (h *EuerHandler) DownloadCSV(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/csv")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 
+	slog.Debug("Writing EÜR CSV data", "year", year)
 	// German Excel uses semicolon as separator
 	fmt.Fprintf(w, "Datum;Typ;Beleg-Nr;Beschreibung;Kategorie;Netto;USt%%;USt-Betrag;Brutto\n")
 
@@ -400,17 +438,20 @@ func (h *EuerHandler) DownloadCSV(w http.ResponseWriter, r *http.Request) {
 			e.Amount,
 		)
 	}
+	slog.Info("EÜR CSV generated successfully", "year", year)
 }
 
 func (h *EuerHandler) ServeReceipt(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		slog.Error("Failed to parse expense ID for receipt serving", "id", idStr, "error", err)
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Processing ServeReceipt request", "id", id, "method", r.Method)
 
-	slog.Debug("Serving expense receipt", "id", id)
+	slog.Debug("Fetching expense receipt from store", "id", id)
 	filename, data, err := h.Store.GetExpenseReceipt(id)
 	if err != nil {
 		slog.Error("Receipt not found", "id", id, "error", err)
@@ -420,6 +461,7 @@ func (h *EuerHandler) ServeReceipt(w http.ResponseWriter, r *http.Request) {
 
 	// Serve from DB (Base64)
 	if data != "" {
+		slog.Debug("Serving receipt from database", "id", id, "filename", filename)
 		decoded, err := base64.StdEncoding.DecodeString(data)
 		if err != nil {
 			slog.Error("Failed to decode receipt data", "id", id, "error", err)
@@ -440,6 +482,7 @@ func (h *EuerHandler) ServeReceipt(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", mimeType)
 		w.Write(decoded)
+		slog.Info("Successfully served receipt from database", "id", id, "mime", mimeType)
 		return
 	}
 
@@ -458,9 +501,11 @@ func (h *EuerHandler) DeleteExpense(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		slog.Error("Failed to parse expense ID for deletion", "id", idStr, "error", err)
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Processing DeleteExpense request", "id", id, "method", r.Method)
 
 	slog.Info("Deleting expense", "id", id)
 	if err := h.Store.DeleteExpense(id); err != nil {

@@ -24,18 +24,19 @@ func NewQuoteHandler(store *models.Store) *QuoteHandler {
 }
 
 func (h *QuoteHandler) List(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Listing quotes")
+	slog.Debug("Processing List quotes request", "method", r.Method)
 	quotes, err := h.Store.ListQuotes()
 	if err != nil {
 		slog.Error("Failed to list quotes", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	slog.Debug("Successfully listed quotes", "count", len(quotes))
 	views.QuoteList(quotes).Render(r.Context(), w)
 }
 
 func (h *QuoteHandler) New(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Rendering new quote form")
+	slog.Debug("Processing New quote request", "method", r.Method)
 	customers, _ := h.Store.ListCustomers()
 	products, _ := h.Store.ListProducts()
 	settings, _ := h.Store.GetAppSettings()
@@ -50,16 +51,19 @@ func (h *QuoteHandler) New(w http.ResponseWriter, r *http.Request) {
 		TaxRate:       19.0,
 	}
 
+	slog.Debug("Successfully prepared new quote form", "quote_number", quoteNum)
 	views.QuoteForm(quote, customers, products).Render(r.Context(), w)
 }
 
 func (h *QuoteHandler) Create(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Processing Create quote request", "method", r.Method)
 	quote, err := h.parseForm(r)
 	if err != nil {
 		slog.Error("Failed to parse quote form", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Successfully parsed quote form", "quote_number", quote.QuoteNumber)
 
 	slog.Info("Creating quote", "quote_number", quote.QuoteNumber)
 
@@ -67,6 +71,7 @@ func (h *QuoteHandler) Create(w http.ResponseWriter, r *http.Request) {
 	settings, _ := h.Store.GetAppSettings()
 	expectedNum := models.FormatDocumentNumber(settings.QuoteNumberSchema, settings.NextQuoteNumber)
 	if quote.QuoteNumber == expectedNum {
+		slog.Debug("Incrementing next quote number", "quote_number", quote.QuoteNumber)
 		h.Store.IncrementNextQuoteNumber()
 	}
 
@@ -83,9 +88,15 @@ func (h *QuoteHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (h *QuoteHandler) Edit(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
-	id, _ := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		slog.Error("Failed to parse quote ID for edit", "id", idStr, "error", err)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+	slog.Debug("Processing Edit quote request", "id", id, "method", r.Method)
 
-	slog.Debug("Editing quote", "id", id)
+	slog.Debug("Fetching quote for edit", "id", id)
 	quote, err := h.Store.GetQuote(id)
 	if err != nil {
 		slog.Error("Quote not found for edit", "id", id, "error", err)
@@ -96,14 +107,21 @@ func (h *QuoteHandler) Edit(w http.ResponseWriter, r *http.Request) {
 	customers, _ := h.Store.ListCustomers()
 	products, _ := h.Store.ListProducts()
 
+	slog.Debug("Successfully fetched quote and lists for edit", "id", id)
 	views.QuoteForm(quote, customers, products).Render(r.Context(), w)
 }
 
 func (h *QuoteHandler) View(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
-	id, _ := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		slog.Error("Failed to parse quote ID for view", "id", idStr, "error", err)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+	slog.Debug("Processing View quote request", "id", id, "method", r.Method)
 
-	slog.Debug("Viewing quote", "id", id)
+	slog.Debug("Fetching quote for view", "id", id)
 	quote, err := h.Store.GetQuote(id)
 	if err != nil {
 		slog.Error("Quote not found for view", "id", id, "error", err)
@@ -112,12 +130,19 @@ func (h *QuoteHandler) View(w http.ResponseWriter, r *http.Request) {
 	}
 
 	settings, _ := h.Store.GetAppSettings()
+	slog.Debug("Successfully fetched quote and settings for view", "id", id)
 	views.QuoteView(quote, settings).Render(r.Context(), w)
 }
 
 func (h *QuoteHandler) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
-	id, _ := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		slog.Error("Failed to parse quote ID for update", "id", idStr, "error", err)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+	slog.Debug("Processing Update quote request", "id", id, "method", r.Method)
 
 	quote, err := h.parseForm(r)
 	if err != nil {
@@ -126,6 +151,7 @@ func (h *QuoteHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	quote.ID = id
+	slog.Debug("Successfully parsed quote update form", "id", id, "quote_number", quote.QuoteNumber)
 
 	slog.Info("Updating quote", "id", id, "quote_number", quote.QuoteNumber)
 	err = h.Store.UpdateQuote(quote)
@@ -141,7 +167,13 @@ func (h *QuoteHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 func (h *QuoteHandler) ConvertToInvoice(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
-	id, _ := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		slog.Error("Failed to parse quote ID for conversion", "id", idStr, "error", err)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+	slog.Debug("Processing ConvertToInvoice request", "id", id, "method", r.Method)
 
 	slog.Info("Converting quote to invoice", "quote_id", id)
 	quote, err := h.Store.GetQuote(id)
@@ -174,6 +206,7 @@ func (h *QuoteHandler) ConvertToInvoice(w http.ResponseWriter, r *http.Request) 
 		})
 	}
 
+	slog.Debug("Creating invoice from quote", "quote_id", id, "invoice_number", invoice.InvoiceNumber)
 	invID, err := h.Store.CreateInvoice(invoice)
 	if err != nil {
 		slog.Error("Failed to create invoice from quote", "quote_id", id, "error", err)
@@ -184,15 +217,22 @@ func (h *QuoteHandler) ConvertToInvoice(w http.ResponseWriter, r *http.Request) 
 	slog.Info("Invoice created from quote", "quote_id", id, "invoice_id", invID, "invoice_number", invoice.InvoiceNumber)
 
 	// 2. Update Quote Status
+	slog.Debug("Updating quote status to 'Umgewandelt'", "quote_id", id)
 	quote.Status = "Umgewandelt"
-	h.Store.UpdateQuote(quote)
+	if err := h.Store.UpdateQuote(quote); err != nil {
+		slog.Error("Failed to update quote status after conversion", "quote_id", id, "error", err)
+	} else {
+		slog.Debug("Quote status updated to 'Umgewandelt'", "quote_id", id)
+	}
 
 	// 3. Redirect to new Invoice
 	http.Redirect(w, r, fmt.Sprintf("/invoices/%d", invID), http.StatusSeeOther)
 }
 
 func (h *QuoteHandler) parseForm(r *http.Request) (*models.Quote, error) {
+	slog.Debug("Parsing quote form", "method", r.Method)
 	if err := r.ParseForm(); err != nil {
+		slog.Error("Failed to parse quote form", "error", err)
 		return nil, err
 	}
 
@@ -223,6 +263,7 @@ func (h *QuoteHandler) parseForm(r *http.Request) (*models.Quote, error) {
 	prices := r.Form["item_price[]"]
 	productIDs := r.Form["item_product_id[]"]
 
+	slog.Debug("Parsing quote items", "count", len(descriptions))
 	for i := range descriptions {
 		if descriptions[i] == "" {
 			continue
@@ -243,6 +284,7 @@ func (h *QuoteHandler) parseForm(r *http.Request) (*models.Quote, error) {
 		})
 	}
 
+	slog.Debug("Successfully parsed quote form", "quote_number", quote.QuoteNumber, "items_count", len(quote.Items))
 	return quote, nil
 }
 
@@ -250,12 +292,15 @@ func (h *QuoteHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		slog.Error("Failed to parse quote ID for PDF download", "id", idStr, "error", err)
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Processing DownloadPDF quote request", "id", id, "method", r.Method)
 
 	force := r.URL.Query().Get("force") == "1"
 
+	slog.Debug("Fetching quote for PDF", "id", id)
 	quote, err := h.Store.GetQuote(id)
 	if err != nil {
 		slog.Error("Quote not found for PDF", "id", id, "error", err)
@@ -294,5 +339,6 @@ func (h *QuoteHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/pdf")
 	w.Header().Set("Content-Disposition", "inline; filename="+filepath.Base(path))
+	slog.Debug("Serving freshly generated quote PDF", "path", path)
 	http.ServeFile(w, r, path)
 }

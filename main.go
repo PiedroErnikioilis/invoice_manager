@@ -70,17 +70,23 @@ func run() error {
 	}
 
 	// 3. Init DB (erstellt Tabellen und führt Migrationen aus)
+	slog.Debug("Opening database", "path", dbPath)
 	database, isNewDB, err := db.Init(dbPath)
 	if err != nil {
+		slog.Error("Failed to initialize database", "path", dbPath, "error", err)
 		return fmt.Errorf("failed to init db: %w", err)
 	}
 	defer database.Close()
 	store := models.NewStore(database)
+	slog.Debug("Database initialized and store created")
 
 	// 4. Demo-Modus: Beispieldaten nur bei neuer DB erstellen
 	if isNewDB && slices.Contains(os.Args[1:], "--demo") {
+		slog.Info("Seeding demo data into new database")
 		if err := store.SeedDemoData(); err != nil {
 			slog.Error("Demo-Daten Fehler", "error", err)
+		} else {
+			slog.Info("Demo data seeded successfully")
 		}
 	}
 

@@ -23,25 +23,28 @@ func NewCreditNoteHandler(store *models.Store) *CreditNoteHandler {
 }
 
 func (h *CreditNoteHandler) List(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Listing credit notes")
+	slog.Debug("Processing List credit notes request", "method", r.Method)
 	notes, err := h.Store.ListCreditNotes()
 	if err != nil {
 		slog.Error("Failed to list credit notes", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	slog.Debug("Successfully listed credit notes", "count", len(notes))
 	views.CreditNoteList(notes).Render(r.Context(), w)
 }
 
 func (h *CreditNoteHandler) NewFromInvoice(w http.ResponseWriter, r *http.Request) {
 	invoiceIDStr := r.URL.Query().Get("invoice_id")
 	if invoiceIDStr == "" {
+		slog.Error("Invoice ID missing for new credit note", "method", r.Method)
 		http.Error(w, "Invoice ID required", http.StatusBadRequest)
 		return
 	}
 	invID, _ := strconv.Atoi(invoiceIDStr)
-	slog.Debug("Creating new credit note from invoice", "invoice_id", invID)
+	slog.Debug("Processing NewFromInvoice credit note request", "invoice_id", invID, "method", r.Method)
 
+	slog.Debug("Fetching invoice for credit note creation", "invoice_id", invID)
 	invoice, err := h.Store.GetInvoice(invID)
 	if err != nil {
 		slog.Error("Failed to load invoice for credit note", "invoice_id", invID, "error", err)
@@ -77,16 +80,19 @@ func (h *CreditNoteHandler) NewFromInvoice(w http.ResponseWriter, r *http.Reques
 	customers, _ := h.Store.ListCustomers()
 	products, _ := h.Store.ListProducts()
 
+	slog.Debug("Successfully prepared credit note form from invoice", "invoice_id", invID, "credit_note_number", creditNoteNum)
 	views.CreditNoteForm(note, customers, products).Render(r.Context(), w)
 }
 
 func (h *CreditNoteHandler) Create(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Processing Create credit note request", "method", r.Method)
 	note, err := h.parseForm(r)
 	if err != nil {
 		slog.Error("Failed to parse credit note form", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Successfully parsed credit note form", "credit_note_number", note.CreditNoteNumber)
 
 	slog.Info("Creating credit note", "credit_note_number", note.CreditNoteNumber)
 
@@ -94,6 +100,7 @@ func (h *CreditNoteHandler) Create(w http.ResponseWriter, r *http.Request) {
 	settings, _ := h.Store.GetAppSettings()
 	expectedNum := models.FormatDocumentNumber(settings.CreditNoteNumberSchema, settings.NextCreditNoteNumber)
 	if note.CreditNoteNumber == expectedNum {
+		slog.Debug("Incrementing next credit note number", "credit_note_number", note.CreditNoteNumber)
 		h.Store.IncrementNextCreditNoteNumber()
 	}
 
@@ -112,11 +119,13 @@ func (h *CreditNoteHandler) View(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		slog.Error("Failed to parse credit note ID for view", "id", idStr, "error", err)
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Processing View credit note request", "id", id, "method", r.Method)
 
-	slog.Debug("Viewing credit note", "id", id)
+	slog.Debug("Fetching credit note for view", "id", id)
 	note, err := h.Store.GetCreditNote(id)
 	if err != nil {
 		slog.Error("Credit note not found", "id", id, "error", err)
@@ -125,6 +134,7 @@ func (h *CreditNoteHandler) View(w http.ResponseWriter, r *http.Request) {
 	}
 
 	settings, _ := h.Store.GetAppSettings()
+	slog.Debug("Successfully fetched credit note and settings for view", "id", id)
 	views.CreditNoteView(note, settings).Render(r.Context(), w)
 }
 
@@ -132,13 +142,15 @@ func (h *CreditNoteHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) 
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		slog.Error("Failed to parse credit note ID for PDF download", "id", idStr, "error", err)
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Processing DownloadPDF credit note request", "id", id, "method", r.Method)
 
 	force := r.URL.Query().Get("force") == "1"
 
-	slog.Debug("Downloading credit note PDF", "id", id, "force", force)
+	slog.Debug("Fetching credit note for PDF", "id", id)
 	note, err := h.Store.GetCreditNote(id)
 	if err != nil {
 		slog.Error("Credit note not found for PDF", "id", id, "error", err)
@@ -171,11 +183,14 @@ func (h *CreditNoteHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) 
 
 	w.Header().Set("Content-Type", "application/pdf")
 	w.Header().Set("Content-Disposition", "inline; filename="+filepath.Base(path))
+	slog.Debug("Serving freshly generated credit note PDF", "path", path)
 	http.ServeFile(w, r, path)
 }
 
 func (h *CreditNoteHandler) parseForm(r *http.Request) (*models.CreditNote, error) {
+	slog.Debug("Parsing credit note form", "method", r.Method)
 	if err := r.ParseForm(); err != nil {
+		slog.Error("Failed to parse credit note form", "error", err)
 		return nil, err
 	}
 
@@ -213,6 +228,7 @@ func (h *CreditNoteHandler) parseForm(r *http.Request) (*models.CreditNote, erro
 	prices := r.Form["item_price[]"]
 	productIDs := r.Form["item_product_id[]"]
 
+	slog.Debug("Parsing credit note items", "count", len(descriptions))
 	for i := range descriptions {
 		if descriptions[i] == "" {
 			continue
@@ -233,5 +249,6 @@ func (h *CreditNoteHandler) parseForm(r *http.Request) (*models.CreditNote, erro
 		})
 	}
 
+	slog.Debug("Successfully parsed credit note form", "credit_note_number", note.CreditNoteNumber, "items_count", len(note.Items))
 	return note, nil
 }

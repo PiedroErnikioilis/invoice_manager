@@ -164,25 +164,37 @@ func copyFileSimple(srcPath, dstPath string) error {
 // Init initializes the database and returns the connection plus a flag
 // indicating whether the DB file was newly created (true) or already existed (false).
 func Init(dataSourceName string) (*sql.DB, bool, error) {
+	slog.Debug("Initializing database", "path", dataSourceName)
 	_, statErr := os.Stat(dataSourceName)
 	isNew := os.IsNotExist(statErr)
+	if isNew {
+		slog.Info("New database file will be created", "path", dataSourceName)
+	} else {
+		slog.Debug("Existing database file found", "path", dataSourceName)
+	}
 	return initDB(dataSourceName, isNew)
 }
 
 func initDB(dataSourceName string, isNew bool) (*sql.DB, bool, error) {
 	db, err := sql.Open("sqlite", dataSourceName)
 	if err != nil {
+		slog.Error("Failed to open sqlite database", "path", dataSourceName, "error", err)
 		return nil, false, err
 	}
 
 	if err := db.Ping(); err != nil {
+		slog.Error("Failed to ping database", "path", dataSourceName, "error", err)
 		return nil, false, err
 	}
 
+	slog.Debug("Database connection established")
+
 	// Enable foreign key enforcement
 	if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
+		slog.Error("Failed to enable foreign keys", "error", err)
 		return nil, false, err
 	}
+	slog.Debug("Foreign key enforcement enabled")
 
 	createTables := `
 	CREATE TABLE IF NOT EXISTS customers (
@@ -322,11 +334,13 @@ func initDB(dataSourceName string, isNew bool) (*sql.DB, bool, error) {
 	);
 	`
 
+	slog.Debug("Executing table creation schema")
 	_, err = db.Exec(createTables)
 	if err != nil {
 		slog.Error("Error creating tables", "error", err)
 		return nil, false, err
 	}
+	slog.Debug("Tables ensured")
 
 	// Migrations for existing DBs (errors are ignored for already-applied migrations)
 	migrations := []string{
@@ -341,16 +355,35 @@ func initDB(dataSourceName string, isNew bool) (*sql.DB, bool, error) {
 		"ALTER TABLE customers ADD COLUMN customer_number TEXT",
 	}
 
-	for _, m := range migrations {
-		_, _ = db.Exec(m)
+	slog.Debug("Applying migrations", "count", len(migrations))
+	for i, m := range migrations {
+		if _, err := db.Exec(m); err == nil {
+			slog.Debug("Migration applied successfully", "index", i, "query", m)
+		} else {
+			// If error contains "duplicate column name", it's already applied, which is expected
+			if strings.Contains(strings.ToLower(err.Error()), "duplicate column name") {
+				slog.Debug("Migration already applied (skipped)", "index", i)
+			} else {
+				slog.Debug("Migration failed or already applied", "index", i, "error", err)
+			}
+		}
 	}
 
 	// Fix missing customer numbers for existing customers
-	_, _ = db.Exec("UPDATE customers SET customer_number = 'KD-' || printf('%04d', id) WHERE customer_number IS NULL OR customer_number = ''")
+	slog.Debug("Ensuring all customers have customer numbers")
+	res, err := db.Exec("UPDATE customers SET customer_number = 'KD-' || printf('%04d', id) WHERE customer_number IS NULL OR customer_number = ''")
+	if err == nil {
+		affected, _ := res.RowsAffected()
+		if affected > 0 {
+			slog.Info("Fixed missing customer numbers", "count", affected)
+		}
+	}
 
 	// Migrate existing category text values into expense_categories table
+	slog.Debug("Migrating expense categories")
 	migrateCategories(db)
 
+	slog.Info("Database initialization complete")
 	return db, isNew, nil
 }
 

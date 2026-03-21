@@ -21,17 +21,19 @@ func NewProductHandler(store *models.Store) *ProductHandler {
 }
 
 func (h *ProductHandler) List(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Listing products")
+	slog.Debug("Processing List products request", "method", r.Method)
 	products, err := h.Store.ListProducts()
 	if err != nil {
 		slog.Error("Failed to list products", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	slog.Debug("Successfully listed products", "count", len(products))
 	views.ProductList(products).Render(r.Context(), w)
 }
 
 func (h *ProductHandler) DownloadInventoryPDF(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Processing DownloadInventoryPDF request", "method", r.Method)
 	slog.Info("Generating inventory PDF")
 	products, err := h.Store.ListProducts()
 	if err != nil {
@@ -61,16 +63,18 @@ func (h *ProductHandler) DownloadInventoryPDF(w http.ResponseWriter, r *http.Req
 }
 
 func (h *ProductHandler) New(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Rendering new product form")
+	slog.Debug("Processing New product request", "method", r.Method)
 	views.ProductForm(&models.Product{}, nil).Render(r.Context(), w)
 }
 
 func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Processing Create product request", "method", r.Method)
 	if err := r.ParseForm(); err != nil {
 		slog.Error("Failed to parse product form", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Successfully parsed product form")
 
 	price := parseDecimal(r.FormValue("price"))
 	initialStock, _ := strconv.Atoi(r.FormValue("stock"))
@@ -107,11 +111,13 @@ func (h *ProductHandler) Edit(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		slog.Error("Failed to parse product ID for edit", "id", idStr, "error", err)
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Processing Edit product request", "id", id, "method", r.Method)
 
-	slog.Debug("Editing product", "id", id)
+	slog.Debug("Fetching product for edit", "id", id)
 	product, err := h.Store.GetProduct(id)
 	if err != nil {
 		slog.Error("Product not found for edit", "id", id, "error", err)
@@ -119,8 +125,10 @@ func (h *ProductHandler) Edit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	slog.Debug("Fetching stock movements for product edit", "id", id)
 	movements, _ := h.Store.ListStockMovements(id)
 
+	slog.Debug("Successfully fetched product and movements for edit", "id", id, "movements_count", len(movements))
 	views.ProductForm(product, movements).Render(r.Context(), w)
 }
 
@@ -128,21 +136,25 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		slog.Error("Failed to parse product ID for update", "id", idStr, "error", err)
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Processing Update product request", "id", id, "method", r.Method)
 
 	if err := r.ParseForm(); err != nil {
 		slog.Error("Failed to parse product update form", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Successfully parsed product update form", "id", id)
 
 	// Stock is not updated here anymore, only basic info
 
 	price := parseDecimal(r.FormValue("price"))
 	minStock, _ := strconv.Atoi(r.FormValue("min_stock"))
 
+	slog.Debug("Fetching existing product for update", "id", id)
 	existing, err := h.Store.GetProduct(id)
 	if err != nil {
 		slog.Error("Product not found for update", "id", id, "error", err)
@@ -176,9 +188,11 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		slog.Error("Failed to parse product ID for deletion", "id", idStr, "error", err)
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Processing Delete product request", "id", id, "method", r.Method)
 
 	slog.Info("Deleting product", "id", id)
 	err = h.Store.DeleteProduct(id)
@@ -193,10 +207,12 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) AddStock(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Processing AddStock request", "method", r.Method)
 	h.handleStockMovement(w, r, 1)
 }
 
 func (h *ProductHandler) RemoveStock(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Processing RemoveStock request", "method", r.Method)
 	h.handleStockMovement(w, r, -1)
 }
 
@@ -204,15 +220,18 @@ func (h *ProductHandler) handleStockMovement(w http.ResponseWriter, r *http.Requ
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		slog.Error("Failed to parse product ID for stock movement", "id", idStr, "error", err)
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Handling stock movement", "id", id, "multiplier", multiplier)
 
 	if err := r.ParseForm(); err != nil {
 		slog.Error("Failed to parse stock movement form", "id", id, "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	slog.Debug("Successfully parsed stock movement form", "id", id)
 
 	quantity, _ := strconv.Atoi(r.FormValue("quantity"))
 	note := r.FormValue("note")
@@ -238,6 +257,7 @@ func (h *ProductHandler) handleStockMovement(w http.ResponseWriter, r *http.Requ
 
 	// Book as expense if requested and it is stock addition (IN)
 	if multiplier > 0 && r.FormValue("book_expense") == "on" {
+		slog.Debug("Booking stock addition as expense", "product_id", id)
 		product, _ := h.Store.GetProduct(id)
 
 		cost := parseDecimal(r.FormValue("cost_total"))
@@ -250,8 +270,16 @@ func (h *ProductHandler) handleStockMovement(w http.ResponseWriter, r *http.Requ
 			}
 			if catID, err := h.Store.CreateExpenseCategory("Warenkauf"); err == nil {
 				expense.CategoryID = &catID
+				slog.Debug("Created/resolved 'Warenkauf' category for stock addition expense", "id", catID)
 			}
-			h.Store.CreateExpense(expense)
+			expID, err := h.Store.CreateExpense(expense)
+			if err != nil {
+				slog.Error("Failed to create expense for stock addition", "product_id", id, "error", err)
+			} else {
+				slog.Info("Successfully booked stock addition as expense", "product_id", id, "expense_id", expID)
+			}
+		} else {
+			slog.Debug("Skipping expense booking for zero cost", "product_id", id)
 		}
 	}
 

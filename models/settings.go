@@ -10,19 +10,25 @@ import (
 
 // GetSetting retrieves a setting value by key. Returns empty string if not found.
 func (s *Store) GetSetting(key string) (string, error) {
+	slog.Debug("Executing GetSetting", "key", key)
 	var value string
 	err := s.DB.QueryRow("SELECT value FROM settings WHERE key = ?", key).Scan(&value)
 	if err != nil {
+		slog.Debug("Setting not found or error", "key", key, "error", err)
 		return "", nil // Return empty if not found, or handle error?
 	}
+	slog.Debug("Setting retrieved", "key", key, "value", value)
 	return value, nil
 }
 
 // SetSetting saves or updates a setting.
 func (s *Store) SetSetting(key, value string) error {
+	slog.Debug("Executing SetSetting", "key", key, "value", value)
 	_, err := s.DB.Exec(`INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)`, key, value)
 	if err != nil {
 		slog.Error("Failed to set setting", "key", key, "error", err)
+	} else {
+		slog.Debug("Setting saved successfully", "key", key)
 	}
 	return err
 }
@@ -72,6 +78,7 @@ func (s AppSettings) BackupMaxCountStr() string {
 }
 
 func (s *Store) GetAppSettings() (AppSettings, error) {
+	slog.Debug("Executing GetAppSettings")
 	var settings AppSettings
 
 	val, _ := s.GetSetting("sender_name")
@@ -218,10 +225,12 @@ func (s *Store) GetAppSettings() (AppSettings, error) {
 		settings.BackupMinIntervalHours = DefaultBackupMinIntervalHours
 	}
 
+	slog.Debug("App settings loaded successfully")
 	return settings, nil
 }
 
 func (s *Store) SaveAppSettings(settings AppSettings) error {
+	slog.Debug("Executing SaveAppSettings")
 	if err := s.SetSetting("sender_name", settings.SenderName); err != nil {
 		return err
 	}
@@ -303,46 +312,59 @@ func (s *Store) SaveAppSettings(settings AppSettings) error {
 	if err := s.SetSetting("backup_min_interval_hours", strconv.Itoa(settings.BackupMinIntervalHours)); err != nil {
 		return err
 	}
+	slog.Info("App settings saved successfully")
 	return nil
 }
 
 // IncrementNextInvoiceNumber increments the counter in the DB
 func (s *Store) IncrementNextInvoiceNumber() error {
+	slog.Info("Incrementing next invoice number")
 	settings, err := s.GetAppSettings()
 	if err != nil {
+		slog.Error("Failed to get settings for invoice increment", "error", err)
 		return err
 	}
 	settings.NextInvoiceNumber++
+	slog.Debug("New next invoice number", "value", settings.NextInvoiceNumber)
 	return s.SaveAppSettings(settings)
 }
 
 // IncrementNextQuoteNumber increments the quote counter in the DB
 func (s *Store) IncrementNextQuoteNumber() error {
+	slog.Info("Incrementing next quote number")
 	settings, err := s.GetAppSettings()
 	if err != nil {
+		slog.Error("Failed to get settings for quote increment", "error", err)
 		return err
 	}
 	settings.NextQuoteNumber++
+	slog.Debug("New next quote number", "value", settings.NextQuoteNumber)
 	return s.SaveAppSettings(settings)
 }
 
 // IncrementNextCreditNoteNumber increments the credit note counter in the DB
 func (s *Store) IncrementNextCreditNoteNumber() error {
+	slog.Info("Incrementing next credit note number")
 	settings, err := s.GetAppSettings()
 	if err != nil {
+		slog.Error("Failed to get settings for credit note increment", "error", err)
 		return err
 	}
 	settings.NextCreditNoteNumber++
+	slog.Debug("New next credit note number", "value", settings.NextCreditNoteNumber)
 	return s.SaveAppSettings(settings)
 }
 
 // IncrementNextCustomerID increments the customer counter in the DB
 func (s *Store) IncrementNextCustomerID() error {
+	slog.Info("Incrementing next customer ID")
 	settings, err := s.GetAppSettings()
 	if err != nil {
+		slog.Error("Failed to get settings for customer ID increment", "error", err)
 		return err
 	}
 	settings.NextCustomerID++
+	slog.Debug("New next customer ID", "value", settings.NextCustomerID)
 	return s.SaveAppSettings(settings)
 }
 

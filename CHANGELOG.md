@@ -2,6 +2,22 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten.
 
+## [v0.4.1] - 2026-03-21
+
+### Hinzugefügt
+- **Maximale Transparenz durch Deep-Logging**:
+    - Detaillierte Einstiegs-Logs für alle HTTP-Handler inklusive HTTP-Methoden und IDs zur besseren Nachverfolgbarkeit von Benutzerinteraktionen.
+    - Schritt-für-Schritt Protokollierung komplexer Datenbank-Operationen (z.B. automatisierte Lagerbestands-Korrekturen bei Rechnungs-Updates).
+    - Erweiterte Status-Abfragen bei Lagerbewegungen: Der neue Lagerbestand wird nach jeder Buchung direkt im Log validiert und angezeigt.
+    - Lückenlose Aufzeichnung der Datenbank-Initialisierung und aller Migrationsschritte.
+    - Detaillierte Protokollierung des Demo-Daten-Seedings zur schnelleren Fehlerdiagnose bei Erstinstallationen.
+
+### Behoben
+- **Stabilität & Build**:
+    - Korrektur von internen Namenskonflikten in den Datenbank-Modellen (`s.DB` vs `s.db`).
+    - Fehlerhafte Pointer-Übergaben bei Kunden-Operationen in Handlern und Demo-Seeds behoben.
+    - Bereinigung ungenutzter Imports und Stabilisierung der Kompilierung.
+
 ## [v0.4.0] - 2026-03-15
 
 ### Hinzugefügt

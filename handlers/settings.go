@@ -20,17 +20,19 @@ func NewSettingsHandler(s *models.Store) *SettingsHandler {
 }
 
 func (h *SettingsHandler) View(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Viewing settings")
+	slog.Debug("Processing View settings request", "method", r.Method)
 	settings, err := h.Store.GetAppSettings()
 	if err != nil {
 		slog.Error("Failed to load settings", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	slog.Debug("Settings loaded successfully")
 	views.Settings(settings).Render(r.Context(), w)
 }
 
 func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Processing Save settings request", "method", r.Method)
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
 		slog.Error("Failed to parse form", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -41,6 +43,11 @@ func (h *SettingsHandler) Save(w http.ResponseWriter, r *http.Request) {
 	nextQuoteNum, _ := strconv.Atoi(r.FormValue("next_quote_number"))
 	nextCreditNoteNum, _ := strconv.Atoi(r.FormValue("next_credit_note_number"))
 	nextCustomerID, _ := strconv.Atoi(r.FormValue("next_customer_id"))
+
+	slog.Debug("Settings form parsed", 
+		"next_inv", nextNum, 
+		"next_quote", nextQuoteNum, 
+		"next_customer", nextCustomerID)
 
 	backupMaxCount, _ := strconv.Atoi(r.FormValue("backup_max_count"))
 	if backupMaxCount < 1 {

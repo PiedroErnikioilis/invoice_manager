@@ -28,7 +28,7 @@ type EuerStats struct {
 
 // GetEuerStats returns income/expense statistics filtered by year.
 func (s *Store) GetEuerStats(year int) (*EuerStats, error) {
-	slog.Debug("Calculating EÜR stats", "year", year)
+	slog.Debug("Executing GetEuerStats", "year", year)
 	stats := &EuerStats{Year: year}
 
 	// 1. Calculate Income (Paid Invoices)
@@ -44,18 +44,22 @@ func (s *Store) GetEuerStats(year int) (*EuerStats, error) {
 		ORDER BY date DESC
 	`, dateFilter)
 
+	slog.Debug("Querying paid invoices for EÜR", "year", year, "query", query)
 	rows, err := s.DB.Query(query)
 	if err != nil {
 		slog.Error("Failed to query paid invoices for EÜR", "year", year, "error", err)
 	} else {
 		defer rows.Close()
+		invoiceCount := 0
 		for rows.Next() {
+			invoiceCount++
 			var i Invoice
 			if err := rows.Scan(&i.ID, &i.InvoiceNumber, &i.Date, &i.RecipientName, &i.TaxRate, &i.IsSmallBusiness, &i.Status); err != nil {
 				slog.Error("Failed to scan invoice row for EÜR", "error", err)
 				continue
 			}
 
+			slog.Debug("Fetching full invoice details for EÜR", "id", i.ID, "invoice_number", i.InvoiceNumber)
 			fullInv, err := s.GetInvoice(i.ID)
 			if err != nil {
 				slog.Error("Failed to get full invoice details for EÜR", "id", i.ID, "error", err)
@@ -66,6 +70,7 @@ func (s *Store) GetEuerStats(year int) (*EuerStats, error) {
 			stats.TotalIncomeGross += fullInv.TotalGross()
 			stats.Invoices = append(stats.Invoices, *fullInv)
 		}
+		slog.Debug("Finished parsing paid invoices for EÜR", "year", year, "count", invoiceCount)
 	}
 
 	// 1b. Calculate Credits (Credit Notes)
@@ -76,18 +81,22 @@ func (s *Store) GetEuerStats(year int) (*EuerStats, error) {
 		ORDER BY date DESC
 	`, dateFilter)
 
+	slog.Debug("Querying credit notes for EÜR", "year", year, "query", creditQuery)
 	cRows, err := s.DB.Query(creditQuery)
 	if err != nil {
 		slog.Error("Failed to query credit notes for EÜR", "year", year, "error", err)
 	} else {
 		defer cRows.Close()
+		creditCount := 0
 		for cRows.Next() {
+			creditCount++
 			var cn CreditNote
 			if err := cRows.Scan(&cn.ID, &cn.CreditNoteNumber, &cn.Date, &cn.RecipientName, &cn.TaxRate, &cn.IsSmallBusiness, &cn.Status); err != nil {
 				slog.Error("Failed to scan credit note row for EÜR", "error", err)
 				continue
 			}
 
+			slog.Debug("Fetching full credit note details for EÜR", "id", cn.ID, "credit_note_number", cn.CreditNoteNumber)
 			fullCn, err := s.GetCreditNote(cn.ID)
 			if err != nil {
 				slog.Error("Failed to get full credit note details for EÜR", "id", cn.ID, "error", err)
@@ -97,9 +106,11 @@ func (s *Store) GetEuerStats(year int) (*EuerStats, error) {
 			stats.TotalIncomeVat += fullCn.TaxAmount()
 			stats.TotalIncomeGross += fullCn.TotalGross()
 		}
+		slog.Debug("Finished parsing credit notes for EÜR", "year", year, "count", creditCount)
 	}
 
 	// 2. Load Expenses list
+	slog.Debug("Listing expenses for EÜR", "year", year)
 	expenses, err := s.ListExpenses(year)
 	if err != nil {
 		slog.Error("Failed to list expenses for EÜR", "year", year, "error", err)
@@ -110,8 +121,10 @@ func (s *Store) GetEuerStats(year int) (*EuerStats, error) {
 		stats.TotalExpensesTax += e.Tax()
 		stats.TotalExpensesGross += e.Amount
 	}
+	slog.Debug("Finished calculating expense totals for EÜR", "year", year, "count", len(expenses))
 
 	// 3. Category Stats (using Net)
+	slog.Debug("Calculating category stats for EÜR", "year", year)
 	catSums := make(map[string]float64)
 	for _, e := range stats.Expenses {
 		catName := e.CategoryName
@@ -132,12 +145,14 @@ func (s *Store) GetEuerStats(year int) (*EuerStats, error) {
 	stats.Profit = stats.TotalIncomeNet - stats.TotalExpensesNet
 	stats.VatPayable = stats.TotalIncomeVat - stats.TotalExpensesTax
 
+	slog.Info("GetEuerStats completed successfully", "year", year, "profit", stats.Profit)
 	return stats, nil
 }
 
 // GetAvailableYears returns all years that have invoices or expenses.
 func (s *Store) GetAvailableYears() ([]int, error) {
-	rows, err := s.DB.Query(`
+	slog.Debug("Executing GetAvailableYears")
+	query := `
 		SELECT DISTINCT year FROM (
 			SELECT CAST(substr(date, 1, 4) AS INTEGER) AS year FROM invoices WHERE date != ''
 			UNION
@@ -145,7 +160,9 @@ func (s *Store) GetAvailableYears() ([]int, error) {
             UNION
             SELECT CAST(substr(date, 1, 4) AS INTEGER) AS year FROM credit_notes WHERE date != ''
 		) ORDER BY year DESC
-	`)
+	`
+	slog.Debug("Querying available years", "query", query)
+	rows, err := s.DB.Query(query)
 	if err != nil {
 		slog.Error("Failed to query available years", "error", err)
 		return nil, err
@@ -163,5 +180,6 @@ func (s *Store) GetAvailableYears() ([]int, error) {
 			years = append(years, y)
 		}
 	}
+	slog.Info("GetAvailableYears completed successfully", "count", len(years))
 	return years, nil
 }

@@ -14,32 +14,28 @@ type Customer struct {
 	CreatedAt      time.Time
 }
 
-func (s *Store) CreateCustomer(c Customer) (int, error) {
+func (s *Store) CreateCustomer(c *Customer) (int, error) {
 	slog.Info("Creating customer", "name", c.Name, "customer_number", c.CustomerNumber)
-	res, err := s.DB.Exec(`
-		INSERT INTO customers (customer_number, name, address, email)
-		VALUES (?, ?, ?, ?)
-	`, c.CustomerNumber, c.Name, c.Address, c.Email)
+	res, err := s.DB.Exec(`INSERT INTO customers (customer_number, name, address, email) VALUES (?, ?, ?, ?)`,
+		c.CustomerNumber, c.Name, c.Address, c.Email)
 	if err != nil {
 		slog.Error("Failed to insert customer", "name", c.Name, "error", err)
 		return 0, err
 	}
+
 	id, err := res.LastInsertId()
 	if err != nil {
 		slog.Error("Failed to get last insert id for customer", "error", err)
 		return 0, err
 	}
 	slog.Info("Customer created successfully", "id", id, "customer_number", c.CustomerNumber)
-	return int(id), err
+	return int(id), nil
 }
 
-func (s *Store) UpdateCustomer(c Customer) error {
-	slog.Info("Updating customer", "id", c.ID, "name", c.Name)
-	_, err := s.DB.Exec(`
-		UPDATE customers
-		SET customer_number = ?, name = ?, address = ?, email = ?
-		WHERE id = ?
-	`, c.CustomerNumber, c.Name, c.Address, c.Email, c.ID)
+func (s *Store) UpdateCustomer(c *Customer) error {
+	slog.Info("Updating customer", "id", c.ID, "name", c.Name, "customer_number", c.CustomerNumber)
+	_, err := s.DB.Exec(`UPDATE customers SET customer_number = ?, name = ?, address = ?, email = ? WHERE id = ?`,
+		c.CustomerNumber, c.Name, c.Address, c.Email, c.ID)
 	if err != nil {
 		slog.Error("Failed to update customer", "id", c.ID, "error", err)
 		return err

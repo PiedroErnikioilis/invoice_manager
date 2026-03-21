@@ -29,7 +29,7 @@ func (h *InvoiceHandler) syncCustomerFromInvoice(inv *models.Invoice) {
 	if inv.CustomerID == nil {
 		return
 	}
-	if err := h.Store.UpdateCustomer(models.Customer{
+	if err := h.Store.UpdateCustomer(&models.Customer{
 		ID:      *inv.CustomerID,
 		Name:    inv.RecipientName,
 		Address: inv.RecipientAddress,
@@ -149,9 +149,11 @@ func (h *InvoiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	settings, _ := h.Store.GetAppSettings()
 	expectedNum := models.FormatDocumentNumber(settings.InvoiceNumberSchema, settings.NextInvoiceNumber)
 	if invoice.InvoiceNumber == expectedNum {
+		slog.Debug("Auto-incrementing invoice number", "current", expectedNum)
 		h.Store.IncrementNextInvoiceNumber()
 	}
 
+	slog.Debug("Creating invoice in store", "invoice_number", invoice.InvoiceNumber, "items_count", len(invoice.Items))
 	id, err := h.Store.CreateInvoice(invoice)
 	if err != nil {
 		slog.Error("Failed to create invoice", "invoice_number", invoice.InvoiceNumber, "error", err)
@@ -161,6 +163,7 @@ func (h *InvoiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	slog.Info("Invoice created", "id", id, "invoice_number", invoice.InvoiceNumber)
 	// Sync customer name/address from invoice recipient data
+	slog.Debug("Syncing customer data from invoice", "customer_id", invoice.CustomerID)
 	h.syncCustomerFromInvoice(invoice)
 
 	http.Redirect(w, r, "/invoices/"+strconv.Itoa(id), http.StatusSeeOther)
@@ -248,15 +251,16 @@ func (h *InvoiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	err = h.Store.UpdateInvoice(invoice)
-	if err != nil {
+	slog.Debug("Updating invoice in store", "id", invoice.ID, "invoice_number", invoice.InvoiceNumber, "items_count", len(invoice.Items))
+	if err := h.Store.UpdateInvoice(invoice); err != nil {
 		slog.Error("Failed to update invoice", "id", invoice.ID, "invoice_number", invoice.InvoiceNumber, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	slog.Info("Invoice updated", "id", invoice.ID, "invoice_number", invoice.InvoiceNumber)
-	// Sync customer name/address from invoice recipient data
+	// Sync customer if needed
+	slog.Debug("Syncing customer data from updated invoice", "customer_id", invoice.CustomerID)
 	h.syncCustomerFromInvoice(invoice)
 
 	http.Redirect(w, r, "/invoices/"+strconv.Itoa(id), http.StatusSeeOther)
@@ -330,7 +334,7 @@ func (h *InvoiceHandler) DownloadPDF(w http.ResponseWriter, r *http.Request) {
 	}
 
 	path := services.GetInvoicePDFPath(invoice, &settings)
-	
+
 	// Smart Check: If file exists and state is final, don't regenerate unless forced
 	isFinal := invoice.Status == "Bezahlt" || invoice.Status == "Storniert" || invoice.Status == "Offen"
 	if !force && isFinal {

@@ -20,17 +20,19 @@ func NewBackupHandler(store *models.Store, dbPath string) *BackupHandler {
 }
 
 func (h *BackupHandler) List(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Listing backups")
+	slog.Debug("Processing List backups request", "method", r.Method)
 	backups, err := h.Store.ListBackups()
 	if err != nil {
 		slog.Error("Failed to list backups", "error", err)
 		backups = nil
 	}
+	slog.Debug("Backups listed successfully", "count", len(backups))
 	settings, _ := h.Store.GetAppSettings()
 	views.BackupList(backups, settings).Render(r.Context(), w)
 }
 
 func (h *BackupHandler) Create(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("Processing Create manual backup request", "method", r.Method)
 	slog.Info("Creating manual backup")
 	path, err := h.Store.CreateBackup(h.DBPath)
 	if err != nil {
@@ -44,6 +46,7 @@ func (h *BackupHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (h *BackupHandler) Download(w http.ResponseWriter, r *http.Request) {
 	filename := chi.URLParam(r, "filename")
+	slog.Debug("Processing Download backup request", "filename", filename, "method", r.Method)
 	slog.Info("Downloading backup", "filename", filename)
 	path, err := h.Store.GetBackupPath(filename)
 	if err != nil {
@@ -58,6 +61,7 @@ func (h *BackupHandler) Download(w http.ResponseWriter, r *http.Request) {
 
 func (h *BackupHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	filename := chi.URLParam(r, "filename")
+	slog.Debug("Processing Delete backup request", "filename", filename, "method", r.Method)
 	slog.Info("Deleting backup", "filename", filename)
 	if err := h.Store.DeleteBackup(filename); err != nil {
 		slog.Error("Failed to delete backup", "filename", filename, "error", err)
@@ -70,6 +74,7 @@ func (h *BackupHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 func (h *BackupHandler) Restore(w http.ResponseWriter, r *http.Request) {
 	filename := chi.URLParam(r, "filename")
+	slog.Debug("Processing Restore backup request", "filename", filename, "method", r.Method)
 	slog.Info("Restoring backup", "filename", filename)
 	if err := h.Store.RestoreBackup(filename, h.DBPath); err != nil {
 		slog.Error("Failed to restore backup", "filename", filename, "error", err)

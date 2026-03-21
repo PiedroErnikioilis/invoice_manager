@@ -52,7 +52,7 @@ func (i *Invoice) TotalGross() float64 {
 }
 
 func (s *Store) CreateInvoice(inv *Invoice) (int, error) {
-	slog.Info("Creating invoice", "invoice_number", inv.InvoiceNumber, "customer_id", inv.CustomerID)
+	slog.Info("Creating invoice", "invoice_number", inv.InvoiceNumber, "customer_id", inv.CustomerID, "items_count", len(inv.Items))
 	stx, err := s.Begin()
 	if err != nil {
 		slog.Error("Failed to begin transaction for invoice creation", "error", err)
@@ -65,6 +65,7 @@ func (s *Store) CreateInvoice(inv *Invoice) (int, error) {
 		inv.Status = "Entwurf"
 	}
 
+	slog.Debug("Inserting invoice record", "invoice_number", inv.InvoiceNumber, "status", inv.Status)
 	res, err := tx.Exec(`
 		INSERT INTO invoices (invoice_number, date, sender_name, sender_address, recipient_name, recipient_address, tax_rate, status, is_small_business, customer_id)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -81,8 +82,10 @@ func (s *Store) CreateInvoice(inv *Invoice) (int, error) {
 		tx.Rollback()
 		return 0, err
 	}
+	slog.Debug("Invoice record inserted", "id", id)
 
 	for _, item := range inv.Items {
+		slog.Debug("Inserting invoice item", "invoice_id", id, "description", item.Description, "quantity", item.Quantity)
 		_, err := tx.Exec(`
 			INSERT INTO invoice_items (invoice_id, description, quantity, price_per_unit, product_id)
 			VALUES (?, ?, ?, ?, ?)
@@ -115,7 +118,7 @@ func (s *Store) CreateInvoice(inv *Invoice) (int, error) {
 }
 
 func (s *Store) UpdateInvoice(inv *Invoice) error {
-	slog.Info("Updating invoice", "id", inv.ID, "invoice_number", inv.InvoiceNumber)
+	slog.Info("Updating invoice", "id", inv.ID, "invoice_number", inv.InvoiceNumber, "items_count", len(inv.Items))
 	stx, err := s.Begin()
 	if err != nil {
 		slog.Error("Failed to begin transaction for invoice update", "id", inv.ID, "error", err)
@@ -123,6 +126,7 @@ func (s *Store) UpdateInvoice(inv *Invoice) error {
 	}
 	tx := stx.Tx
 
+	slog.Debug("Updating invoice record", "id", inv.ID, "status", inv.Status)
 	_, err = tx.Exec(`
 		UPDATE invoices 
 		SET invoice_number = ?, date = ?, sender_name = ?, sender_address = ?, recipient_name = ?, recipient_address = ?, tax_rate = ?, status = ?, is_small_business = ?, customer_id = ?
@@ -159,10 +163,12 @@ func (s *Store) UpdateInvoice(inv *Invoice) error {
 		toRestore = append(toRestore, itr)
 	}
 	rows.Close()
+	slog.Debug("Found old invoice items to restore stock", "id", inv.ID, "count", len(toRestore))
 
 	for _, itr := range toRestore {
 		if itr.ProductID != nil {
 			// Restore: Positive quantity
+			slog.Debug("Restoring stock for old invoice item", "product_id", *itr.ProductID, "quantity", itr.Quantity)
 			err := s.RecordStockMovementTx(stx, *itr.ProductID, itr.Quantity, "INVOICE_UPDATE", "Korrektur Rechnung "+inv.InvoiceNumber)
 			if err != nil {
 				slog.Error("Failed to restore stock for old invoice item", "product_id", *itr.ProductID, "error", err)
@@ -173,6 +179,7 @@ func (s *Store) UpdateInvoice(inv *Invoice) error {
 	}
 
 	// Delete existing items
+	slog.Debug("Deleting old invoice items", "id", inv.ID)
 	_, err = tx.Exec(`DELETE FROM invoice_items WHERE invoice_id = ?`, inv.ID)
 	if err != nil {
 		slog.Error("Failed to delete old invoice items", "id", inv.ID, "error", err)
@@ -182,6 +189,7 @@ func (s *Store) UpdateInvoice(inv *Invoice) error {
 
 	// Insert new items and deduct stock
 	for _, item := range inv.Items {
+		slog.Debug("Inserting new invoice item during update", "id", inv.ID, "description", item.Description, "quantity", item.Quantity)
 		_, err := tx.Exec(`
 			INSERT INTO invoice_items (invoice_id, description, quantity, price_per_unit, product_id)
 			VALUES (?, ?, ?, ?, ?)

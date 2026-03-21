@@ -13,11 +13,13 @@ type Product struct {
 }
 
 func (s *Store) CreateProduct(p Product) (int, error) {
-	slog.Info("Creating product", "name", p.Name, "price", p.Price)
-	res, err := s.DB.Exec(`
+	slog.Debug("Executing CreateProduct", "name", p.Name, "price", p.Price)
+	query := `
 		INSERT INTO products (name, description, price, stock, min_stock, unit)
 		VALUES (?, ?, ?, ?, ?, ?)
-	`, p.Name, p.Description, p.Price, p.Stock, p.MinStock, p.Unit)
+	`
+	slog.Debug("Inserting product into database", "name", p.Name, "query", query)
+	res, err := s.DB.Exec(query, p.Name, p.Description, p.Price, p.Stock, p.MinStock, p.Unit)
 	if err != nil {
 		slog.Error("Failed to insert product", "name", p.Name, "error", err)
 		return 0, err
@@ -27,39 +29,45 @@ func (s *Store) CreateProduct(p Product) (int, error) {
 		slog.Error("Failed to get last insert id for product", "error", err)
 		return 0, err
 	}
-	slog.Info("Product created successfully", "id", id)
+	slog.Info("CreateProduct completed successfully", "id", id, "name", p.Name)
 	return int(id), nil
 }
 
 func (s *Store) UpdateProduct(p Product) error {
-	slog.Info("Updating product", "id", p.ID, "name", p.Name)
-	_, err := s.DB.Exec(`
+	slog.Debug("Executing UpdateProduct", "id", p.ID, "name", p.Name)
+	query := `
 		UPDATE products
 		SET name = ?, description = ?, price = ?, stock = ?, min_stock = ?, unit = ?
 		WHERE id = ?
-	`, p.Name, p.Description, p.Price, p.Stock, p.MinStock, p.Unit, p.ID)
+	`
+	slog.Debug("Updating product in database", "id", p.ID, "query", query)
+	_, err := s.DB.Exec(query, p.Name, p.Description, p.Price, p.Stock, p.MinStock, p.Unit, p.ID)
 	if err != nil {
 		slog.Error("Failed to update product", "id", p.ID, "error", err)
 		return err
 	}
-	slog.Info("Product updated successfully", "id", p.ID)
+	slog.Info("UpdateProduct completed successfully", "id", p.ID)
 	return nil
 }
 
 func (s *Store) DeleteProduct(id int) error {
-	slog.Info("Deleting product", "id", id)
-	_, err := s.DB.Exec(`DELETE FROM products WHERE id = ?`, id)
+	slog.Debug("Executing DeleteProduct", "id", id)
+	query := `DELETE FROM products WHERE id = ?`
+	slog.Debug("Deleting product from database", "id", id, "query", query)
+	_, err := s.DB.Exec(query, id)
 	if err != nil {
 		slog.Error("Failed to delete product", "id", id, "error", err)
 		return err
 	}
-	slog.Info("Product deleted successfully", "id", id)
+	slog.Info("DeleteProduct completed successfully", "id", id)
 	return nil
 }
 
 func (s *Store) ListProducts() ([]Product, error) {
-	slog.Debug("Listing products from database")
-	rows, err := s.DB.Query(`SELECT id, name, description, price, stock, min_stock, unit FROM products ORDER BY name ASC`)
+	slog.Debug("Executing ListProducts")
+	query := `SELECT id, name, description, price, stock, min_stock, unit FROM products ORDER BY name ASC`
+	slog.Debug("Querying products from database", "query", query)
+	rows, err := s.DB.Query(query)
 	if err != nil {
 		slog.Error("Failed to query products", "error", err)
 		return nil, err
@@ -75,19 +83,23 @@ func (s *Store) ListProducts() ([]Product, error) {
 		}
 		products = append(products, p)
 	}
+	slog.Info("ListProducts completed successfully", "count", len(products))
 	return products, nil
 }
 
 func (s *Store) GetProduct(id int) (*Product, error) {
-	slog.Debug("Getting product details", "id", id)
+	slog.Debug("Executing GetProduct", "id", id)
 	var p Product
-	err := s.DB.QueryRow(`
+	query := `
 		SELECT id, name, description, price, stock, min_stock, unit
 		FROM products WHERE id = ?
-	`, id).Scan(&p.ID, &p.Name, &p.Description, &p.Price, &p.Stock, &p.MinStock, &p.Unit)
+	`
+	slog.Debug("Querying product details", "id", id, "query", query)
+	err := s.DB.QueryRow(query, id).Scan(&p.ID, &p.Name, &p.Description, &p.Price, &p.Stock, &p.MinStock, &p.Unit)
 	if err != nil {
 		slog.Error("Failed to get product", "id", id, "error", err)
 		return nil, err
 	}
+	slog.Info("GetProduct completed successfully", "id", id, "name", p.Name)
 	return &p, nil
 }

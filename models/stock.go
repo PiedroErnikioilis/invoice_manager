@@ -15,6 +15,7 @@ type StockMovement struct {
 }
 
 func (s *Store) RecordStockMovement(productID int, quantity int, movementType string, note string) error {
+	slog.Debug("Recording stock movement", "product_id", productID, "quantity", quantity, "type", movementType, "note", note)
 	tx, err := s.DB.Begin()
 	if err != nil {
 		slog.Error("Failed to begin transaction for stock movement", "error", err)
@@ -40,17 +41,22 @@ func (s *Store) RecordStockMovement(productID int, quantity int, movementType st
 		return err
 	}
 
+	// 3. Get new stock level for logging
+	var newStock int
+	_ = tx.QueryRow(`SELECT stock FROM products WHERE id = ?`, productID).Scan(&newStock)
+
 	if err := tx.Commit(); err != nil {
 		slog.Error("Failed to commit stock movement", "error", err)
 		return err
 	}
 
-	slog.Info("Stock movement recorded", "product_id", productID, "quantity", quantity, "type", movementType)
+	slog.Info("Stock movement recorded", "product_id", productID, "quantity", quantity, "type", movementType, "new_stock", newStock)
 	return nil
 }
 
 // RecordStockMovementTx allows recording within an existing transaction
 func (s *Store) RecordStockMovementTx(tx *Transaction, productID int, quantity int, movementType string, note string) error {
+	slog.Debug("Recording stock movement in TX", "product_id", productID, "quantity", quantity, "type", movementType, "note", note)
 	_, err := tx.Tx.Exec(`
 		INSERT INTO stock_movements (product_id, quantity, movement_type, note)
 		VALUES (?, ?, ?, ?)
@@ -66,7 +72,11 @@ func (s *Store) RecordStockMovementTx(tx *Transaction, productID int, quantity i
 		return err
 	}
 
-	slog.Debug("Stock movement recorded in TX", "product_id", productID, "quantity", quantity, "type", movementType)
+	// Get new stock level for logging (in TX)
+	var newStock int
+	_ = tx.Tx.QueryRow(`SELECT stock FROM products WHERE id = ?`, productID).Scan(&newStock)
+
+	slog.Debug("Stock movement recorded in TX", "product_id", productID, "quantity", quantity, "type", movementType, "new_stock_in_tx", newStock)
 	return nil
 }
 
