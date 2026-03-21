@@ -4,6 +4,10 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten
 
 ## [v0.4.3] - 2026-03-21
 
+### Hinzugefügt
+
+- **Zahlungsdetails für Rechnungen**: Neues internes Feld zum Erfassen von Zahlungsinformationen (z.B. Barzahlung, Transaktionsnummern, Datum des Geldeingangs).
+
 ### Behoben
 
 - **PDF-Layout & Multi-Page-Handling**:

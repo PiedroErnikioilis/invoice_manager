@@ -220,7 +220,8 @@ func initDB(dataSourceName string, isNew bool) (*sql.DB, bool, error) {
 		is_small_business BOOLEAN DEFAULT 0,
 		customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
 		internal_note TEXT,
-		document_note TEXT
+		document_note TEXT,
+		payment_details TEXT
 	);
 
 	CREATE TABLE IF NOT EXISTS products (
@@ -365,6 +366,7 @@ func initDB(dataSourceName string, isNew bool) (*sql.DB, bool, error) {
 		"ALTER TABLE quotes ADD COLUMN document_note TEXT",
 		"ALTER TABLE credit_notes ADD COLUMN internal_note TEXT",
 		"ALTER TABLE credit_notes ADD COLUMN document_note TEXT",
+		"ALTER TABLE invoices ADD COLUMN payment_details TEXT",
 	}
 
 	slog.Debug("Applying migrations", "count", len(migrations))

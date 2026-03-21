@@ -34,10 +34,20 @@ templ InvoiceView(inv *models.Invoice, settings models.AppSettings) {
 			</div>
 		</div>
 
-		if inv.InternalNote != "" {
+		if inv.InternalNote != "" || inv.PaymentDetails != "" {
 			<div class="no-print bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8 text-yellow-800 rounded shadow-sm">
-				<p class="font-bold text-sm mb-1 uppercase tracking-wide">Interne Notiz (Wird nicht gedruckt)</p>
-				<p class="whitespace-pre-line text-sm">{ inv.InternalNote }</p>
+				if inv.InternalNote != "" {
+					<div class="mb-2">
+						<p class="font-bold text-sm mb-1 uppercase tracking-wide">Interne Notiz (Wird nicht gedruckt)</p>
+						<p class="whitespace-pre-line text-sm">{ inv.InternalNote }</p>
+					</div>
+				}
+				if inv.PaymentDetails != "" {
+					<div>
+						<p class="font-bold text-sm mb-1 uppercase tracking-wide">Zahlungsdetails (Intern)</p>
+						<p class="whitespace-pre-line text-sm">{ inv.PaymentDetails }</p>
+					</div>
+				}
 			</div>
 		}
 

@@ -127,8 +127,9 @@ templ InvoiceForm(invoice *models.Invoice, products []models.Product, customers 
 				<div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
 					@Input("Steuersatz (%)", "tax_rate", "text", models.FormatDecimalSimple(invoice.TaxRate), "19", true, "Umsatzsteuersatz (z.B. 19 oder 7).")
 				</div>
-				<div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+				<div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
 					@Textarea("Interne Notiz", "internal_note", invoice.InternalNote, 3)
+					@Textarea("Zahlungsdetails (intern)", "payment_details", invoice.PaymentDetails, 3)
 					@Textarea("Dokument-Kommentar (auf PDF)", "document_note", invoice.DocumentNote, 3)
 				</div>
 				<div class="flex items-center justify-end mt-8">

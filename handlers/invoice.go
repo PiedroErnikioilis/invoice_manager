@@ -107,6 +107,7 @@ func (h *InvoiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 		IsSmallBusiness:  r.FormValue("is_small_business") == "on",
 		InternalNote:     r.FormValue("internal_note"),
 		DocumentNote:     r.FormValue("document_note"),
+		PaymentDetails:   r.FormValue("payment_details"),
 		Items:            []models.InvoiceItem{},
 	}
 
@@ -215,6 +216,7 @@ func (h *InvoiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 		IsSmallBusiness:  r.FormValue("is_small_business") == "on",
 		InternalNote:     r.FormValue("internal_note"),
 		DocumentNote:     r.FormValue("document_note"),
+		PaymentDetails:   r.FormValue("payment_details"),
 		Items:            []models.InvoiceItem{},
 	}
 
