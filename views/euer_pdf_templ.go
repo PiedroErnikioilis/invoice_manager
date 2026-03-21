@@ -35,14 +35,14 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"de\"><head><meta charset=\"UTF-8\"><title>Einnahmen-Überschuss-Rechnung</title><script src=\"https://cdn.tailwindcss.com\"></script><style>\n\t\t\t\t@page { size: A4; margin: 0; }\n\t\t\t\tbody {\n\t\t\t\t\tmargin: 0;\n\t\t\t\t\tpadding: 0;\n\t\t\t\t\tfont-family: Calibri, 'Calibri Light', Arial, sans-serif;\n\t\t\t\t\tbackground: white;\n\t\t\t\t\t-webkit-print-color-adjust: exact;\n\t\t\t\t\tfont-size: 10pt;\n\t\t\t\t}\n\t\t\t\t.page {\n\t\t\t\t\twidth: 210mm;\n\t\t\t\t\tmin-height: 297mm;\n\t\t\t\t\tpadding: 20mm;\n\t\t\t\t\tposition: relative;\n\t\t\t\t\tbox-sizing: border-box;\n\t\t\t\t}\n\t\t\t</style></head><body><div class=\"page\"><!-- Header --><div class=\"flex justify-between items-start mb-8\"><div><h1 class=\"text-2xl font-bold text-gray-800\">Einnahmen-Überschuss-Rechnung ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"de\"><head><meta charset=\"UTF-8\"><title>Einnahmen-Überschuss-Rechnung</title><script src=\"https://cdn.tailwindcss.com\"></script><style>\n\t\t\t\t@page { size: A4; margin: 20mm; }\n\t\t\t\tbody {\n\t\t\t\t\tmargin: 0;\n\t\t\t\t\tpadding: 0;\n\t\t\t\t\tfont-family: Calibri, 'Calibri Light', Arial, sans-serif;\n\t\t\t\t\tbackground: white;\n\t\t\t\t\t-webkit-print-color-adjust: exact;\n\t\t\t\t\tfont-size: 10pt;\n\t\t\t\t}\n\t\t\t\t.page {\n\t\t\t\t\tposition: relative;\n\t\t\t\t}\n\t\t\t</style></head><body><div class=\"page\"><!-- Header --><div class=\"flex justify-between items-start mb-8\"><div><h1 class=\"text-2xl font-bold text-gray-800\">Einnahmen-Überschuss-Rechnung ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Year))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 40, Col: 113}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 36, Col: 113}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -55,7 +55,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(settings.SenderName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 41, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 37, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -68,7 +68,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(time.Now().Format("02.01.2006"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 44, Col: 54}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 40, Col: 54}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -81,7 +81,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.TotalIncomeNet))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 51, Col: 99}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 47, Col: 99}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -94,7 +94,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.TotalIncomeGross))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 52, Col: 99}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 48, Col: 99}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -107,7 +107,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.TotalExpensesNet))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 56, Col: 99}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 52, Col: 99}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -120,7 +120,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.TotalExpensesGross))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 57, Col: 101}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 53, Col: 101}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -155,7 +155,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.Profit))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 61, Col: 110}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 57, Col: 110}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
@@ -190,7 +190,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.VatPayable))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 66, Col: 119}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 62, Col: 119}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
@@ -208,7 +208,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(i.Date)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 85, Col: 33}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 81, Col: 33}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -221,7 +221,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(i.InvoiceNumber)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 86, Col: 42}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 82, Col: 42}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
@@ -234,7 +234,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 			var templ_7745c5c3_Var17 string
 			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(i.RecipientName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 87, Col: 42}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 83, Col: 42}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
@@ -247,7 +247,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(i.TotalNet()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 88, Col: 116}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 84, Col: 116}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
@@ -260,7 +260,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 			var templ_7745c5c3_Var19 string
 			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(i.TaxAmount()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 89, Col: 116}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 85, Col: 116}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
@@ -284,7 +284,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 		var templ_7745c5c3_Var20 string
 		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.TotalIncomeNet))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 101, Col: 123}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 97, Col: 123}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
@@ -297,7 +297,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 		var templ_7745c5c3_Var21 string
 		templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.TotalIncomeVat))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 102, Col: 122}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 98, Col: 122}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 		if templ_7745c5c3_Err != nil {
@@ -315,7 +315,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 			var templ_7745c5c3_Var22 string
 			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(e.Date)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 121, Col: 33}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 117, Col: 33}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
@@ -328,7 +328,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 			var templ_7745c5c3_Var23 string
 			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(e.Description)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 122, Col: 40}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 118, Col: 40}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 			if templ_7745c5c3_Err != nil {
@@ -341,7 +341,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 			var templ_7745c5c3_Var24 string
 			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(e.CategoryName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 123, Col: 55}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 119, Col: 55}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 			if templ_7745c5c3_Err != nil {
@@ -354,7 +354,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 			var templ_7745c5c3_Var25 string
 			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", e.TaxRate))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 123, Col: 91}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 119, Col: 91}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 			if templ_7745c5c3_Err != nil {
@@ -367,7 +367,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 			var templ_7745c5c3_Var26 string
 			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(e.Net()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 124, Col: 109}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 120, Col: 109}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 			if templ_7745c5c3_Err != nil {
@@ -380,7 +380,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 			var templ_7745c5c3_Var27 string
 			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(e.Tax()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 125, Col: 110}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 121, Col: 110}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 			if templ_7745c5c3_Err != nil {
@@ -404,7 +404,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 		var templ_7745c5c3_Var28 string
 		templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.TotalExpensesNet))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 137, Col: 123}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 133, Col: 123}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 		if templ_7745c5c3_Err != nil {
@@ -417,7 +417,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 		var templ_7745c5c3_Var29 string
 		templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.TotalExpensesTax))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 138, Col: 124}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 134, Col: 124}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 		if templ_7745c5c3_Err != nil {
@@ -452,7 +452,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 		var templ_7745c5c3_Var32 string
 		templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.Profit))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 146, Col: 137}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 142, Col: 137}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 		if templ_7745c5c3_Err != nil {
@@ -487,7 +487,7 @@ func EuerPDF(stats *models.EuerStats, settings models.AppSettings) templ.Compone
 		var templ_7745c5c3_Var35 string
 		templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(stats.VatPayable))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 150, Col: 138}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/euer_pdf.templ`, Line: 146, Col: 138}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 		if templ_7745c5c3_Err != nil {

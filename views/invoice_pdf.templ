@@ -28,25 +28,30 @@ templ PDFLayout(title string) {
                 background: white;
                 -webkit-print-color-adjust: exact;
             }
-            .page {
-                width: 210mm;
-                min-height: 297mm;
-                position: relative;
+            
+            /* The table approach for multi-page headers/footers */
+            .page-table {
+                width: 100%;
+                border-collapse: collapse;
             }
             
-            /* DIN 5008 Form B Zones */
+            .page-header-space {
+                height: 20mm; /* Top padding for Page 2+ */
+            }
             
-            /* Header / Logo (0 - 45mm) */
+            .page-footer-space {
+                height: 45mm; /* Space at bottom for fixed footer */
+            }
+            
+            /* DIN 5008 Zones - positioned relative to paper edge */
             .header-zone {
                 position: absolute;
-                top: 0;
-                left: 20mm; /* or 25mm left margin */
+                top: 5mm;
+                left: 20mm;
                 right: 10mm;
-                height: 45mm;
-                /* border-bottom: 1px dashed #ccc; debug */
+                height: 40mm;
             }
             
-            /* Address Zone (45mm - 85mm) */
             .address-zone {
                 position: absolute;
                 top: 45mm;
@@ -54,29 +59,22 @@ templ PDFLayout(title string) {
                 width: 85mm;
                 height: 40mm;
                 font-size: 10pt;
-                /* background: #f9f9f9; debug */
             }
             
             .sender-line {
                 font-size: 6pt;
                 text-decoration: underline;
-                margin-bottom: 4mm; /* Adjusted for visual alignment */
+                margin-bottom: 4mm;
                 color: #555;
             }
             
-            /* Info Block (Right of Address) */
             .info-zone {
                 position: absolute;
-                top: 50mm; /* Start slightly below top of address zone */
-                right: 20mm; /* 20mm right margin */
+                top: 50mm;
+                right: 20mm;
                 width: 75mm;
                 text-align: left;
                 font-size: 9pt;
-            }
-            
-            .info-table td {
-                padding-bottom: 1mm;
-                vertical-align: top;
             }
             
             .info-label {
@@ -87,24 +85,41 @@ templ PDFLayout(title string) {
                 color: #555;
             }
             
-            /* Content (Starts below 98mm typically, say 105mm) */
-            .content-zone {
-                position: absolute;
-                top: 105mm;
-                left: 20mm;
-                right: 20mm;
-                bottom: 55mm; /* Leave space for footer */
+            /* Spacer to push content down on FIRST page only (below headers) */
+            .first-page-spacer {
+                height: 85mm; /* 20mm thead + 85mm spacer = 105mm total start */
+                display: block;
             }
             
-            /* Footer (Bottom area) */
+            /* Content Area */
+            .content-zone {
+                padding-left: 20mm;
+                padding-right: 20mm;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            /* Footer - Truly fixed at the bottom of every page */
             .footer-zone {
-                position: absolute;
-                bottom: 15mm;
-                left: 20mm;
-                right: 20mm;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 40mm;
+                padding: 0 20mm;
                 font-size: 8pt;
                 border-top: 1px solid #ddd;
-                padding-top: 2mm;
+                background: white;
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+            }
+            
+            .footer-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1rem;
+                width: 100%;
             }
 
             /* Fold Marks */
@@ -114,24 +129,37 @@ templ PDFLayout(title string) {
                 width: 4mm;
                 height: 1pt;
                 background: #000;
+                z-index: 10;
             }
             .fold-1 { top: 87mm; }
             .fold-2 { top: 192mm; }
-            .punch-mark { 
-                top: 148.5mm; 
-                width: 6mm;
-            }
+            .punch-mark { top: 148.5mm; width: 6mm; }
 
 		</style>
 		</head>
 		<body>
-			<div class="page">
-				<!-- Fold Marks -->
-				<div class="fold-mark fold-1"></div>
-				<div class="fold-mark punch-mark"></div>
-				<div class="fold-mark fold-2"></div>
-				{ children... }
-			</div>
+            <!-- Static zones on page 1 -->
+            <div class="fold-mark fold-1"></div>
+            <div class="fold-mark punch-mark"></div>
+            <div class="fold-mark fold-2"></div>
+
+            <table class="page-table">
+                <thead>
+                    <tr><td><div class="page-header-space"></div></td></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="page-container">
+                                { children... }
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr><td><div class="page-footer-space"></div></td></tr>
+                </tfoot>
+            </table>
 		</body>
 	</html>
 }
@@ -142,10 +170,6 @@ templ InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) {
 		<div class="header-zone">
 			if settings.LogoPath != "" {
 				<div class="flex justify-end pt-5">
-					<!-- We need absolute path or base64 for PDF generation usually, 
-                         but since we run locally, a relative path might work if CWD is correct. 
-                         However, for safety in browser rendering context, absolute file:// is often needed 
-                         or base64. Let's rely on standard img src and fix in service if needed. -->
 					<img src={ settings.LogoPath } style="max-height: 25mm; max-width: 50%;"/>
 				</div>
 			}
@@ -156,14 +180,14 @@ templ InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) {
 				{ invoice.SenderName } • { invoice.SenderAddress }
 			</div>
 			<div class="recipient-block">
-				<div class="font-bold">{ invoice.RecipientName }</div>
+				<div class="font-bold text-lg">{ invoice.RecipientName }</div>
 				<div class="whitespace-pre-wrap">{ invoice.RecipientAddress }</div>
 			</div>
 		</div>
 		<!-- Info Zone -->
 		<div class="info-zone">
 			<h1 class="text-xl font-bold mb-4 text-right">RECHNUNG</h1>
-			<table class="info-table w-full">
+			<table class="w-full text-sm">
 				<tr>
 					<td class="info-label">Rechnungs-Nr:</td>
 					<td>{ invoice.InvoiceNumber }</td>
@@ -180,13 +204,14 @@ templ InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) {
 				}
 			</table>
 		</div>
+
 		<!-- Content Zone -->
 		<div class="content-zone">
+			<div class="first-page-spacer"></div>
+			
 			<h2 class="text-lg font-bold mb-4">Rechnung Nr. { invoice.InvoiceNumber }</h2>
-			<div class="text-sm mb-6">
-				<p>Sehr geehrte Damen und Herren,</p>
-				<p class="mt-2">vielen Dank für Ihren Auftrag. Wir stellen Ihnen folgende Leistungen in Rechnung:</p>
-			</div>
+...
+...
 			<!-- Items Table -->
 			<table class="w-full text-sm mb-6">
 				<thead class="bg-gray-100">
@@ -244,7 +269,7 @@ templ InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) {
 		</div>
 		<!-- Footer Zone -->
 		<div class="footer-zone">
-			<div class="grid grid-cols-3 gap-4">
+			<div class="footer-grid">
 				<div>
 					<div class="font-bold mb-1">{ invoice.SenderName }</div>
 					<div class="whitespace-pre-wrap">{ invoice.SenderAddress }</div>

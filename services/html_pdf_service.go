@@ -416,7 +416,7 @@ func GenerateInvoicePDFHTML(inv *models.Invoice, settings *models.AppSettings) (
 		PaperWidth:           toPtr(8.27),  // A4 Width in inches
 		PaperHeight:          toPtr(11.69), // A4 Height
 		MarginTop:            toPtr(0.0),
-		MarginBottom:         toPtr(0.35),  // ~9mm for page number
+		MarginBottom:         toPtr(0.0),
 		MarginLeft:           toPtr(0.0),
 		MarginRight:          toPtr(0.0),
 		PrintBackground:      true,

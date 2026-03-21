@@ -350,7 +350,7 @@ func CreditNotePDF(note *models.CreditNote, settings *models.AppSettings) templ.
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "</div></div><!-- Footer Zone --> <div class=\"footer-zone\"><div class=\"grid grid-cols-3 gap-4\"><div><div class=\"font-bold mb-1\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "</div></div><!-- Footer Zone --> <div class=\"footer-zone\"><div class=\"footer-grid\"><div><div class=\"font-bold mb-1\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

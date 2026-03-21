@@ -49,7 +49,7 @@ func PDFLayout(title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</title><!-- Tailwind for basic styling --><script src=\"https://cdn.tailwindcss.com\"></script><style>\n            /* Reset & Page Setup */\n\t\t\t@page { \n                size: A4; \n                margin: 0; \n            }\n\t\t\tbody { \n                margin: 0; \n                padding: 0; \n                font-family: Calibri, 'Calibri Light', Arial, sans-serif; \n                background: white;\n                -webkit-print-color-adjust: exact;\n            }\n            .page {\n                width: 210mm;\n                min-height: 297mm;\n                position: relative;\n            }\n            \n            /* DIN 5008 Form B Zones */\n            \n            /* Header / Logo (0 - 45mm) */\n            .header-zone {\n                position: absolute;\n                top: 0;\n                left: 20mm; /* or 25mm left margin */\n                right: 10mm;\n                height: 45mm;\n                /* border-bottom: 1px dashed #ccc; debug */\n            }\n            \n            /* Address Zone (45mm - 85mm) */\n            .address-zone {\n                position: absolute;\n                top: 45mm;\n                left: 20mm;\n                width: 85mm;\n                height: 40mm;\n                font-size: 10pt;\n                /* background: #f9f9f9; debug */\n            }\n            \n            .sender-line {\n                font-size: 6pt;\n                text-decoration: underline;\n                margin-bottom: 4mm; /* Adjusted for visual alignment */\n                color: #555;\n            }\n            \n            /* Info Block (Right of Address) */\n            .info-zone {\n                position: absolute;\n                top: 50mm; /* Start slightly below top of address zone */\n                right: 20mm; /* 20mm right margin */\n                width: 75mm;\n                text-align: left;\n                font-size: 9pt;\n            }\n            \n            .info-table td {\n                padding-bottom: 1mm;\n                vertical-align: top;\n            }\n            \n            .info-label {\n                font-weight: bold;\n                padding-right: 2mm;\n                text-align: right;\n                width: 35mm;\n                color: #555;\n            }\n            \n            /* Content (Starts below 98mm typically, say 105mm) */\n            .content-zone {\n                position: absolute;\n                top: 105mm;\n                left: 20mm;\n                right: 20mm;\n                bottom: 55mm; /* Leave space for footer */\n            }\n            \n            /* Footer (Bottom area) */\n            .footer-zone {\n                position: absolute;\n                bottom: 15mm;\n                left: 20mm;\n                right: 20mm;\n                font-size: 8pt;\n                border-top: 1px solid #ddd;\n                padding-top: 2mm;\n            }\n\n            /* Fold Marks */\n            .fold-mark {\n                position: absolute;\n                left: 5mm;\n                width: 4mm;\n                height: 1pt;\n                background: #000;\n            }\n            .fold-1 { top: 87mm; }\n            .fold-2 { top: 192mm; }\n            .punch-mark { \n                top: 148.5mm; \n                width: 6mm;\n            }\n\n\t\t</style></head><body><div class=\"page\"><!-- Fold Marks --><div class=\"fold-mark fold-1\"></div><div class=\"fold-mark punch-mark\"></div><div class=\"fold-mark fold-2\"></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</title><!-- Tailwind for basic styling --><script src=\"https://cdn.tailwindcss.com\"></script><style>\n            /* Reset & Page Setup */\n\t\t\t@page { \n                size: A4; \n                margin: 0; \n            }\n\t\t\tbody { \n                margin: 0; \n                padding: 0; \n                font-family: Calibri, 'Calibri Light', Arial, sans-serif; \n                background: white;\n                -webkit-print-color-adjust: exact;\n            }\n            \n            /* The table approach for multi-page headers/footers */\n            .page-table {\n                width: 100%;\n                border-collapse: collapse;\n            }\n            \n            .page-header-space {\n                height: 20mm; /* Top padding for Page 2+ */\n            }\n            \n            .page-footer-space {\n                height: 45mm; /* Space at bottom for fixed footer */\n            }\n            \n            /* DIN 5008 Zones - positioned relative to paper edge */\n            .header-zone {\n                position: absolute;\n                top: 5mm;\n                left: 20mm;\n                right: 10mm;\n                height: 40mm;\n            }\n            \n            .address-zone {\n                position: absolute;\n                top: 45mm;\n                left: 20mm;\n                width: 85mm;\n                height: 40mm;\n                font-size: 10pt;\n            }\n            \n            .sender-line {\n                font-size: 6pt;\n                text-decoration: underline;\n                margin-bottom: 4mm;\n                color: #555;\n            }\n            \n            .info-zone {\n                position: absolute;\n                top: 50mm;\n                right: 20mm;\n                width: 75mm;\n                text-align: left;\n                font-size: 9pt;\n            }\n            \n            .info-label {\n                font-weight: bold;\n                padding-right: 2mm;\n                text-align: right;\n                width: 35mm;\n                color: #555;\n            }\n            \n            /* Spacer to push content down on FIRST page only (below headers) */\n            .first-page-spacer {\n                height: 85mm; /* 20mm thead + 85mm spacer = 105mm total start */\n                display: block;\n            }\n            \n            /* Content Area */\n            .content-zone {\n                padding-left: 20mm;\n                padding-right: 20mm;\n                width: 100%;\n                box-sizing: border-box;\n            }\n            \n            /* Footer - Truly fixed at the bottom of every page */\n            .footer-zone {\n                position: fixed;\n                bottom: 0;\n                left: 0;\n                right: 0;\n                height: 40mm;\n                padding: 0 20mm;\n                font-size: 8pt;\n                border-top: 1px solid #ddd;\n                background: white;\n                z-index: 1000;\n                display: flex;\n                align-items: center;\n            }\n            \n            .footer-grid {\n                display: grid;\n                grid-template-columns: repeat(3, 1fr);\n                gap: 1rem;\n                width: 100%;\n            }\n\n            /* Fold Marks */\n            .fold-mark {\n                position: absolute;\n                left: 5mm;\n                width: 4mm;\n                height: 1pt;\n                background: #000;\n                z-index: 10;\n            }\n            .fold-1 { top: 87mm; }\n            .fold-2 { top: 192mm; }\n            .punch-mark { top: 148.5mm; width: 6mm; }\n\n\t\t</style></head><body><!-- Static zones on page 1 --><div class=\"fold-mark fold-1\"></div><div class=\"fold-mark punch-mark\"></div><div class=\"fold-mark fold-2\"></div><table class=\"page-table\"><thead><tr><td><div class=\"page-header-space\"></div></td></tr></thead> <tbody><tr><td><div class=\"page-container\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -57,7 +57,7 @@ func PDFLayout(title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></td></tr></tbody><tfoot><tr><td><div class=\"page-footer-space\"></div></td></tr></tfoot></table></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -103,14 +103,14 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 				return templ_7745c5c3_Err
 			}
 			if settings.LogoPath != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"flex justify-end pt-5\"><!-- We need absolute path or base64 for PDF generation usually, \n                         but since we run locally, a relative path might work if CWD is correct. \n                         However, for safety in browser rendering context, absolute file:// is often needed \n                         or base64. Let's rely on standard img src and fix in service if needed. --><img src=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"flex justify-end pt-5\"><img src=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(settings.LogoPath)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 149, Col: 33}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 173, Col: 33}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -128,7 +128,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(invoice.SenderName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 156, Col: 24}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 180, Col: 24}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -141,20 +141,20 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(invoice.SenderAddress)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 156, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 180, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div><div class=\"recipient-block\"><div class=\"font-bold\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div><div class=\"recipient-block\"><div class=\"font-bold text-lg\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(invoice.RecipientName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 159, Col: 50}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 183, Col: 58}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -167,20 +167,20 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(invoice.RecipientAddress)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 160, Col: 63}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 184, Col: 63}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div></div></div><!-- Info Zone --> <div class=\"info-zone\"><h1 class=\"text-xl font-bold mb-4 text-right\">RECHNUNG</h1><table class=\"info-table w-full\"><tr><td class=\"info-label\">Rechnungs-Nr:</td><td>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div></div></div><!-- Info Zone --> <div class=\"info-zone\"><h1 class=\"text-xl font-bold mb-4 text-right\">RECHNUNG</h1><table class=\"w-full text-sm\"><tr><td class=\"info-label\">Rechnungs-Nr:</td><td>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(invoice.InvoiceNumber)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 169, Col: 32}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 193, Col: 32}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -193,7 +193,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(invoice.Date)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 173, Col: 23}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 197, Col: 23}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -211,7 +211,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 				var templ_7745c5c3_Var12 string
 				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(invoice.CustomerNumber)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 178, Col: 34}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 202, Col: 34}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
@@ -222,20 +222,20 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</table></div><!-- Content Zone --> <div class=\"content-zone\"><h2 class=\"text-lg font-bold mb-4\">Rechnung Nr. ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</table></div><!-- Content Zone --> <div class=\"content-zone\"><div class=\"first-page-spacer\"></div><h2 class=\"text-lg font-bold mb-4\">Rechnung Nr. ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(invoice.InvoiceNumber)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 185, Col: 74}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 212, Col: 74}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</h2><div class=\"text-sm mb-6\"><p>Sehr geehrte Damen und Herren,</p><p class=\"mt-2\">vielen Dank für Ihren Auftrag. Wir stellen Ihnen folgende Leistungen in Rechnung:</p></div><!-- Items Table --><table class=\"w-full text-sm mb-6\"><thead class=\"bg-gray-100\"><tr><th class=\"p-2 text-left w-10\">Pos</th><th class=\"p-2 text-left\">Beschreibung</th><th class=\"p-2 text-right w-20\">Menge</th><th class=\"p-2 text-right w-24\">Einzel</th><th class=\"p-2 text-right w-24\">Gesamt</th></tr></thead> <tbody>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</h2>... ...<!-- Items Table --><table class=\"w-full text-sm mb-6\"><thead class=\"bg-gray-100\"><tr><th class=\"p-2 text-left w-10\">Pos</th><th class=\"p-2 text-left\">Beschreibung</th><th class=\"p-2 text-right w-20\">Menge</th><th class=\"p-2 text-right w-24\">Einzel</th><th class=\"p-2 text-right w-24\">Gesamt</th></tr></thead> <tbody>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -247,7 +247,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 				var templ_7745c5c3_Var14 string
 				templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(i + 1))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 204, Col: 44}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 229, Col: 44}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 				if templ_7745c5c3_Err != nil {
@@ -260,7 +260,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 				var templ_7745c5c3_Var15 string
 				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(item.Description)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 205, Col: 41}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 230, Col: 41}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 				if templ_7745c5c3_Err != nil {
@@ -273,7 +273,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 				var templ_7745c5c3_Var16 string
 				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(item.Quantity))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 206, Col: 63}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 231, Col: 63}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 				if templ_7745c5c3_Err != nil {
@@ -286,7 +286,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 				var templ_7745c5c3_Var17 string
 				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(item.PricePerUnit))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 207, Col: 76}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 232, Col: 76}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 				if templ_7745c5c3_Err != nil {
@@ -299,7 +299,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 				var templ_7745c5c3_Var18 string
 				templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(float64(item.Quantity) * item.PricePerUnit))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 208, Col: 101}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 233, Col: 101}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 				if templ_7745c5c3_Err != nil {
@@ -317,7 +317,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 			var templ_7745c5c3_Var19 string
 			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(invoice.TotalNet()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 218, Col: 104}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 243, Col: 104}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
@@ -335,7 +335,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 				var templ_7745c5c3_Var20 string
 				templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%g%%", invoice.TaxRate))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 222, Col: 88}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 247, Col: 88}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 				if templ_7745c5c3_Err != nil {
@@ -348,7 +348,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 				var templ_7745c5c3_Var21 string
 				templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(invoice.TaxAmount()))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 223, Col: 106}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 248, Col: 106}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 				if templ_7745c5c3_Err != nil {
@@ -366,7 +366,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 			var templ_7745c5c3_Var22 string
 			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(invoice.TotalGross()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 228, Col: 124}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 253, Col: 124}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
@@ -390,7 +390,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 				var templ_7745c5c3_Var23 string
 				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(invoice.DocumentNote)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 239, Col: 28}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 264, Col: 28}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 				if templ_7745c5c3_Err != nil {
@@ -401,14 +401,14 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "<p>Bitte überweisen Sie den Gesamtbetrag innerhalb von 14 Tagen auf das unten genannte Konto unter Angabe der Rechnungsnummer.</p></div></div><!-- Footer Zone --> <div class=\"footer-zone\"><div class=\"grid grid-cols-3 gap-4\"><div><div class=\"font-bold mb-1\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "<p>Bitte überweisen Sie den Gesamtbetrag innerhalb von 14 Tagen auf das unten genannte Konto unter Angabe der Rechnungsnummer.</p></div></div><!-- Footer Zone --> <div class=\"footer-zone\"><div class=\"footer-grid\"><div><div class=\"font-bold mb-1\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var24 string
 			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(invoice.SenderName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 249, Col: 53}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 274, Col: 53}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 			if templ_7745c5c3_Err != nil {
@@ -421,7 +421,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 			var templ_7745c5c3_Var25 string
 			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(invoice.SenderAddress)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 250, Col: 61}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 275, Col: 61}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 			if templ_7745c5c3_Err != nil {
@@ -434,7 +434,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 			var templ_7745c5c3_Var26 string
 			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(settings.BankName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 254, Col: 29}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 279, Col: 29}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 			if templ_7745c5c3_Err != nil {
@@ -447,7 +447,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 			var templ_7745c5c3_Var27 string
 			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(settings.IBAN)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 255, Col: 31}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 280, Col: 31}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 			if templ_7745c5c3_Err != nil {
@@ -460,7 +460,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 			var templ_7745c5c3_Var28 string
 			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(settings.BIC)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 256, Col: 29}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 281, Col: 29}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 			if templ_7745c5c3_Err != nil {
@@ -473,7 +473,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 			var templ_7745c5c3_Var29 string
 			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(settings.Website)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 260, Col: 28}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 285, Col: 28}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 			if templ_7745c5c3_Err != nil {
@@ -486,7 +486,7 @@ func InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) templ.Com
 			var templ_7745c5c3_Var30 string
 			templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(settings.Email)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 261, Col: 26}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/invoice_pdf.templ`, Line: 286, Col: 26}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 			if templ_7745c5c3_Err != nil {

@@ -14,7 +14,7 @@ templ EuerPDF(stats *models.EuerStats, settings models.AppSettings) {
 			<title>Einnahmen-Überschuss-Rechnung</title>
 			<script src="https://cdn.tailwindcss.com"></script>
 			<style>
-				@page { size: A4; margin: 0; }
+				@page { size: A4; margin: 20mm; }
 				body {
 					margin: 0;
 					padding: 0;
@@ -24,11 +24,7 @@ templ EuerPDF(stats *models.EuerStats, settings models.AppSettings) {
 					font-size: 10pt;
 				}
 				.page {
-					width: 210mm;
-					min-height: 297mm;
-					padding: 20mm;
 					position: relative;
-					box-sizing: border-box;
 				}
 			</style>
 		</head>

@@ -35,14 +35,14 @@ func InventarPDF(products []models.Product, settings models.AppSettings) templ.C
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"de\"><head><meta charset=\"UTF-8\"><title>Inventurliste</title><script src=\"https://cdn.tailwindcss.com\"></script><style>\n\t\t\t\t@page { size: A4; margin: 0; }\n\t\t\t\tbody {\n\t\t\t\t\tmargin: 0;\n\t\t\t\t\tpadding: 0;\n\t\t\t\t\tfont-family: Calibri, 'Calibri Light', Arial, sans-serif;\n\t\t\t\t\tbackground: white;\n\t\t\t\t\t-webkit-print-color-adjust: exact;\n\t\t\t\t\tfont-size: 10pt;\n\t\t\t\t}\n\t\t\t\t.page {\n\t\t\t\t\twidth: 210mm;\n\t\t\t\t\tmin-height: 297mm;\n\t\t\t\t\tpadding: 20mm;\n\t\t\t\t\tposition: relative;\n\t\t\t\t\tbox-sizing: border-box;\n\t\t\t\t}\n\t\t\t</style></head><body><div class=\"page\"><!-- Header --><div class=\"flex justify-between items-start mb-8\"><div><h1 class=\"text-2xl font-bold text-gray-800\">Inventurliste / Bestandsübersicht</h1><p class=\"text-sm text-gray-500 mt-1\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"de\"><head><meta charset=\"UTF-8\"><title>Inventurliste</title><script src=\"https://cdn.tailwindcss.com\"></script><style>\n\t\t\t\t@page { size: A4; margin: 20mm; }\n\t\t\t\tbody {\n\t\t\t\t\tmargin: 0;\n\t\t\t\t\tpadding: 0;\n\t\t\t\t\tfont-family: Calibri, 'Calibri Light', Arial, sans-serif;\n\t\t\t\t\tbackground: white;\n\t\t\t\t\t-webkit-print-color-adjust: exact;\n\t\t\t\t\tfont-size: 10pt;\n\t\t\t\t}\n\t\t\t\t.page {\n\t\t\t\t\tposition: relative;\n\t\t\t\t}\n\t\t\t</style></head><body><div class=\"page\"><!-- Header --><div class=\"flex justify-between items-start mb-8\"><div><h1 class=\"text-2xl font-bold text-gray-800\">Inventurliste / Bestandsübersicht</h1><p class=\"text-sm text-gray-500 mt-1\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(settings.SenderName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 41, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 37, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -55,7 +55,7 @@ func InventarPDF(products []models.Product, settings models.AppSettings) templ.C
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(time.Now().Format("02.01.2006 15:04"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 44, Col: 55}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 40, Col: 55}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -76,7 +76,7 @@ func InventarPDF(products []models.Product, settings models.AppSettings) templ.C
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 65, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 61, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -89,7 +89,7 @@ func InventarPDF(products []models.Product, settings models.AppSettings) templ.C
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(p.Description)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 66, Col: 64}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 62, Col: 64}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -102,7 +102,7 @@ func InventarPDF(products []models.Product, settings models.AppSettings) templ.C
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(p.Price))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 67, Col: 80}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 63, Col: 80}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -137,7 +137,7 @@ func InventarPDF(products []models.Product, settings models.AppSettings) templ.C
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", p.Stock))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 68, Col: 133}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 64, Col: 133}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -150,7 +150,7 @@ func InventarPDF(products []models.Product, settings models.AppSettings) templ.C
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(p.Unit)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 69, Col: 64}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 65, Col: 64}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -163,7 +163,7 @@ func InventarPDF(products []models.Product, settings models.AppSettings) templ.C
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(val))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 70, Col: 76}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 66, Col: 76}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -187,7 +187,7 @@ func InventarPDF(products []models.Product, settings models.AppSettings) templ.C
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatCurrency(totalValue))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 82, Col: 94}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/inventar_pdf.templ`, Line: 78, Col: 94}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
