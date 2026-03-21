@@ -100,6 +100,11 @@ templ CreditNotePDF(note *models.CreditNote, settings *models.AppSettings) {
 				if note.IsSmallBusiness {
 					<p class="mb-2 italic">Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.</p>
 				}
+				if note.DocumentNote != "" {
+					<div class="mb-4 whitespace-pre-wrap">
+						{ note.DocumentNote }
+					</div>
+				}
 			</div>
 		</div>
 		<!-- Footer Zone -->

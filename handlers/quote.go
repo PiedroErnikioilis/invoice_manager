@@ -255,6 +255,8 @@ func (h *QuoteHandler) parseForm(r *http.Request) (*models.Quote, error) {
 		Status:           r.FormValue("status"),
 		IsSmallBusiness:  r.FormValue("is_small_business") == "true",
 		CustomerID:       customerID,
+		InternalNote:     r.FormValue("internal_note"),
+		DocumentNote:     r.FormValue("document_note"),
 	}
 
 	// Parse items

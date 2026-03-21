@@ -234,6 +234,11 @@ templ InvoicePDF(invoice *models.Invoice, settings *models.AppSettings) {
 				if invoice.IsSmallBusiness {
 					<p class="mb-2 italic">Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.</p>
 				}
+				if invoice.DocumentNote != "" {
+					<div class="mb-4 whitespace-pre-wrap">
+						{ invoice.DocumentNote }
+					</div>
+				}
 				<p>Bitte überweisen Sie den Gesamtbetrag innerhalb von 14 Tagen auf das unten genannte Konto unter Angabe der Rechnungsnummer.</p>
 			</div>
 		</div>

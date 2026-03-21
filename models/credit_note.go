@@ -20,6 +20,8 @@ type CreditNote struct {
 	CustomerID       *int
 	CustomerNumber   string
 	InvoiceID        *int // Reference to original invoice
+	InternalNote     string
+	DocumentNote     string
 	Items            []CreditNoteItem
 }
 
@@ -67,9 +69,9 @@ func (s *Store) CreateCreditNote(c *CreditNote) (int, error) {
 
 	slog.Debug("Inserting credit note into database", "credit_note_number", c.CreditNoteNumber)
 	res, err := tx.Exec(`
-		INSERT INTO credit_notes (credit_note_number, date, sender_name, sender_address, recipient_name, recipient_address, tax_rate, status, is_small_business, customer_id, invoice_id)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	`, c.CreditNoteNumber, c.Date, c.SenderName, c.SenderAddress, c.RecipientName, c.RecipientAddress, c.TaxRate, c.Status, c.IsSmallBusiness, c.CustomerID, c.InvoiceID)
+		INSERT INTO credit_notes (credit_note_number, date, sender_name, sender_address, recipient_name, recipient_address, tax_rate, status, is_small_business, customer_id, invoice_id, internal_note, document_note)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`, c.CreditNoteNumber, c.Date, c.SenderName, c.SenderAddress, c.RecipientName, c.RecipientAddress, c.TaxRate, c.Status, c.IsSmallBusiness, c.CustomerID, c.InvoiceID, c.InternalNote, c.DocumentNote)
 	if err != nil {
 		slog.Error("Failed to insert credit note", "credit_note_number", c.CreditNoteNumber, "error", err)
 		tx.Rollback()
@@ -151,13 +153,13 @@ func (s *Store) GetCreditNote(id int) (*CreditNote, error) {
 	slog.Debug("Executing GetCreditNote", "id", id)
 	var c CreditNote
 	query := `
-		SELECT cn.id, cn.credit_note_number, cn.date, cn.sender_name, cn.sender_address, cn.recipient_name, cn.recipient_address, cn.tax_rate, cn.created_at, cn.status, cn.is_small_business, cn.customer_id, COALESCE(cust.customer_number, ''), cn.invoice_id
+		SELECT cn.id, cn.credit_note_number, cn.date, cn.sender_name, cn.sender_address, cn.recipient_name, cn.recipient_address, cn.tax_rate, cn.created_at, cn.status, cn.is_small_business, cn.customer_id, COALESCE(cust.customer_number, ''), cn.invoice_id, COALESCE(cn.internal_note, ''), COALESCE(cn.document_note, '')
 		FROM credit_notes cn
 		LEFT JOIN customers cust ON cn.customer_id = cust.id
 		WHERE cn.id = ?
 	`
 	slog.Debug("Querying credit note details", "id", id, "query", query)
-	err := s.DB.QueryRow(query, id).Scan(&c.ID, &c.CreditNoteNumber, &c.Date, &c.SenderName, &c.SenderAddress, &c.RecipientName, &c.RecipientAddress, &c.TaxRate, &c.CreatedAt, &c.Status, &c.IsSmallBusiness, &c.CustomerID, &c.CustomerNumber, &c.InvoiceID)
+	err := s.DB.QueryRow(query, id).Scan(&c.ID, &c.CreditNoteNumber, &c.Date, &c.SenderName, &c.SenderAddress, &c.RecipientName, &c.RecipientAddress, &c.TaxRate, &c.CreatedAt, &c.Status, &c.IsSmallBusiness, &c.CustomerID, &c.CustomerNumber, &c.InvoiceID, &c.InternalNote, &c.DocumentNote)
 	if err != nil {
 		slog.Error("Failed to get credit note", "id", id, "error", err)
 		return nil, err

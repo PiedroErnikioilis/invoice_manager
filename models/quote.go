@@ -19,6 +19,8 @@ type Quote struct {
 	IsSmallBusiness  bool
 	CustomerID       *int
 	CustomerNumber   string
+	InternalNote     string
+	DocumentNote     string
 	Items            []QuoteItem
 }
 
@@ -65,9 +67,9 @@ func (s *Store) CreateQuote(q *Quote) (int, error) {
 
 	slog.Debug("Inserting quote into database", "quote_number", q.QuoteNumber)
 	res, err := tx.Exec(`
-		INSERT INTO quotes (quote_number, date, sender_name, sender_address, recipient_name, recipient_address, tax_rate, status, is_small_business, customer_id)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	`, q.QuoteNumber, q.Date, q.SenderName, q.SenderAddress, q.RecipientName, q.RecipientAddress, q.TaxRate, q.Status, q.IsSmallBusiness, q.CustomerID)
+		INSERT INTO quotes (quote_number, date, sender_name, sender_address, recipient_name, recipient_address, tax_rate, status, is_small_business, customer_id, internal_note, document_note)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`, q.QuoteNumber, q.Date, q.SenderName, q.SenderAddress, q.RecipientName, q.RecipientAddress, q.TaxRate, q.Status, q.IsSmallBusiness, q.CustomerID, q.InternalNote, q.DocumentNote)
 	if err != nil {
 		slog.Error("Failed to insert quote", "quote_number", q.QuoteNumber, "error", err)
 		tx.Rollback()
@@ -137,13 +139,13 @@ func (s *Store) GetQuote(id int) (*Quote, error) {
 	slog.Debug("Executing GetQuote", "id", id)
 	var q Quote
 	query := `
-		SELECT q.id, q.quote_number, q.date, q.sender_name, q.sender_address, q.recipient_name, q.recipient_address, q.tax_rate, q.created_at, q.status, q.is_small_business, q.customer_id, COALESCE(c.customer_number, '')
+		SELECT q.id, q.quote_number, q.date, q.sender_name, q.sender_address, q.recipient_name, q.recipient_address, q.tax_rate, q.created_at, q.status, q.is_small_business, q.customer_id, COALESCE(c.customer_number, ''), COALESCE(q.internal_note, ''), COALESCE(q.document_note, '')
 		FROM quotes q
 		LEFT JOIN customers c ON q.customer_id = c.id
 		WHERE q.id = ?
 	`
 	slog.Debug("Querying quote details", "id", id, "query", query)
-	err := s.DB.QueryRow(query, id).Scan(&q.ID, &q.QuoteNumber, &q.Date, &q.SenderName, &q.SenderAddress, &q.RecipientName, &q.RecipientAddress, &q.TaxRate, &q.CreatedAt, &q.Status, &q.IsSmallBusiness, &q.CustomerID, &q.CustomerNumber)
+	err := s.DB.QueryRow(query, id).Scan(&q.ID, &q.QuoteNumber, &q.Date, &q.SenderName, &q.SenderAddress, &q.RecipientName, &q.RecipientAddress, &q.TaxRate, &q.CreatedAt, &q.Status, &q.IsSmallBusiness, &q.CustomerID, &q.CustomerNumber, &q.InternalNote, &q.DocumentNote)
 	if err != nil {
 		slog.Error("Failed to get quote", "id", id, "error", err)
 		return nil, err
@@ -184,9 +186,9 @@ func (s *Store) UpdateQuote(q *Quote) error {
 	slog.Debug("Updating quote record in database", "id", q.ID)
 	_, err = tx.Exec(`
 		UPDATE quotes 
-		SET quote_number = ?, date = ?, sender_name = ?, sender_address = ?, recipient_name = ?, recipient_address = ?, tax_rate = ?, status = ?, is_small_business = ?, customer_id = ?
+		SET quote_number = ?, date = ?, sender_name = ?, sender_address = ?, recipient_name = ?, recipient_address = ?, tax_rate = ?, status = ?, is_small_business = ?, customer_id = ?, internal_note = ?, document_note = ?
 		WHERE id = ?
-	`, q.QuoteNumber, q.Date, q.SenderName, q.SenderAddress, q.RecipientName, q.RecipientAddress, q.TaxRate, q.Status, q.IsSmallBusiness, q.CustomerID, q.ID)
+	`, q.QuoteNumber, q.Date, q.SenderName, q.SenderAddress, q.RecipientName, q.RecipientAddress, q.TaxRate, q.Status, q.IsSmallBusiness, q.CustomerID, q.InternalNote, q.DocumentNote, q.ID)
 	if err != nil {
 		slog.Error("Failed to update quote record", "id", q.ID, "error", err)
 		tx.Rollback()

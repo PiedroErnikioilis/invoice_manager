@@ -22,14 +22,11 @@ func expenseField(expense *models.Expense, field string) string {
 	case "description":
 		return expense.Description
 	case "amount":
-		if expense.Amount == 0 {
-			return ""
-		}
-		return fmt.Sprintf("%.2f", expense.Amount)
+		return models.FormatDecimalSimple(expense.Amount)
 	case "date":
 		return expense.Date
 	case "tax_rate":
-		return fmt.Sprintf("%.1f", expense.TaxRate)
+		return models.FormatDecimalSimple(expense.TaxRate)
 	case "category":
 		return expense.CategoryName
 	}
@@ -169,7 +166,7 @@ func ExpenseFormBody(products []models.Product, categories []models.ExpenseCateg
 			var templ_7745c5c3_Var5 templ.SafeURL
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/euer/expenses/%d", expense.ID)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 60, Col: 77}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 57, Col: 77}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -248,7 +245,7 @@ func ExpenseFormFields(products []models.Product, categories []models.ExpenseCat
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(expenseField(expense, "category"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 94, Col: 256}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 91, Col: 256}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -266,7 +263,7 @@ func ExpenseFormFields(products []models.Product, categories []models.ExpenseCat
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(c.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 97, Col: 26}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 94, Col: 26}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -289,7 +286,7 @@ func ExpenseFormFields(products []models.Product, categories []models.ExpenseCat
 			var templ_7745c5c3_Var9 templ.SafeURL
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/euer/expenses/%d/receipt", expense.ID)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 105, Col: 135}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 102, Col: 135}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -302,7 +299,7 @@ func ExpenseFormFields(products []models.Product, categories []models.ExpenseCat
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(expense.ReceiptPath)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 105, Col: 213}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 102, Col: 213}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -330,7 +327,7 @@ func ExpenseFormFields(products []models.Product, categories []models.ExpenseCat
 				var templ_7745c5c3_Var11 string
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", p.ID))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 127, Col: 47}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 124, Col: 47}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
@@ -343,7 +340,7 @@ func ExpenseFormFields(products []models.Product, categories []models.ExpenseCat
 				var templ_7745c5c3_Var12 string
 				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 127, Col: 58}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 124, Col: 58}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
@@ -356,7 +353,7 @@ func ExpenseFormFields(products []models.Product, categories []models.ExpenseCat
 				var templ_7745c5c3_Var13 string
 				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", p.Stock))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 127, Col: 99}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/expense_form.templ`, Line: 124, Col: 99}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 				if templ_7745c5c3_Err != nil {

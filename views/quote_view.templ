@@ -40,6 +40,14 @@ templ QuoteView(quote *models.Quote, settings models.AppSettings) {
 				}
 			</div>
 		</div>
+
+		if quote.InternalNote != "" {
+			<div class="no-print bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8 text-yellow-800 rounded shadow-sm">
+				<p class="font-bold text-sm mb-1 uppercase tracking-wide">Interne Notiz (Wird nicht gedruckt)</p>
+				<p class="whitespace-pre-line text-sm">{ quote.InternalNote }</p>
+			</div>
+		}
+
 		<div class="page text-sm text-black relative font-serif z-10">
 			<div class="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none z-0 overflow-hidden">
 				<div class="transform -rotate-45 text-[100pt] font-bold text-blue-600 border-8 border-blue-600 p-10 rounded uppercase">{ quote.Status }</div>
@@ -123,7 +131,12 @@ templ QuoteView(quote *models.Quote, settings models.AppSettings) {
 						Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.
 					</p>
 				}
-				<p class="mt-12 text-sm text-gray-700">Dieses Angebot ist freibleibend und gültig für 30 Tage ab Ausstellungsdatum.</p>
+				if quote.DocumentNote != "" {
+					<div class="mt-6 mb-2 whitespace-pre-line text-sm text-gray-800">
+						{ quote.DocumentNote }
+					</div>
+				}
+				<p class="mt-8 text-sm text-gray-700">Dieses Angebot ist freibleibend und gültig für 30 Tage ab Ausstellungsdatum.</p>
 			</div>
 			<!-- Footer -->
 			<div class="absolute bottom-[20mm] left-[20mm] right-[20mm] text-[8pt] text-gray-500 border-t border-gray-300 pt-4 z-10">

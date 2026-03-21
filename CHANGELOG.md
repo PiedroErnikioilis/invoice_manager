@@ -2,6 +2,20 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten.
 
+## [v0.4.2] - 2026-03-21
+
+### Hinzugefügt
+- **Notiz-Funktionen für Dokumente**:
+    - **Interne Notizen**: Neues Feld für Rechnungen, Angebote und Gutschriften, das nur im System sichtbar ist (ideal für interne Vermerke).
+    - **Dokument-Kommentare**: Frei gestaltbare Texte, die direkt auf dem PDF-Dokument (vor dem Fußbereich) angedruckt werden.
+- **Erweiterte Demo-Daten**:
+    - Alle Demo-Dokumente enthalten nun Beispiel-Notizen und Kommentare.
+    - Neue **20-Positionen-Testrechnung** (`RE-BIG-2026`) zum Testen von mehrseitigen Layouts und langen Artikellisten.
+
+### Geändert
+- **PDF-Templates**: Unterstützung für den Andruck von Dokument-Kommentaren in Rechnungen, Angeboten und Gutschriften.
+- **Benutzeroberfläche**: Neue Textbereiche in allen Erstellungs- und Bearbeitungsformularen für Notizen.
+
 ## [v0.4.1] - 2026-03-21
 
 ### Hinzugefügt

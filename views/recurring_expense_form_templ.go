@@ -59,7 +59,7 @@ func RecurringExpenseForm(categories []models.ExpenseCategory) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = Input("Steuer (%)", "tax_rate", "text", "19.0", "19,0", true, "Umsatzsteuersatz.").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = Input("Steuer (%)", "tax_rate", "text", models.FormatDecimalSimple(19.0), "19,0", true, "Umsatzsteuersatz.").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

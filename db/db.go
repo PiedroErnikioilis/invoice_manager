@@ -218,7 +218,9 @@ func initDB(dataSourceName string, isNew bool) (*sql.DB, bool, error) {
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		status TEXT DEFAULT 'Entwurf' CHECK(status IN ('Entwurf', 'Offen', 'Bezahlt', 'Storniert')),
 		is_small_business BOOLEAN DEFAULT 0,
-		customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL
+		customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+		internal_note TEXT,
+		document_note TEXT
 	);
 
 	CREATE TABLE IF NOT EXISTS products (
@@ -252,7 +254,9 @@ func initDB(dataSourceName string, isNew bool) (*sql.DB, bool, error) {
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		status TEXT DEFAULT 'Entwurf' CHECK(status IN ('Entwurf', 'Verschickt', 'Angenommen', 'Abgelehnt', 'Umgewandelt')),
 		is_small_business BOOLEAN DEFAULT 0,
-		customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL
+		customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+		internal_note TEXT,
+		document_note TEXT
 	);
 
 	CREATE TABLE IF NOT EXISTS quote_items (
@@ -277,7 +281,9 @@ func initDB(dataSourceName string, isNew bool) (*sql.DB, bool, error) {
 		status TEXT DEFAULT 'Offen' CHECK(status IN ('Entwurf', 'Offen', 'Abgeschlossen')),
 		is_small_business BOOLEAN DEFAULT 0,
 		customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
-		invoice_id INTEGER REFERENCES invoices(id) ON DELETE SET NULL
+		invoice_id INTEGER REFERENCES invoices(id) ON DELETE SET NULL,
+		internal_note TEXT,
+		document_note TEXT
 	);
 
 	CREATE TABLE IF NOT EXISTS credit_note_items (
@@ -353,6 +359,12 @@ func initDB(dataSourceName string, isNew bool) (*sql.DB, bool, error) {
 		"ALTER TABLE expenses ADD COLUMN tax_rate REAL DEFAULT 19.0",
 		"ALTER TABLE products ADD COLUMN min_stock INTEGER DEFAULT 0",
 		"ALTER TABLE customers ADD COLUMN customer_number TEXT",
+		"ALTER TABLE invoices ADD COLUMN internal_note TEXT",
+		"ALTER TABLE invoices ADD COLUMN document_note TEXT",
+		"ALTER TABLE quotes ADD COLUMN internal_note TEXT",
+		"ALTER TABLE quotes ADD COLUMN document_note TEXT",
+		"ALTER TABLE credit_notes ADD COLUMN internal_note TEXT",
+		"ALTER TABLE credit_notes ADD COLUMN document_note TEXT",
 	}
 
 	slog.Debug("Applying migrations", "count", len(migrations))

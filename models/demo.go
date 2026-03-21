@@ -58,6 +58,11 @@ func (s *Store) SeedDemoData() error {
 		return fmt.Errorf("Rechnungen: %w", err)
 	}
 
+	slog.Debug("Creating big demo invoice with 20 positions")
+	if err := s.seedBigInvoice(customerIDs, productIDs); err != nil {
+		return fmt.Errorf("Große Rechnung: %w", err)
+	}
+
 	slog.Debug("Creating demo quotes")
 	if err := s.seedQuotes(customerIDs, productIDs); err != nil {
 		return fmt.Errorf("Angebote: %w", err)
@@ -255,6 +260,8 @@ func (s *Store) seedInvoices(customerIDs, productIDs []int) error {
 			Status:           status,
 			CustomerID:       &custID,
 			Items:            items,
+			InternalNote:     fmt.Sprintf("Demo-Rechnung erstellt am %s. Kundenzufriedenheit: Hoch.", now.Format("02.01.2006")),
+			DocumentNote:     "Vielen Dank für die angenehme Zusammenarbeit! Bitte begleichen Sie den Betrag fristgerecht.",
 		}
 
 		if _, err := s.CreateInvoice(inv); err != nil {
@@ -316,6 +323,8 @@ func (s *Store) seedQuotes(customerIDs, productIDs []int) error {
 			Status:           status,
 			CustomerID:       &custID,
 			Items:            items,
+			InternalNote:     "Nachfass-Aktion für dieses Angebot geplant für nächste Woche.",
+			DocumentNote:     "Dieses Angebot ist freibleibend. Wir freuen uns auf Ihre Rückmeldung.",
 		}
 
 		if _, err := s.CreateQuote(q); err != nil {
@@ -363,6 +372,8 @@ func (s *Store) seedCreditNotes(customerIDs, productIDs []int) error {
 			TaxRate:          19.0,
 			Status:           status,
 			CustomerID:       &custID,
+			InternalNote:     "Gutschrift aufgrund von Reklamation (Transportschaden).",
+			DocumentNote:     "Hiermit schreiben wir Ihnen den Betrag für die beschädigte Ware gut.",
 			Items: []CreditNoteItem{
 				{
 					Description:  prod.Name + " (Gutschrift)",
@@ -475,4 +486,45 @@ func (s *Store) seedRecurringExpenses(categoryIDs []int) error {
 		}
 	}
 	return nil
+}
+
+func (s *Store) seedBigInvoice(customerIDs, productIDs []int) error {
+	senderName := "Demo GmbH"
+	senderAddr := "Musterstraße 1\n12345 Berlin\nDeutschland"
+	now := time.Now()
+
+	custID := customerIDs[0] // Müller & Söhne
+	cust, _ := s.GetCustomer(custID)
+
+	var items []InvoiceItem
+	// Create 20 items
+	for i := 0; i < 20; i++ {
+		prodIdx := i % len(productIDs)
+		prod, _ := s.GetProduct(productIDs[prodIdx])
+		prodID := prod.ID
+		items = append(items, InvoiceItem{
+			Description:  fmt.Sprintf("%s (Pos %d)", prod.Name, i+1),
+			Quantity:     1 + (i % 3),
+			PricePerUnit: prod.Price,
+			ProductID:    &prodID,
+		})
+	}
+
+	inv := &Invoice{
+		InvoiceNumber:    "RE-BIG-2026",
+		Date:             now.Format("2006-01-02"),
+		SenderName:       senderName,
+		SenderAddress:    senderAddr,
+		RecipientName:    cust.Name,
+		RecipientAddress: cust.Address,
+		TaxRate:          19.0,
+		Status:           "Offen",
+		CustomerID:       &custID,
+		Items:            items,
+		InternalNote:     "Diese Rechnung dient zum Testen von mehrseitigen PDFs und dem Layout bei vielen Positionen.",
+		DocumentNote:     "Vielen Dank für Ihre umfangreiche Bestellung! Wir haben Ihnen einen Sonderrabatt auf alle Positionen gewährt.",
+	}
+
+	_, err := s.CreateInvoice(inv)
+	return err
 }

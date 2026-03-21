@@ -357,9 +357,9 @@ func QuoteForm(quote *models.Quote, customers []models.Customer, products []mode
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var13 string
-					templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", item.PricePerUnit))
+					templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(models.FormatDecimalSimple(item.PricePerUnit))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 99, Col: 184}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 99, Col: 191}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 					if templ_7745c5c3_Err != nil {
@@ -416,60 +416,72 @@ func QuoteForm(quote *models.Quote, customers []models.Customer, products []mode
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = Input("Steuersatz (%)", "tax_rate", "text", fmt.Sprintf("%g", quote.TaxRate), "19", true, "Umsatzsteuersatz (z.B. 19 oder 7).").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = Input("Steuersatz (%)", "tax_rate", "text", models.FormatDecimalSimple(quote.TaxRate), "19", true, "Umsatzsteuersatz (z.B. 19 oder 7).").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "</div><div class=\"flex items-center justify-between mt-8\"><div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "</div><div class=\"mt-6 grid grid-cols-1 md:grid-cols-2 gap-4\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = Textarea("Interne Notiz", "internal_note", quote.InternalNote, 3).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = Textarea("Dokument-Kommentar (auf PDF)", "document_note", quote.DocumentNote, 3).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "</div><div class=\"flex items-center justify-between mt-8\"><div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if quote.ID != 0 && quote.Status != "Umgewandelt" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "<form action=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "<form action=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var16 templ.SafeURL
 				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/quotes/%d/convert", quote.ID)))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 132, Col: 101}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 136, Col: 101}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "\" method=\"POST\" class=\"inline\"><button type=\"submit\" class=\"bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow\">In Rechnung umwandeln</button></form>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "\" method=\"POST\" class=\"inline\"><button type=\"submit\" class=\"bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow\">In Rechnung umwandeln</button></form>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "</div><button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\" type=\"submit\">Speichern</button></div></form></div><div id=\"products-data\" data-products=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "</div><button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\" type=\"submit\">Speichern</button></div></form></div><div id=\"products-data\" data-products=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var17 string
 			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(jsonString(products))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 145, Col: 62}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 149, Col: 62}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "\" style=\"display:none;\"></div><div id=\"customers-data\" data-customers=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "\" style=\"display:none;\"></div><div id=\"customers-data\" data-customers=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(jsonString(customers))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 146, Col: 65}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/quote_form.templ`, Line: 150, Col: 65}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "\" style=\"display:none;\"></div><script>\n            let products = [];\n            let customers = [];\n            try {\n                products = JSON.parse(document.getElementById('products-data').dataset.products);\n                customers = JSON.parse(document.getElementById('customers-data').dataset.customers);\n            } catch(e) {\n                console.error(\"Failed to parse data\", e);\n            }\n\n            function selectCustomer(select) {\n                const id = parseInt(select.value);\n                const customer = customers.find(c => c.ID === id);\n                \n                if (customer) {\n                    document.querySelector('input[name=\"recipient_name\"]').value = customer.Name;\n                    document.querySelector('textarea[name=\"recipient_address\"]').value = customer.Address;\n                    document.getElementById('customer_id').value = customer.ID;\n                } else {\n                    document.getElementById('customer_id').value = \"\";\n                }\n            }\n\n            function selectProduct(select) {\n                const id = parseInt(select.value);\n                const row = select.closest('tr');\n                const descInput = row.querySelector('input[name=\"item_description[]\"]');\n                const priceInput = row.querySelector('input[name=\"item_price[]\"]');\n                const idInput = row.querySelector('input[name=\"item_product_id[]\"]');\n\n                if (id) {\n                    const product = products.find(p => p.ID === id);\n                    if (product) {\n                        descInput.value = product.Name + (product.Description ? \" - \" + product.Description : \"\");\n                        priceInput.value = product.Price.toFixed(2);\n                        idInput.value = product.ID;\n                    }\n                } else {\n                    idInput.value = \"\";\n                }\n            }\n\n            function addItemRow() {\n                const tbody = document.querySelector('#items-table tbody');\n                const tr = document.createElement('tr');\n                \n                let options = '<option value=\"\">Produkt wählen...</option>';\n                products.forEach(p => {\n                    options += `<option value=\"${p.ID}\">${p.Name}</option>`;\n                });\n\n                tr.innerHTML = `\n                    <td class=\"p-1\">\n                        <div class=\"flex flex-col\">\n                            <select class=\"text-xs text-gray-500 mb-1 border rounded p-1\" onchange=\"selectProduct(this)\">\n                                ${options}\n                            </select>\n                            <input name=\"item_description[]\" class=\"border rounded w-full p-2\" required placeholder=\"Artikel oder Leistung\" />\n                            <input type=\"hidden\" name=\"item_product_id[]\" value=\"\" />\n                        </div>\n                    </td>\n                    <td class=\"p-1 align-top\"><input name=\"item_quantity[]\" type=\"number\" class=\"border rounded w-full p-2\" required value=\"1\" /></td>\n                    <td class=\"p-1 align-top\"><input name=\"item_price[]\" type=\"text\" inputmode=\"decimal\" class=\"border rounded w-full p-2\" required placeholder=\"0,00\" /></td>\n                    <td class=\"p-1 align-top\"><button type=\"button\" class=\"text-red-500 font-bold px-2 py-2\" onclick=\"this.closest('tr').remove()\">×</button></td>\n                `;\n                tbody.appendChild(tr);\n            }\n        </script>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 52, "\" style=\"display:none;\"></div><script>\n            let products = [];\n            let customers = [];\n            try {\n                products = JSON.parse(document.getElementById('products-data').dataset.products);\n                customers = JSON.parse(document.getElementById('customers-data').dataset.customers);\n            } catch(e) {\n                console.error(\"Failed to parse data\", e);\n            }\n\n            function selectCustomer(select) {\n                const id = parseInt(select.value);\n                const customer = customers.find(c => c.ID === id);\n                \n                if (customer) {\n                    document.querySelector('input[name=\"recipient_name\"]').value = customer.Name;\n                    document.querySelector('textarea[name=\"recipient_address\"]').value = customer.Address;\n                    document.getElementById('customer_id').value = customer.ID;\n                } else {\n                    document.getElementById('customer_id').value = \"\";\n                }\n            }\n\n            function selectProduct(select) {\n                const id = parseInt(select.value);\n                const row = select.closest('tr');\n                const descInput = row.querySelector('input[name=\"item_description[]\"]');\n                const priceInput = row.querySelector('input[name=\"item_price[]\"]');\n                const idInput = row.querySelector('input[name=\"item_product_id[]\"]');\n\n                if (id) {\n                    const product = products.find(p => p.ID === id);\n                    if (product) {\n                        descInput.value = product.Name + (product.Description ? \" - \" + product.Description : \"\");\n                        priceInput.value = product.Price.toFixed(2);\n                        idInput.value = product.ID;\n                    }\n                } else {\n                    idInput.value = \"\";\n                }\n            }\n\n            function addItemRow() {\n                const tbody = document.querySelector('#items-table tbody');\n                const tr = document.createElement('tr');\n                \n                let options = '<option value=\"\">Produkt wählen...</option>';\n                products.forEach(p => {\n                    options += `<option value=\"${p.ID}\">${p.Name}</option>`;\n                });\n\n                tr.innerHTML = `\n                    <td class=\"p-1\">\n                        <div class=\"flex flex-col\">\n                            <select class=\"text-xs text-gray-500 mb-1 border rounded p-1\" onchange=\"selectProduct(this)\">\n                                ${options}\n                            </select>\n                            <input name=\"item_description[]\" class=\"border rounded w-full p-2\" required placeholder=\"Artikel oder Leistung\" />\n                            <input type=\"hidden\" name=\"item_product_id[]\" value=\"\" />\n                        </div>\n                    </td>\n                    <td class=\"p-1 align-top\"><input name=\"item_quantity[]\" type=\"number\" class=\"border rounded w-full p-2\" required value=\"1\" /></td>\n                    <td class=\"p-1 align-top\"><input name=\"item_price[]\" type=\"text\" inputmode=\"decimal\" class=\"border rounded w-full p-2\" required placeholder=\"0,00\" /></td>\n                    <td class=\"p-1 align-top\"><button type=\"button\" class=\"text-red-500 font-bold px-2 py-2\" onclick=\"this.closest('tr').remove()\">×</button></td>\n                `;\n                tbody.appendChild(tr);\n            }\n        </script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

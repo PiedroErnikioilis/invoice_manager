@@ -126,6 +126,10 @@ templ QuoteForm(quote *models.Quote, customers []models.Customer, products []mod
 				<div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
 					@Input("Steuersatz (%)", "tax_rate", "text", models.FormatDecimalSimple(quote.TaxRate), "19", true, "Umsatzsteuersatz (z.B. 19 oder 7).")
 				</div>
+				<div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+					@Textarea("Interne Notiz", "internal_note", quote.InternalNote, 3)
+					@Textarea("Dokument-Kommentar (auf PDF)", "document_note", quote.DocumentNote, 3)
+				</div>
 				<div class="flex items-center justify-between mt-8">
                     <div>
                         if quote.ID != 0 && quote.Status != "Umgewandelt" {

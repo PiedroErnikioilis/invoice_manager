@@ -221,6 +221,8 @@ func (h *CreditNoteHandler) parseForm(r *http.Request) (*models.CreditNote, erro
 		IsSmallBusiness:  r.FormValue("is_small_business") == "true",
 		CustomerID:       customerID,
 		InvoiceID:        invoiceID,
+		InternalNote:     r.FormValue("internal_note"),
+		DocumentNote:     r.FormValue("document_note"),
 	}
 
 	descriptions := r.Form["item_description[]"]

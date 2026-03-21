@@ -95,6 +95,10 @@ templ CreditNoteForm(note *models.CreditNote, customers []models.Customer, produ
 				<div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
 					@Input("Steuersatz (%)", "tax_rate", "text", models.FormatDecimalSimple(note.TaxRate), "19", true, "Umsatzsteuersatz (z.B. 19 oder 7).")
 				</div>
+				<div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+					@Textarea("Interne Notiz", "internal_note", note.InternalNote, 3)
+					@Textarea("Dokument-Kommentar (auf PDF)", "document_note", note.DocumentNote, 3)
+				</div>
 				<div class="flex items-center justify-end mt-8">
 					<button class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
 						Gutschrift speichern

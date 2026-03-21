@@ -15,10 +15,12 @@ type Invoice struct {
 	RecipientAddress string
 	TaxRate          float64
 	CreatedAt        time.Time
-	Status           string // 'Entwurf', 'Offen', 'Bezahlt'
+	Status           string // 'Entwurf', 'Offen', 'Bezahlt', 'Storniert'
 	IsSmallBusiness  bool
 	CustomerID       *int
 	CustomerNumber   string
+	InternalNote     string
+	DocumentNote     string
 	Items            []InvoiceItem
 	ItemCount        int // nur für Listenansicht (via Subquery)
 }
@@ -67,9 +69,9 @@ func (s *Store) CreateInvoice(inv *Invoice) (int, error) {
 
 	slog.Debug("Inserting invoice record", "invoice_number", inv.InvoiceNumber, "status", inv.Status)
 	res, err := tx.Exec(`
-		INSERT INTO invoices (invoice_number, date, sender_name, sender_address, recipient_name, recipient_address, tax_rate, status, is_small_business, customer_id)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	`, inv.InvoiceNumber, inv.Date, inv.SenderName, inv.SenderAddress, inv.RecipientName, inv.RecipientAddress, inv.TaxRate, inv.Status, inv.IsSmallBusiness, inv.CustomerID)
+		INSERT INTO invoices (invoice_number, date, sender_name, sender_address, recipient_name, recipient_address, tax_rate, status, is_small_business, customer_id, internal_note, document_note)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`, inv.InvoiceNumber, inv.Date, inv.SenderName, inv.SenderAddress, inv.RecipientName, inv.RecipientAddress, inv.TaxRate, inv.Status, inv.IsSmallBusiness, inv.CustomerID, inv.InternalNote, inv.DocumentNote)
 	if err != nil {
 		slog.Error("Failed to insert invoice", "invoice_number", inv.InvoiceNumber, "error", err)
 		tx.Rollback()
@@ -129,9 +131,9 @@ func (s *Store) UpdateInvoice(inv *Invoice) error {
 	slog.Debug("Updating invoice record", "id", inv.ID, "status", inv.Status)
 	_, err = tx.Exec(`
 		UPDATE invoices 
-		SET invoice_number = ?, date = ?, sender_name = ?, sender_address = ?, recipient_name = ?, recipient_address = ?, tax_rate = ?, status = ?, is_small_business = ?, customer_id = ?
+		SET invoice_number = ?, date = ?, sender_name = ?, sender_address = ?, recipient_name = ?, recipient_address = ?, tax_rate = ?, status = ?, is_small_business = ?, customer_id = ?, internal_note = ?, document_note = ?
 		WHERE id = ?
-	`, inv.InvoiceNumber, inv.Date, inv.SenderName, inv.SenderAddress, inv.RecipientName, inv.RecipientAddress, inv.TaxRate, inv.Status, inv.IsSmallBusiness, inv.CustomerID, inv.ID)
+	`, inv.InvoiceNumber, inv.Date, inv.SenderName, inv.SenderAddress, inv.RecipientName, inv.RecipientAddress, inv.TaxRate, inv.Status, inv.IsSmallBusiness, inv.CustomerID, inv.InternalNote, inv.DocumentNote, inv.ID)
 	if err != nil {
 		slog.Error("Failed to update invoice record", "id", inv.ID, "error", err)
 		tx.Rollback()
@@ -379,11 +381,11 @@ func (s *Store) GetInvoice(id int) (*Invoice, error) {
 	slog.Debug("Getting invoice details", "id", id)
 	var i Invoice
 	err := s.DB.QueryRow(`
-		SELECT i.id, i.invoice_number, i.date, i.sender_name, i.sender_address, i.recipient_name, i.recipient_address, i.tax_rate, i.created_at, i.status, i.is_small_business, i.customer_id, COALESCE(c.customer_number, '')
+		SELECT i.id, i.invoice_number, i.date, i.sender_name, i.sender_address, i.recipient_name, i.recipient_address, i.tax_rate, i.created_at, i.status, i.is_small_business, i.customer_id, COALESCE(c.customer_number, ''), COALESCE(i.internal_note, ''), COALESCE(i.document_note, '')
 		FROM invoices i
 		LEFT JOIN customers c ON i.customer_id = c.id
 		WHERE i.id = ?
-	`, id).Scan(&i.ID, &i.InvoiceNumber, &i.Date, &i.SenderName, &i.SenderAddress, &i.RecipientName, &i.RecipientAddress, &i.TaxRate, &i.CreatedAt, &i.Status, &i.IsSmallBusiness, &i.CustomerID, &i.CustomerNumber)
+	`, id).Scan(&i.ID, &i.InvoiceNumber, &i.Date, &i.SenderName, &i.SenderAddress, &i.RecipientName, &i.RecipientAddress, &i.TaxRate, &i.CreatedAt, &i.Status, &i.IsSmallBusiness, &i.CustomerID, &i.CustomerNumber, &i.InternalNote, &i.DocumentNote)
 	if err != nil {
 		slog.Error("Failed to get invoice", "id", id, "error", err)
 		return nil, err

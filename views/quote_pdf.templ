@@ -100,6 +100,11 @@ templ QuotePDF(quote *models.Quote, settings *models.AppSettings) {
 				if quote.IsSmallBusiness {
 					<p class="mb-2 italic">Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.</p>
 				}
+				if quote.DocumentNote != "" {
+					<div class="mb-4 whitespace-pre-wrap">
+						{ quote.DocumentNote }
+					</div>
+				}
 				<p>Dieses Angebot ist freibleibend und gültig für 30 Tage ab Ausstellungsdatum.</p>
 			</div>
 		</div>
