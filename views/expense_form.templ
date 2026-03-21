@@ -14,14 +14,11 @@ func expenseField(expense *models.Expense, field string) string {
 	case "description":
 		return expense.Description
 	case "amount":
-		if expense.Amount == 0 {
-			return ""
-		}
-		return fmt.Sprintf("%.2f", expense.Amount)
+		return models.FormatDecimalSimple(expense.Amount)
 	case "date":
 		return expense.Date
 	case "tax_rate":
-		return fmt.Sprintf("%.1f", expense.TaxRate)
+		return models.FormatDecimalSimple(expense.TaxRate)
 	case "category":
 		return expense.CategoryName
 	}

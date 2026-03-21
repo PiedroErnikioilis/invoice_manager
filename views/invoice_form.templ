@@ -97,7 +97,7 @@ templ InvoiceForm(invoice *models.Invoice, products []models.Product, customers 
 											</div>
 										</td>
 										<td class="p-1 align-top"><input name="quantity[]" type="number" class="border rounded w-full p-2" required value={ strconv.Itoa(item.Quantity) }/></td>
-										<td class="p-1 align-top"><input name="price[]" type="text" inputmode="decimal" class="border rounded w-full p-2" required value={ fmt.Sprintf("%.2f", item.PricePerUnit) }/></td>
+										<td class="p-1 align-top"><input name="price[]" type="text" inputmode="decimal" class="border rounded w-full p-2" required value={ models.FormatDecimalSimple(item.PricePerUnit) }/></td>
 										<td class="p-1 align-top"><button type="button" class="text-red-500 font-bold px-2 py-2" onclick="this.closest('tr').remove()">×</button></td>
 									</tr>
 								}
@@ -125,7 +125,7 @@ templ InvoiceForm(invoice *models.Invoice, products []models.Product, customers 
 					<button type="button" class="mt-2 text-sm text-blue-600 hover:text-blue-800 font-bold" onclick="addItemRow()">+ Position hinzufügen</button>
 				</div>
 				<div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-					@Input("Steuersatz (%)", "tax_rate", "text", fmt.Sprintf("%g", invoice.TaxRate), "19", true, "Umsatzsteuersatz (z.B. 19 oder 7).")
+					@Input("Steuersatz (%)", "tax_rate", "text", models.FormatDecimalSimple(invoice.TaxRate), "19", true, "Umsatzsteuersatz (z.B. 19 oder 7).")
 				</div>
 				<div class="flex items-center justify-end mt-8">
 					<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">

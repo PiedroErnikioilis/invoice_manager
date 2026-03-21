@@ -12,6 +12,12 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei festgehalten
     - Lückenlose Aufzeichnung der Datenbank-Initialisierung und aller Migrationsschritte.
     - Detaillierte Protokollierung des Demo-Daten-Seedings zur schnelleren Fehlerdiagnose bei Erstinstallationen.
 
+### Geändert
+- **Harmonisierung der Dezimaltrennzeichen**:
+    - Alle Beträge, Preise und Steuersätze werden nun konsistent mit Komma als Dezimaltrenner angezeigt und in Eingabefeldern vorausgefüllt.
+    - Neue Hilfsfunktionen `FormatDecimal` und `FormatDecimalSimple` für eine saubere Lokalisierung.
+    - Die Eingabe akzeptiert weiterhin flexibel sowohl Komma als auch Punkt (wird beim Speichern automatisch normalisiert).
+
 ### Behoben
 - **Stabilität & Build**:
     - Korrektur von internen Namenskonflikten in den Datenbank-Modellen (`s.DB` vs `s.db`).

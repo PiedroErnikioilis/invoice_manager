@@ -69,27 +69,26 @@ templ EuerDashboard(stats *models.EuerStats, years []int) {
                         <tbody>
                             for _, cs := range stats.CategoryStats {
                                 <tr class="border-b last:border-0 hover:bg-gray-50">
-                                    <td class="py-2 font-medium">{ cs.Name }</td>
+                                    <td class="py-2 text-right font-medium">{ cs.Name }</td>
                                     <td class="py-2 text-right font-mono">{ models.FormatCurrency(cs.Total) }</td>
-                                    <td class="py-2 text-right">{ fmt.Sprintf("%.1f", cs.Percentage) }%</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-                <div class="flex flex-col justify-center gap-4">
-                    for _, cs := range stats.CategoryStats {
-                        <div>
-                            <div class="flex justify-between text-xs mb-1">
-                                <span class="font-bold">{ cs.Name }</span>
-                                <span>{ fmt.Sprintf("%.1f", cs.Percentage) }%</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-blue-600 h-2 rounded-full" style={ fmt.Sprintf("width: %.1f%%", cs.Percentage) }></div>
-                            </div>
-                        </div>
-                    }
-                </div>
+                                    <td class="py-2 text-right">{ models.FormatDecimal(cs.Percentage) }%</td>
+                                    </tr>
+                                    }
+                                    </tbody>
+                                    </table>
+                                    </div>
+                                    <div class="flex flex-col justify-center gap-4">
+                                    for _, cs := range stats.CategoryStats {
+                                    <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-bold">{ cs.Name }</span>
+                                    <span>{ models.FormatDecimal(cs.Percentage) }%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full" style={ fmt.Sprintf("width: %.1f%%", cs.Percentage) }></div>
+                                    </div>
+                                    </div>
+                                    }                </div>
             </div>
         </div>
 
