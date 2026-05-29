@@ -4,7 +4,8 @@ go 1.26.0
 
 require (
 	github.com/a-h/templ v0.3.1001
-	github.com/go-chi/chi/v5 v5.2.5
+	github.com/fatih/color v1.16.0
+	github.com/go-chi/chi/v5 v5.3.0
 	github.com/go-rod/rod v0.116.2
 	github.com/johnfercher/maroto v1.0.0
 	modernc.org/sqlite v1.46.1
@@ -17,7 +18,6 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cli/browser v1.3.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/fatih/color v1.16.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jung-kurt/gofpdf v1.16.2 // indirect
